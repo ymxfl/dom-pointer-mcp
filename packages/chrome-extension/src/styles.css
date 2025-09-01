@@ -1,0 +1,408 @@
+/* MCP Pointer Element Selection Styles */
+
+/* Crosshair cursor when Alt key is pressed */
+.mcp-pointer--alt-pressed {
+  cursor: crosshair !important;
+}
+
+.mcp-pointer--alt-pressed * {
+  cursor: crosshair !important;
+}
+
+/* Hover overlay when Alt key is pressed */
+.mcp-pointer__overlay--hover {
+  border: 2px dashed rgba(0, 200, 255, 0.8);
+  border-radius: 12px;
+  background: linear-gradient(135deg,
+    rgba(0, 200, 255, 0.02) 0%,
+    rgba(150, 100, 255, 0.015) 50%,
+    rgba(0, 200, 255, 0.02) 100%);
+  box-shadow: 
+    inset 0 0 0 1px rgba(75, 150, 255, 0.3),
+    inset 0 0 0 2px rgba(120, 120, 255, 0.2),
+    0 0 8px rgba(150, 100, 255, 0.1);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+
+.mcp-pointer__overlay--hover.mcp-pointer__overlay--visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Block: Main overlay container */
+.mcp-pointer__overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 999999;
+}
+
+/* Element: AI Glass Border (thinner) */
+.mcp-pointer__overlay-border {
+  position: absolute;
+  inset: -6px; /* Creates border around the target element */
+  padding: 2px; /* Thinner border */
+  border-radius: 12px;
+  background: linear-gradient(135deg,
+    rgba(0, 200, 255, 0.6) 0%,
+    rgba(75, 150, 255, 0.55) 20%,
+    rgba(120, 120, 255, 0.5) 40%,
+    rgba(150, 100, 255, 0.5) 50%,
+    rgba(120, 120, 255, 0.5) 60%,
+    rgba(75, 150, 255, 0.55) 80%,
+    rgba(0, 200, 255, 0.6) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  isolation: isolate;
+  transition: all 0.3s ease;
+}
+
+/* Complex shimmer effect (::before) */
+.mcp-pointer__overlay-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: 12px;
+  background: 
+    linear-gradient(45deg,
+      transparent 0%,
+      transparent 20%,
+      rgba(0, 200, 255, 0) 30%,
+      rgba(0, 200, 255, 0.05) 35%,
+      rgba(0, 200, 255, 0.1) 40%,
+      rgba(0, 200, 255, 0.2) 44%,
+      rgba(0, 200, 255, 0.3) 47%,
+      rgba(255, 255, 255, 0.4) 49%,
+      rgba(255, 255, 255, 0.6) 50%,
+      rgba(255, 255, 255, 0.4) 51%,
+      rgba(0, 200, 255, 0.3) 53%,
+      rgba(0, 200, 255, 0.2) 56%,
+      rgba(0, 200, 255, 0.1) 60%,
+      rgba(0, 200, 255, 0.05) 65%,
+      rgba(0, 200, 255, 0) 70%,
+      transparent 80%,
+      transparent 100%),
+    linear-gradient(120deg,
+      transparent 0%,
+      transparent 10%,
+      rgba(255, 255, 255, 0) 20%,
+      rgba(255, 255, 255, 0.05) 30%,
+      rgba(255, 255, 255, 0.1) 35%,
+      rgba(255, 255, 255, 0.15) 40%,
+      rgba(255, 255, 255, 0.2) 45%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.1) 55%,
+      rgba(255, 255, 255, 0.05) 60%,
+      rgba(255, 255, 255, 0) 65%,
+      transparent 75%,
+      transparent 100%),
+    linear-gradient(-30deg,
+      transparent 0%,
+      transparent 30%,
+      rgba(150, 100, 255, 0) 40%,
+      rgba(150, 100, 255, 0.05) 50%,
+      rgba(150, 100, 255, 0.1) 55%,
+      rgba(150, 100, 255, 0.2) 60%,
+      rgba(150, 100, 255, 0.4) 65%,
+      rgba(150, 100, 255, 0.2) 70%,
+      rgba(150, 100, 255, 0.1) 75%,
+      rgba(150, 100, 255, 0.05) 80%,
+      rgba(150, 100, 255, 0) 85%,
+      transparent 95%,
+      transparent 100%);
+  background-size: 200% 200%, 300% 300%, 250% 250%;
+  animation: 
+    shimmer 4s ease-in-out infinite,
+    shimmer2 6.5s ease-in-out infinite reverse,
+    shimmer3 5.2s ease-in-out infinite;
+  transition: all 0.3s ease;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+/* Siri-style inner glow effect as separate element */
+.mcp-pointer__overlay-glow {
+  position: absolute;
+  inset: -4px; /* Slightly inside to create inner border effect */
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: 
+    inset 1px 0 3px rgba(255, 20, 147, 0.5),
+    inset -1px 0 3px rgba(0, 200, 255, 0.5),
+    inset 0 1px 3px rgba(255, 215, 0, 0.5),
+    inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+    inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+    inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+    inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+    inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  animation: 
+    border-pulse-top 4s ease-in-out infinite,
+    border-pulse-right 4s ease-in-out infinite 1s,
+    border-pulse-bottom 4s ease-in-out infinite 2s,
+    border-pulse-left 4s ease-in-out infinite 3s;
+  z-index: 2;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+
+/* Element: Inner glass effect */
+.mcp-pointer__overlay-glass {
+  position: absolute;
+  inset: -4px; /* Match border positioning to touch the inside edge */
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(1px) saturate(150%);
+  box-shadow: 
+    0 4px 16px rgba(31, 38, 135, 0.15),
+    inset 0 2px 10px rgba(255, 255, 255, 0.2);
+  z-index: 0;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.mcp-pointer__overlay-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(0.5px);
+  box-shadow: 
+    inset -6px -4px 0px -7px rgba(255, 255, 255, 0.8),
+    inset 0px -5px 0px -4px rgba(255, 255, 255, 0.6);
+  opacity: 0.5;
+  z-index: -1;
+  filter: brightness(110%);
+}
+
+/* Modifier: Enhanced animated state */
+.mcp-pointer__overlay--animated .mcp-pointer__overlay-border::before {
+  animation-duration: 2s, 3.5s, 2.8s;
+}
+
+.mcp-pointer__overlay--animated .mcp-pointer__overlay-glow {
+  opacity: 0.9;
+  animation-duration: 3s, 3s, 3s, 3s;
+}
+
+.mcp-pointer__overlay--animated .mcp-pointer__overlay-glass {
+  opacity: 0.6;
+  backdrop-filter: blur(1.5px) saturate(180%);
+  box-shadow: 
+    0 6px 24px rgba(31, 38, 135, 0.2),
+    inset 0 3px 15px rgba(255, 255, 255, 0.3);
+}
+
+.mcp-pointer__overlay--animated .mcp-pointer__overlay-glass::after {
+  opacity: 0.7;
+  box-shadow: 
+    inset -8px -6px 0px -9px rgba(255, 255, 255, 1),
+    inset 0px -7px 0px -5px rgba(255, 255, 255, 0.8);
+  filter: brightness(115%);
+}
+
+
+/* Modifier: Fading out state */
+.mcp-pointer__overlay--fading-out {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.8s ease-out;
+}
+
+/* Animations from demo */
+@keyframes shimmer {
+  0% {
+    background-position: -150% -150%, 100% -100%, -100% 100%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 150% 150%, -100% 100%, 100% -100%;
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer2 {
+  0% {
+    background-position: -100% -100%, -200% 50%, 100% -100%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 100% 100%, 200% -50%, -100% 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer3 {
+  0% {
+    background-position: 50% -150%, -100% -100%, -100% 50%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -50% 150%, 100% 100%, 100% -50%;
+    opacity: 0;
+  }
+}
+
+@keyframes inner-shimmer {
+  0% {
+    background-position: -100% -100%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: -100% -100%;
+  }
+}
+
+@keyframes siri-pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+}
+
+@keyframes rotate-siri-glow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes border-pulse-top {
+  0%, 75%, 100% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+  12.5% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 2px 4px rgba(255, 215, 0, 0.7),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+}
+
+@keyframes border-pulse-right {
+  0%, 75%, 100% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+  12.5% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -2px 0 4px rgba(0, 200, 255, 0.7),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+}
+
+@keyframes border-pulse-bottom {
+  0%, 75%, 100% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+  12.5% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -2px 4px rgba(138, 43, 226, 0.6),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+}
+
+@keyframes border-pulse-left {
+  0%, 75%, 100% { 
+    box-shadow: 
+      inset 1px 0 3px rgba(255, 20, 147, 0.5),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+  12.5% { 
+    box-shadow: 
+      inset 2px 0 4px rgba(255, 20, 147, 0.7),
+      inset -1px 0 3px rgba(0, 200, 255, 0.5),
+      inset 0 1px 3px rgba(255, 215, 0, 0.5),
+      inset 0 -1px 3px rgba(138, 43, 226, 0.4),
+      inset 2px 2px 4px rgba(255, 69, 0, 0.3),
+      inset -2px 2px 4px rgba(0, 255, 127, 0.3),
+      inset 2px -2px 4px rgba(255, 127, 0, 0.25),
+      inset -2px -2px 4px rgba(127, 0, 255, 0.25);
+  }
+}
+

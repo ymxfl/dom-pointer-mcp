@@ -1,0 +1,42 @@
+{
+  "name": "@mcp-pointer/server",
+  "version": "0.1.0",
+  "description": "MCP Server for DOM element pointing - WebSocket bridge for element targeting",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-pointer": "dist/cli.cjs"
+  },
+  "scripts": {
+    "build": "pnpm clean && esbuild src/cli.ts --outfile=dist/cli.cjs --format=cjs --bundle  --platform=node --target=node20 --sourcemap",
+    "dev": "tsx watch src/cli.ts start",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "configure": "tsx src/cli.ts configure",
+    "link:global": "pnpm build && npm link"
+  },
+  "dependencies": {
+    "@mcp-pointer/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "commander": "^11.1.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "esbuild": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "mcp",
+    "ai",
+    "pointer",
+    "websocket",
+    "element-targeting"
+  ],
+  "author": "MCP Pointer Team",
+  "license": "MIT"
+}

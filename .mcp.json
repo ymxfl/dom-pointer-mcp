@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "@mcp-pointer/server": {
+      "command": "mcp-pointer",
+      "args": ["start"],
+      "env": {
+        "MCP_POINTER_PORT": "7007"
+      }
+    }
+  }
+}
