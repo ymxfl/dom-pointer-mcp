@@ -30,12 +30,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm -C packages/mcp build
+        run: pnpm -C packages/server build
 
       - name: Run tests (if any)
-        run: pnpm -C packages/mcp test || echo "No tests found"
+        run: pnpm -C packages/server test || echo "No tests found"
 
       - name: Publish with provenance
-        run: pnpm -C packages/mcp publish --access public --provenance --no-git-checks
+        run: pnpm -C packages/server publish --access public --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

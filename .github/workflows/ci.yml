@@ -37,6 +37,6 @@ jobs:
 
       - name: Test CLI
         run: |
-          cd packages/mcp
+          cd packages/server
           node dist/cli.cjs --version
           node dist/cli.cjs --help
