@@ -1,6 +1,8 @@
 # 🧪 Setup Guide for Testers & Contributors
 
-This guide helps you set up AI Glasses for testing or development without waiting for official npm releases.
+This guide helps you set up MCP Pointer for testing unreleased versions without waiting for official npm releases.
+
+> **For Development & Contributing:** See [CONTRIBUTING.md](./CONTRIBUTING.md) for comprehensive development setup, code guidelines, and contribution process.
 
 ## 📋 Prerequisites
 
@@ -14,8 +16,8 @@ This guide helps you set up AI Glasses for testing or development without waitin
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd tuba_mcp
+git clone https://github.com/elieteyssedou/mcp-pointer
+cd mcp-pointer
 
 # Install all dependencies
 pnpm install
@@ -24,7 +26,7 @@ pnpm install
 pnpm -C packages/server link:global
 ```
 
-This creates a global `glasses` command that points to your local build.
+This creates a global `mcp-pointer` command that points to your local build.
 
 ### 2. Install Chrome Extension (Developer Mode)
 
@@ -39,11 +41,11 @@ pnpm -C packages/chrome-extension build
 1. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
 2. Click "Load unpacked"
 3. Select the `packages/chrome-extension/dist/` folder
-4. The AI Glasses extension should appear in your extensions list
+4. The MCP Pointer extension should appear in your extensions list
 
 ### 3. Configure Your Working Project
 
-Navigate to any project where you want to use AI Glasses:
+Navigate to any project where you want to use MCP Pointer:
 
 ```bash
 cd /path/to/your/frontend-project
@@ -58,18 +60,18 @@ The `.mcp.json` will look like:
 ```json
 {
   "mcpServers": {
-    "@glasses/mcp": {
-      "command": "glasses",
-      "args": ["wear"],
+    "@mcp-pointer/server": {
+      "command": "mcp-pointer",
+      "args": ["start"],
       "env": {
-        "GLASSES_PORT": "7007"
+        "MCP_POINTER_PORT": "7007"
       }
     }
   }
 }
 ```
 
-### 4. Start Using AI Glasses
+### 4. Start Using MCP Pointer
 
 ```bash
 # In your working project, start the MCP server
@@ -85,7 +87,7 @@ Now you can:
 
 ## 🔄 Making Changes
 
-When you make changes to the AI Glasses code:
+When you make changes to the MCP Pointer code:
 
 ```bash
 # For MCP server changes
@@ -100,7 +102,7 @@ pnpm -C packages/chrome-extension build
 
 ```bash
 # Remove the global link
-npm unlink -g @glasses/mcp
+npm unlink -g @mcp-pointer/server
 
 # Remove from your projects
 rm .mcp.json  # In each project that used it
@@ -111,7 +113,7 @@ rm .mcp.json  # In each project that used it
 ### MCP Server Issues
 
 ```bash
-# Check if glasses command is available
+# Check if mcp-pointer command is available
 mcp-pointer --help
 
 # Test server startup
@@ -145,16 +147,16 @@ mcp-pointer start --log-level debug
    - Check that `.mcp.json` exists in your project root
    - Verify MCP server is running
 
-2. **"Command not found: glasses":**
+2. **"Command not found: mcp-pointer":**
    - Run `npm link` again in `packages/server/` directory
    - Check your `PATH` includes npm global binaries
 
 ## 📁 Project Structure
 
 ```
-tuba_mcp/
+mcp-pointer/
 ├── packages/
-│   ├── mcp/                    # MCP Server
+│   ├── server/                 # MCP Server
 │   │   ├── dist/cli.cjs       # Built CLI (created by pnpm build)
 │   │   └── src/               # Source code
 │   ├── chrome-extension/       # Chrome Extension  
@@ -185,4 +187,4 @@ tuba_mcp/
 
 **Questions or issues?** Check the main README.md or create an issue in the repository.
 
-**Happy testing! 👓**
+**Happy testing! 👆**

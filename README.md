@@ -15,7 +15,8 @@ MCP Pointer is a Chrome extension + MCP server that allows you to point at any D
 
 ## 🚀 Quick Start
 
-> **For Testers & Contributors:** See [SETUP_FOR_TESTERS.md](./SETUP_FOR_TESTERS.md) for development setup instructions.
+> **For Contributors:** See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and contribution guidelines.
+> **For Testers:** See [SETUP_FOR_TESTERS.md](./SETUP_FOR_TESTERS.md) for testing unreleased versions.
 
 ### 1. Install the MCP Server
 
@@ -90,72 +91,6 @@ git push origin v0.1.0
 # Or use GitHub's release UI
 ```
 
-## 🛠 Development Setup
-
-```bash
-# Clone repository
-git clone https://github.com/elieteyssedou/mcp-pointer.git
-cd mcp-pointer
-
-# Install dependencies
-pnpm install
-```
-
-### Chrome Extension Development
-
-1. **Build extension in development mode**:
-   ```bash
-   cd packages/chrome-extension
-   pnpm dev  # Builds to dev/ directory with logging enabled and source maps
-   ```
-
-2. **Load extension in Chrome**:
-   - Open Chrome → Extensions → Developer mode → Load unpacked
-   - Select `packages/chrome-extension/dev/` folder
-   - The extension will appear in your browser
-
-3. **Making changes**:
-   - Files are watched automatically in dev mode
-   - Refresh the extension in Chrome Extensions page after changes
-   - Check browser console for development logs
-
-4. **Development vs Production**:
-   - **Dev build** (`pnpm dev`) → `dev/` folder, includes logging and source maps
-   - **Production build** (`pnpm build`) → `dist/` folder, minified, no logs
-
-### MCP Server Development
-
-1. **Run MCP server in watch mode**:
-   ```bash
-   cd packages/server
-   pnpm dev  # Starts server and restarts on file changes
-   ```
-
-2. **Test server locally**:
-   ```bash
-   # In a separate terminal
-   node dist/cli.cjs --help  # Test the built CLI
-   ```
-
-3. **Configure for development**:
-   ```bash
-   pnpm -C packages/server configure  # Auto-configure Claude Code
-   ```
-
-### Development Commands
-
-```bash
-# Build everything for production
-pnpm build
-
-# Run linting and type checking
-pnpm lint
-pnpm typecheck
-
-# Clean all build outputs
-pnpm -C packages/chrome-extension clean
-pnpm -C packages/server clean
-```
 
 ## 🏗 Project Structure
 
@@ -268,11 +203,18 @@ MIT License - see LICENSE file for details
 
 ## 🤝 Contributing
 
+We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) guide for:
+
+- Development setup instructions
+- Code style guidelines
+- Testing requirements
+- Pull request process
+
+**Quick start for contributors:**
 1. Fork the repository
-2. Create a feature branch
+2. Follow the setup guide in [CONTRIBUTING.md](./CONTRIBUTING.md)
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Submit a pull request
 
 ---
 
