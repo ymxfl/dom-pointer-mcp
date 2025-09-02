@@ -1,7 +1,7 @@
 import defaultConfig, { ExtensionConfig } from './config';
 import logger from './logger';
 
-const STORAGE_KEY = 'glasses_config';
+const STORAGE_KEY = 'mcp_pointer_config';
 
 /* eslint-disable import/prefer-default-export */
 

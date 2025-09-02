@@ -4,9 +4,9 @@ import logger from './logger';
 export default function showConfig() {
   const config = {
     mcpServers: {
-      '@glasses/mcp': {
-        command: 'glasses',
-        args: [CLICommand.WEAR],
+      '@mcp-pointer/server': {
+        command: 'mcp-pointer',
+        args: [CLICommand.START],
         env: {},
       },
     },

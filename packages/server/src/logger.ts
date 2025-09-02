@@ -1,4 +1,4 @@
-import { Logger } from '@glasses/shared/Logger';
+import { Logger } from '@mcp-pointer/shared/Logger';
 
 const logger = new Logger();
 

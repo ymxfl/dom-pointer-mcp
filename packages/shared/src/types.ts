@@ -1,4 +1,4 @@
-// Shared types for AI Glasses MCP
+// Shared types for MCP Pointer
 export interface ElementPosition {
   x: number;
   y: number;

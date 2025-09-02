@@ -14,7 +14,7 @@ async function initialize() {
   // Create the service (no connection on startup)
   elementSender = new ElementSenderService();
 
-  logger.info('🚀 AI Glasses background script loaded', {
+  logger.info('🚀 MCP Pointer background script loaded', {
     enabled: currentConfig.enabled,
     port: currentConfig.websocket.port,
   });
