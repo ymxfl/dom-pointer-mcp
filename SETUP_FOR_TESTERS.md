@@ -21,7 +21,7 @@ cd tuba_mcp
 pnpm install
 
 # Build and link the MCP server globally
-pnpm -C packages/mcp link:global
+pnpm -C packages/server link:global
 ```
 
 This creates a global `glasses` command that points to your local build.
@@ -89,7 +89,7 @@ When you make changes to the AI Glasses code:
 
 ```bash
 # For MCP server changes
-pnpm -C packages/mcp build
+pnpm -C packages/server build
 
 # For Chrome extension changes
 pnpm -C packages/chrome-extension build
@@ -146,7 +146,7 @@ mcp-pointer start --log-level debug
    - Verify MCP server is running
 
 2. **"Command not found: glasses":**
-   - Run `npm link` again in `packages/mcp/` directory
+   - Run `npm link` again in `packages/server/` directory
    - Check your `PATH` includes npm global binaries
 
 ## 📁 Project Structure

@@ -11,7 +11,7 @@
   ],
   "eslint.workingDirectories": [
     ".",
-    "packages/mcp",
+    "packages/server",
     "packages/chrome-extension",
     "packages/shared"
   ],
