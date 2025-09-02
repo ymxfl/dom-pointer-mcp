@@ -28,7 +28,21 @@ npm install -g @mcp-pointer/server
 npx @mcp-pointer/server start
 ```
 
-### 2. Install Chrome Extension
+### 2. Configure with Claude Code
+
+**Recommended (User-wide configuration):**
+```bash
+# Configure MCP Pointer for all your projects
+claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start
+```
+
+**Alternative (Project-specific configuration):**
+```bash
+# Configure MCP Pointer for current project only
+claude mcp add pointer --env MCP_POINTER_PORT=7007 -- mcp-pointer start
+```
+
+### 3. Install Chrome Extension
 
 **For end users** (when available):
 - Install from Chrome Web Store (coming soon)
@@ -43,9 +57,9 @@ npx @mcp-pointer/server start
 3. Open Chrome → Extensions → Developer mode → Load Unpacked
 4. Select `packages/chrome-extension/dist/` folder
 
-### 3. Start Using
+### 4. Start Using
 
-1. **Start the server**: `mcp-pointer start`
+1. **Start the server**: `mcp-pointer start` (or let Claude Code start it automatically)
 2. **Navigate to any webpage** 
 3. **Option+Click** any element to select it
 4. **Ask your AI** to analyze the targeted element!
@@ -56,7 +70,7 @@ npx @mcp-pointer/server start
 
 ```bash
 mcp-pointer start         # 👆 Start pointing at elements (start server)
-mcp-pointer configure         # Auto-configure AI tools  
+mcp-pointer configure     # Show Claude MCP configuration command
 mcp-pointer show-config   # Show manual configuration
 ```
 
@@ -124,15 +138,19 @@ packages/
 
 ## 🔧 Configuration
 
-### Auto Configuration
+### Recommended Configuration
 
 ```bash
-mcp-pointer configure
+# User-wide configuration (recommended)
+claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start
+
+# Project-specific configuration  
+claude mcp add pointer --env MCP_POINTER_PORT=7007 -- mcp-pointer start
 ```
 
 ### Manual Configuration
 
-Add to your AI tool's MCP settings (e.g., `~/.claude/settings.json`):
+For non-Claude MCP tools, add to your AI tool's MCP settings (e.g., `~/.claude/settings.json`):
 
 ```json
 {
@@ -140,10 +158,17 @@ Add to your AI tool's MCP settings (e.g., `~/.claude/settings.json`):
     "@mcp-pointer/server": {
       "command": "mcp-pointer",
       "args": ["start"],
-      "env": {}
+      "env": {
+        "MCP_POINTER_PORT": "7007"
+      }
     }
   }
 }
+```
+
+Get this configuration by running:
+```bash
+mcp-pointer show-config
 ```
 
 ## 🎯 How It Works

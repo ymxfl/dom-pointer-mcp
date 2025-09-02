@@ -8,7 +8,7 @@ import { version } from 'process';
 import type PointerWebSocketServer from './websocket-server';
 
 enum MCPToolName {
-  GET_TARGETED_ELEMENT = 'get-targeted-element',
+  GET_POINTED_ELEMENT = 'get-pointed-element',
 }
 
 enum MCPServerName {
@@ -46,8 +46,8 @@ export default class MCPHandler {
     return {
       tools: [
         {
-          name: MCPToolName.GET_TARGETED_ELEMENT,
-          description: 'Get information about the currently targeted DOM element from the browser extension, in order to let you see a specific element the user is pointing on his/her the browser.',
+          name: MCPToolName.GET_POINTED_ELEMENT,
+          description: 'Get information about the currently pointed/shown DOM element from the browser extension, in order to let you see a specific element the user is showing you on his/her the browser.',
           inputSchema: {
             type: 'object',
             properties: {},
@@ -59,7 +59,7 @@ export default class MCPHandler {
   }
 
   private async handleCallTool(request: any) {
-    if (request.params.name === MCPToolName.GET_TARGETED_ELEMENT) {
+    if (request.params.name === MCPToolName.GET_POINTED_ELEMENT) {
       return this.getTargetedElement();
     }
 
@@ -74,8 +74,8 @@ export default class MCPHandler {
         content: [
           {
             type: 'text',
-            text: 'No element is currently targeted. '
-              + 'The user needs to select an element in their browser using Option+Click.',
+            text: 'No element is currently pointed. '
+              + 'The user needs to point an element in their browser using Option+Click.',
           },
         ],
       };

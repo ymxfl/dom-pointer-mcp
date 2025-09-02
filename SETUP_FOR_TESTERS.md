@@ -43,41 +43,25 @@ pnpm -C packages/chrome-extension build
 3. Select the `packages/chrome-extension/dist/` folder
 4. The MCP Pointer extension should appear in your extensions list
 
-### 3. Configure Your Working Project
+### 3. Configure Claude Code for Testing
 
-Navigate to any project where you want to use MCP Pointer:
+**For Contributors/Testers** (after linking the MCP server):
 
 ```bash
-cd /path/to/your/frontend-project
-
-# Auto-configure Claude Code for this project
-mcp-pointer configure
-
-# This creates a .mcp.json file in your project
+# Configure MCP Pointer user-wide for testing
+claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start
 ```
 
-The `.mcp.json` will look like:
-```json
-{
-  "mcpServers": {
-    "@mcp-pointer/server": {
-      "command": "mcp-pointer",
-      "args": ["start"],
-      "env": {
-        "MCP_POINTER_PORT": "7007"
-      }
-    }
-  }
-}
-```
+**Important for Contributors:**
+- Since you linked the MCP server globally in step 1, this will use your local development build
+- The configuration is user-wide, so it works across all your projects
+- No need to create `.mcp.json` files in individual projects
 
 ### 4. Start Using MCP Pointer
 
 ```bash
-# In your working project, start the MCP server
+# Start the MCP server (Claude Code will start it automatically when needed)
 mcp-pointer start
-
-# Or let Claude Code start it automatically
 ```
 
 Now you can:
@@ -104,8 +88,8 @@ pnpm -C packages/chrome-extension build
 # Remove the global link
 npm unlink -g @mcp-pointer/server
 
-# Remove from your projects
-rm .mcp.json  # In each project that used it
+# Remove from Claude Code
+claude mcp remove pointer
 ```
 
 ## 🐛 Troubleshooting
@@ -143,8 +127,8 @@ mcp-pointer start --log-level debug
 ### Claude Code Integration
 
 1. **Tools not appearing:**
-   - Restart Claude Code after running `mcp-pointer configure`
-   - Check that `.mcp.json` exists in your project root
+   - Restart Claude Code after configuring the MCP server
+   - Check that the MCP server is configured with `claude mcp list`
    - Verify MCP server is running
 
 2. **"Command not found: mcp-pointer":**
@@ -163,7 +147,6 @@ mcp-pointer/
 │   │   ├── dist/              # Built extension (created by pnpm build)
 │   │   └── src/               # Source code
 │   └── shared/                # Shared TypeScript types
-└── .mcp.json                  # Local MCP configuration (created by mcp-pointer configure)
 ```
 
 ## 🎯 Testing Checklist

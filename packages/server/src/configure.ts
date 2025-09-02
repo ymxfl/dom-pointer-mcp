@@ -1,38 +1,16 @@
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
 import logger from './logger';
 
 async function configure() {
-  try {
-    const mcpConfigPath = join(process.cwd(), '.mcp.json');
-    let config: any = {};
-
-    try {
-      const existingConfig = readFileSync(mcpConfigPath, 'utf8');
-      config = JSON.parse(existingConfig);
-    } catch {
-      config = {};
-    }
-
-    if (!config.mcpServers) {
-      config.mcpServers = {};
-    }
-
-    config.mcpServers['@mcp-pointer/server'] = {
-      command: 'mcp-pointer',
-      args: ['start'],
-      env: {
-        MCP_POINTER_PORT: '7007',
-      },
-    };
-
-    writeFileSync(mcpConfigPath, JSON.stringify(config, null, 2));
-    logger.info('✅ MCP Pointer configured for Claude Code in current project!');
-    logger.info('Created .mcp.json with pointer configuration.');
-  } catch (error) {
-    logger.error('Failed to configure Claude Code:', error);
-    process.exit(1);
-  }
+  logger.info('🔧 To configure MCP Pointer with Claude Code, run this command:');
+  logger.info('');
+  logger.info('claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start');
+  logger.info('');
+  logger.info('This will configure MCP Pointer user-wide across all your projects.');
+  logger.info('');
+  logger.info('Alternative: For project-specific configuration, use:');
+  logger.info('claude mcp add pointer --env MCP_POINTER_PORT=7007 -- mcp-pointer start');
+  logger.info('');
+  logger.info('💡 You can customize the port by changing MCP_POINTER_PORT=7007 to your preferred port.');
 }
 
 export default configure;
