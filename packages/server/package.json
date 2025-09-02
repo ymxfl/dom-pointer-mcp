@@ -13,7 +13,8 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "configure": "tsx src/cli.ts configure",
-    "link:global": "pnpm build && npm link"
+    "link:global": "pnpm build && pnpm link --global",
+    "build:start": "node dist/cli.cjs start"
   },
   "dependencies": {
     "@mcp-pointer/shared": "workspace:*",
