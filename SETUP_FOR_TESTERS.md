@@ -16,7 +16,7 @@ This guide helps you set up MCP Pointer for testing unreleased versions without 
 
 ```bash
 # Clone the repository
-git clone https://github.com/elieteyssedou/mcp-pointer
+git clone https://github.com/etsd-tech/mcp-pointer
 cd mcp-pointer
 
 # Install all dependencies

@@ -38,11 +38,11 @@ curl -fsSL https://get.pnpm.io/install.sh | sh
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/elieteyssedou/mcp-pointer.git
+git clone https://github.com/etsd-tech/mcp-pointer.git
 cd mcp-pointer
 
 # Add upstream remote
-git remote add upstream https://github.com/elieteyssedou/mcp-pointer.git
+git remote add upstream https://github.com/etsd-tech/mcp-pointer.git
 ```
 
 ### 2. Install Dependencies
@@ -297,7 +297,7 @@ Include screenshots for UI changes
 
 ### Getting Help
 
-- Check existing [GitHub Issues](https://github.com/elieteyssedou/mcp-pointer/issues)
+- Check existing [GitHub Issues](https://github.com/etsd-tech/mcp-pointer/issues)
 - Create a new issue with:
   - Clear description of the problem
   - Steps to reproduce
