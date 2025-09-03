@@ -1,5 +1,10 @@
 import type { ComponentInfo, ElementPosition, CSSProperties } from './element-utils';
 
+export enum OverlayType {
+  SELECTION = 'selection',
+  HOVER = 'hover',
+}
+
 export interface TargetedElement {
   selector: string;
   tagName: string;

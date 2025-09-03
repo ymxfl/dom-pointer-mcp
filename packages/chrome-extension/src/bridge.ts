@@ -42,7 +42,7 @@ function urlMatches(): boolean {
 }
 
 // Bridge script - runs in isolated world and forwards messages from main world to background
-logger.info('🌉 Bridge script loaded');
+logger.debug('🌉 Bridge script loaded');
 
 // Initialize configuration
 initializeConfig();

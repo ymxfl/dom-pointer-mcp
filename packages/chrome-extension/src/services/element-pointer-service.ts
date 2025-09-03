@@ -1,4 +1,4 @@
-import ElementStyleManager from './styles';
+import OverlayService from './overlay-service';
 import {
   getReactFiberInfo,
   getElementAttributes,
@@ -6,12 +6,17 @@ import {
   getElementPosition,
   getElementCSSProperties,
   getElementClasses,
-} from './element-utils';
-import type { TargetedElement } from './types';
-import logger from './logger';
+} from '../element-utils';
+import type { TargetedElement } from '../types';
+import { OverlayType } from '../types';
+import logger from '../logger';
 
-export default class ElementPointer {
-  private styleManager: ElementStyleManager;
+export default class ElementPointerService {
+  private overlayService: OverlayService;
+
+  private selectedElement: HTMLElement | null = null;
+
+  private hoveredElement: HTMLElement | null = null;
 
   private lastMouseEvent: MouseEvent | null = null;
 
@@ -20,7 +25,7 @@ export default class ElementPointer {
   private boundHandleMouseOut: (event: MouseEvent) => void;
 
   constructor() {
-    this.styleManager = ElementStyleManager.getInstance();
+    this.overlayService = OverlayService.getInstance();
 
     // Bind mouse event handlers once for consistent reference
     this.boundHandleMouseOver = this.handleMouseOver.bind(this);
@@ -40,7 +45,7 @@ export default class ElementPointer {
     document.addEventListener('keydown', this.handleKeyDown.bind(this), true);
     document.addEventListener('keyup', this.handleKeyUp.bind(this), true);
 
-    logger.info('👆 Element pointer initialized');
+    logger.info('👆 Element pointer loaded');
   }
 
   private handleWindowClick(event: MouseEvent): void {
@@ -55,35 +60,46 @@ export default class ElementPointer {
   }
 
   private handleAltClick(): void {
-    console.log('Alt+click detected');
     const element = this.getElementUnderCursor();
+    if (!element) return;
 
-    // Use the hovered element if available, fallback to event target
-    // const element = this.styleManager.getHoveredElement() as HTMLElement;
-    // if (!element) return;
-
-    console.log('element', element);
-
-    logger.info('🎯 Option+click detected on:', element);
+    logger.debug('🎯 Option+click detected on:', element);
 
     // Check if clicking on the same already selected element
-    const currentlySelected = this.styleManager.getSelectedElement();
-    if (currentlySelected === element) {
-      logger.info('🔄 Deselecting same element:', element);
-      this.styleManager.clearHighlight();
+    if (this.selectedElement === element) {
+      logger.debug('🔄 Deselecting same element:', element);
+      this.clearSelection();
       return;
     }
 
-    this.styleManager.highlightElement(element);
+    this.selectElement(element);
     const targetedElement = this.extractElementData(element);
     this.sendToBackground(targetedElement);
+  }
+
+  private selectElement(element: HTMLElement): void {
+    this.clearSelection();
+    this.clearHoverEffect(); // Clear hover overlay when selecting
+    // Remove any lingering hover effect from the element being selected
+    element.classList.remove('mcp-pointer__hover');
+    this.selectedElement = element;
+    this.overlayService.create(element, OverlayType.SELECTION);
+  }
+
+  private clearSelection(): void {
+    this.overlayService.remove(OverlayType.SELECTION);
+    this.selectedElement = null;
   }
 
   private handleMouseOver(event: MouseEvent): void {
     if (this.isOnlyTriggerKeyRelated(event)) {
       const element = event.target as HTMLElement;
-      if (element) {
-        this.styleManager.addHoverEffect(element);
+      if (element && element !== this.selectedElement && element !== this.hoveredElement) {
+        // Remove any existing hover overlay first
+        this.clearHoverEffect();
+        // Create new hover overlay and track the element
+        this.hoveredElement = element;
+        this.overlayService.create(element, OverlayType.HOVER);
       }
     }
   }
@@ -91,10 +107,16 @@ export default class ElementPointer {
   private handleMouseOut(event: MouseEvent): void {
     if (this.isOnlyTriggerKeyRelated(event)) {
       const element = event.target as HTMLElement;
-      if (element) {
-        this.styleManager.removeHoverEffect();
+      // Only remove if we're actually leaving the hovered element
+      if (element === this.hoveredElement) {
+        this.clearHoverEffect();
       }
     }
+  }
+
+  private clearHoverEffect(): void {
+    this.overlayService.remove(OverlayType.HOVER);
+    this.hoveredElement = null;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
@@ -103,13 +125,18 @@ export default class ElementPointer {
       this.attachMouseListeners();
 
       // Check what element is currently under the cursor and add hover effect
-      const elementUnderCursor = this.getElementUnderCursor();
-      if (elementUnderCursor) {
-        this.styleManager.addHoverEffect(elementUnderCursor);
-      }
+      // Defer this to prevent forced reflow from DOM read→read→write pattern
+      requestAnimationFrame(() => {
+        const elementUnderCursor = this.getElementUnderCursor();
+        if (elementUnderCursor && elementUnderCursor !== this.selectedElement) {
+          this.clearHoverEffect();
+          this.hoveredElement = elementUnderCursor;
+          this.overlayService.create(elementUnderCursor, OverlayType.HOVER);
+        }
+      });
     } else if (this.isTriggerKeyRelated(event) && document.body.classList.contains('mcp-pointer--trigger-key-pressed')) {
       document.body.classList.remove('mcp-pointer--trigger-key-pressed');
-      this.styleManager.removeHoverEffect();
+      this.clearHoverEffect();
       this.removeMouseListeners();
     }
   }
@@ -118,7 +145,7 @@ export default class ElementPointer {
     if (this.isTriggerKeyRelated(event)) {
       document.body.classList.remove('mcp-pointer--trigger-key-pressed');
       this.removeMouseListeners();
-      this.styleManager.removeHoverEffect();
+      this.clearHoverEffect();
     }
   }
 
@@ -152,10 +179,10 @@ export default class ElementPointer {
   private getElementUnderCursor(): HTMLElement | null {
     // Get cursor position from last mouse event
     const mouseEvent = this.lastMouseEvent;
-    if (mouseEvent) {
-      return document.elementFromPoint(mouseEvent.clientX, mouseEvent.clientY) as HTMLElement;
-    }
-    return null;
+
+    if (!mouseEvent) return null;
+
+    return document.elementFromPoint(mouseEvent.clientX, mouseEvent.clientY) as HTMLElement;
   }
 
   private extractElementData(element: HTMLElement): TargetedElement {
@@ -175,7 +202,7 @@ export default class ElementPointer {
   }
 
   private sendToBackground(element: TargetedElement): void {
-    logger.debug('📤 Sending element to background:', element);
+    logger.info('📤 Sending element to background:', element);
 
     // Send via window messaging (main world can't access chrome.runtime directly)
     window.postMessage({

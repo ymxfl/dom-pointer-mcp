@@ -2,7 +2,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
   TargetedElement, WebSocketMessage, WebSocketMessageType, ConnectionStatus,
 } from '@mcp-pointer/shared';
-import logger from './logger';
+import logger from '../logger';
 
 export type StatusCallback = (status: ConnectionStatus, error?: string) => void;
 

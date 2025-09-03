@@ -1,6 +1,6 @@
 import { ConnectionStatus } from '@mcp-pointer/shared';
 import logger from './logger';
-import { ElementSenderService } from './element-sender-service';
+import { ElementSenderService } from './services/element-sender-service';
 import { ConfigStorage } from './storage';
 import { ExtensionConfig } from './config';
 

@@ -1,5 +1,6 @@
 /* MCP Pointer Element Selection Styles */
 
+
 /* Crosshair cursor when activation key is pressed */
 .mcp-pointer--trigger-key-pressed {
   cursor: crosshair !important;
@@ -34,12 +35,13 @@
 /* Block: Main overlay container */
 .mcp-pointer__overlay {
   position: absolute;
-  z-index: 999999;
+  z-index: 2147483647 !important; /* Maximum safe z-index with !important */
   pointer-events: none; /* Selection overlay allows clicks through */
 }
 
 /* Hover overlay should block clicks */
 .mcp-pointer__overlay--hover {
+  z-index: 2147483647 !important; /* Use same maximum z-index with !important */
   pointer-events: none;
 }
 
