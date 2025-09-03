@@ -1,4 +1,4 @@
-import OverlayManager from './overlay-manager';
+import OverlayManager, { OverlayType } from './overlay-manager';
 
 export default class ElementStyleManager {
   private static instance: ElementStyleManager;
@@ -30,11 +30,10 @@ export default class ElementStyleManager {
     if (element === this.selectedElement) return;
     // Always remove existing hover overlay first, then create new one
     this.overlayManager.removeHoverOverlay();
-    this.overlayManager.createOverlay(element, 'hover');
+    this.overlayManager.createOverlay(element, OverlayType.HOVER);
   }
 
-  removeHoverEffect(element: HTMLElement): void {
-    if (element === this.selectedElement) return;
+  removeHoverEffect(): void {
     this.overlayManager.removeHoverOverlay();
   }
 
@@ -53,6 +52,10 @@ export default class ElementStyleManager {
 
   getSelectedElement(): HTMLElement | null {
     return this.selectedElement;
+  }
+
+  getHoveredElement(): HTMLElement | null {
+    return this.overlayManager.getHoverTargetElement();
   }
 
   fadeOutAndRemove(): Promise<void> {

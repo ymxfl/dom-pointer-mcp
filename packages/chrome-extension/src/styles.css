@@ -1,15 +1,15 @@
 /* MCP Pointer Element Selection Styles */
 
-/* Crosshair cursor when Alt key is pressed */
-.mcp-pointer--alt-pressed {
+/* Crosshair cursor when activation key is pressed */
+.mcp-pointer--trigger-key-pressed {
   cursor: crosshair !important;
 }
 
-.mcp-pointer--alt-pressed * {
+.mcp-pointer--trigger-key-pressed * {
   cursor: crosshair !important;
 }
 
-/* Hover overlay when Alt key is pressed */
+/* Hover overlay when activation key is pressed */
 .mcp-pointer__overlay--hover {
   border: 2px dashed rgba(0, 200, 255, 0.8);
   border-radius: 12px;
@@ -34,14 +34,19 @@
 /* Block: Main overlay container */
 .mcp-pointer__overlay {
   position: absolute;
-  pointer-events: none;
   z-index: 999999;
+  pointer-events: none; /* Selection overlay allows clicks through */
+}
+
+/* Hover overlay should block clicks */
+.mcp-pointer__overlay--hover {
+  pointer-events: none;
 }
 
 /* Element: AI Glass Border (thinner) */
 .mcp-pointer__overlay-border {
   position: absolute;
-  inset: -6px; /* Creates border around the target element */
+  inset: 0;
   padding: 2px; /* Thinner border */
   border-radius: 12px;
   background: linear-gradient(135deg,
@@ -129,7 +134,7 @@
 /* Siri-style inner glow effect as separate element */
 .mcp-pointer__overlay-glow {
   position: absolute;
-  inset: -4px; /* Slightly inside to create inner border effect */
+  inset: 2px; /* 2px inside the border (was -4px vs -6px border) */
   border-radius: 10px;
   background: transparent;
   box-shadow: 
@@ -156,7 +161,7 @@
 /* Element: Inner glass effect */
 .mcp-pointer__overlay-glass {
   position: absolute;
-  inset: -4px; /* Match border positioning to touch the inside edge */
+  inset: 2px; /* 2px inside the border (was -4px vs -6px border) */
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(1px) saturate(150%);

@@ -1,4 +1,11 @@
+export enum OverlayType {
+  SELECTION = 'selection',
+  HOVER = 'hover',
+}
+
 export default class OverlayManager {
+  private static readonly OVERLAY_OFFSET = 6;
+
   private static instance: OverlayManager;
 
   private selectionOverlay: HTMLDivElement | null = null;
@@ -9,6 +16,20 @@ export default class OverlayManager {
 
   private hoverTargetElement: HTMLElement | null = null;
 
+  private intersectionObserver: IntersectionObserver;
+
+  private mutationObserver: MutationObserver;
+
+  private rafId: number | null = null;
+
+  private mutationTimer: NodeJS.Timeout | null = null;
+
+  constructor() {
+    this.intersectionObserver = this.createIntersectionObserver();
+    this.mutationObserver = this.createMutationObserver();
+    this.initResizeHandler();
+  }
+
   static getInstance(): OverlayManager {
     if (!OverlayManager.instance) {
       OverlayManager.instance = new OverlayManager();
@@ -16,8 +37,8 @@ export default class OverlayManager {
     return OverlayManager.instance;
   }
 
-  createOverlay(element: HTMLElement, type: 'selection' | 'hover' = 'selection'): void {
-    if (type === 'selection') {
+  createOverlay(element: HTMLElement, type: OverlayType = OverlayType.SELECTION): void {
+    if (type === OverlayType.SELECTION) {
       this.removeSelectionOverlay();
       this.createSelectionOverlay(element);
     } else {
@@ -45,14 +66,14 @@ export default class OverlayManager {
     this.selectionOverlay.appendChild(insideGlass);
 
     this.positionAndAppendOverlay(this.selectionOverlay, element, '999999');
-    window.addEventListener('resize', this.handleSelectionResize);
+    this.intersectionObserver.observe(element);
   }
 
   private createHoverOverlay(element: HTMLElement): void {
     this.hoverTargetElement = element;
     this.hoverOverlay = this.createOverlayElement('mcp-pointer__overlay mcp-pointer__overlay--hover');
     this.positionAndAppendOverlay(this.hoverOverlay, element, '999998');
-    window.addEventListener('resize', this.handleHoverResize);
+    this.intersectionObserver.observe(element);
   }
 
   private createOverlayElement(className: string): HTMLDivElement {
@@ -67,22 +88,17 @@ export default class OverlayManager {
     zIndex: string,
   ): void {
     const rect = element.getBoundingClientRect();
-    const { scrollX, scrollY } = window;
-
-    // Check if this is a hover overlay to apply offset
     const isHoverOverlay = overlay.className.includes('--hover');
-    const offset = isHoverOverlay ? 6 : 0; // 6px offset for hover, 0 for selection
 
-    // Apply styles in batch
-    Object.assign(overlay.style, {
-      position: 'absolute',
-      left: `${rect.left + scrollX - offset}px`,
-      top: `${rect.top + scrollY - offset}px`,
-      width: `${rect.width + (offset * 2)}px`,
-      height: `${rect.height + (offset * 2)}px`,
-      pointerEvents: 'none',
-      zIndex,
-    });
+    const docDimensions = this.getDocumentDimensions();
+    const position = this.calculateOverlayPosition(rect, docDimensions);
+
+    this.applyOverlayStyles(overlay, position, zIndex);
+
+    // Selection overlay should allow clicks to pass through
+    if (!isHoverOverlay) {
+      Object.assign(overlay.style, { pointerEvents: 'none' });
+    }
 
     // Add shimmer duration for selection overlays
     if (overlay.className.includes('mcp-pointer__overlay') && !isHoverOverlay) {
@@ -103,18 +119,6 @@ export default class OverlayManager {
       });
     }
   }
-
-  private handleSelectionResize = (): void => {
-    if (this.selectionOverlay && this.selectionTargetElement) {
-      this.positionAndAppendOverlay(this.selectionOverlay, this.selectionTargetElement, '999999');
-    }
-  };
-
-  private handleHoverResize = (): void => {
-    if (this.hoverOverlay && this.hoverTargetElement) {
-      this.positionAndAppendOverlay(this.hoverOverlay, this.hoverTargetElement, '999998');
-    }
-  };
 
   addAnimation(): void {
     if (this.selectionOverlay) {
@@ -150,21 +154,46 @@ export default class OverlayManager {
     this.removeHoverOverlay();
   }
 
+  destroy(): void {
+    this.removeOverlay();
+    this.intersectionObserver.disconnect();
+    this.mutationObserver.disconnect();
+
+    // Clean up event listeners
+    window.removeEventListener('resize', this.scheduleUpdate);
+    window.removeEventListener('scroll', this.scheduleUpdate);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+
+    // Clean up pending timers
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+    if (this.mutationTimer !== null) {
+      clearTimeout(this.mutationTimer);
+      this.mutationTimer = null;
+    }
+  }
+
   removeSelectionOverlay(): void {
+    if (this.selectionTargetElement) {
+      this.intersectionObserver.unobserve(this.selectionTargetElement);
+    }
     if (this.selectionOverlay) {
       this.selectionOverlay.remove();
       this.selectionOverlay = null;
     }
-    window.removeEventListener('resize', this.handleSelectionResize);
     this.selectionTargetElement = null;
   }
 
   removeHoverOverlay(): void {
+    if (this.hoverTargetElement) {
+      this.intersectionObserver.unobserve(this.hoverTargetElement);
+    }
     if (this.hoverOverlay) {
       this.hoverOverlay.remove();
       this.hoverOverlay = null;
     }
-    window.removeEventListener('resize', this.handleHoverResize);
     this.hoverTargetElement = null;
   }
 
@@ -172,7 +201,201 @@ export default class OverlayManager {
     return this.selectionOverlay !== null;
   }
 
-  hasHoverOverlay(): boolean {
-    return this.hoverOverlay !== null;
+  getHoverTargetElement(): HTMLElement | null {
+    return this.hoverTargetElement;
   }
+
+  private createIntersectionObserver(): IntersectionObserver {
+    return new IntersectionObserver(
+      (entries) => this.handleIntersection(entries),
+      {
+        // Simple binary visibility detection - element is visible or not
+        threshold: [0, 1.0],
+        // Moderate root margin for visibility detection
+        rootMargin: '50px',
+      },
+    );
+  }
+
+  private initResizeHandler(): void {
+    window.addEventListener('resize', this.scheduleUpdate);
+    window.addEventListener('scroll', this.scheduleUpdate, { passive: true });
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  private createMutationObserver(): MutationObserver {
+    const mutationObserver = new MutationObserver(() => {
+      this.scheduleMutationUpdate();
+    });
+
+    // Start observing DOM changes
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+    });
+
+    return mutationObserver;
+  }
+
+  private getOverlayInfo(
+    element: HTMLElement,
+  ): { overlay: HTMLDivElement; isHover: boolean } | null {
+    if (element === this.selectionTargetElement && this.selectionOverlay) {
+      return { overlay: this.selectionOverlay, isHover: false };
+    }
+    if (element === this.hoverTargetElement && this.hoverOverlay) {
+      return { overlay: this.hoverOverlay, isHover: true };
+    }
+    return null;
+  }
+
+  private scheduleUpdate = (): void => {
+    // Throttle updates using RAF (max 60fps)
+    if (this.rafId !== null) return;
+    this.rafId = requestAnimationFrame(() => {
+      this.updateAllOverlays();
+      this.rafId = null;
+    });
+  };
+
+  private scheduleMutationUpdate = (): void => {
+    // Debounce mutation updates - wait for DOM changes to settle
+    if (this.mutationTimer !== null) {
+      clearTimeout(this.mutationTimer);
+    }
+    this.mutationTimer = setTimeout(() => {
+      this.updateAllOverlays();
+      this.mutationTimer = null;
+    }, 50); // 50ms debounce
+  };
+
+  private updateAllOverlays = (): void => {
+    // Update positions for all active overlays
+    if (this.selectionTargetElement) {
+      this.repositionOverlay(this.selectionTargetElement);
+    }
+    if (this.hoverTargetElement) {
+      this.repositionOverlay(this.hoverTargetElement);
+    }
+  };
+
+  private repositionOverlay(element: HTMLElement): void {
+    const overlayInfo = this.getOverlayInfo(element);
+    if (!overlayInfo) return;
+
+    const rect = element.getBoundingClientRect();
+
+    const docDimensions = this.getDocumentDimensions();
+    const position = this.calculateOverlayPosition(rect, docDimensions);
+
+    this.applyOverlayStyles(overlayInfo.overlay, position);
+  }
+
+  private handleIntersection(entries: IntersectionObserverEntry[]): void {
+    entries.forEach((entry) => {
+      const element = entry.target as HTMLElement;
+
+      if (entry.isIntersecting) {
+        // Element is visible, show overlay
+        this.showOverlayForElement(element);
+      } else {
+        // Element is not visible, hide overlay completely
+        this.hideOverlayForElement(element);
+      }
+    });
+  }
+
+  private showOverlayForElement(element: HTMLElement): void {
+    const overlayInfo = this.getOverlayInfo(element);
+    if (overlayInfo) {
+      overlayInfo.overlay.style.opacity = '1';
+      overlayInfo.overlay.style.transition = 'opacity 0.2s ease-in-out';
+    }
+  }
+
+  private getDocumentDimensions(): { width: number; height: number } {
+    const width = Math.max(
+      document.documentElement.scrollWidth,
+      document.documentElement.offsetWidth,
+      document.documentElement.clientWidth,
+    );
+    const height = Math.max(
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.documentElement.clientHeight,
+    );
+    return { width, height };
+  }
+
+  private calculateOverlayPosition(
+    rect: DOMRect,
+    docDimensions: { width: number; height: number },
+  ): { left: number; top: number; width: number; height: number } {
+    const { scrollX, scrollY } = window;
+    const offset = OverlayManager.OVERLAY_OFFSET;
+
+    // Calculate desired position with offset
+    const desiredLeft = rect.left + scrollX - offset;
+    const desiredTop = rect.top + scrollY - offset;
+
+    // Clamp position to document boundaries
+    const leftPos = Math.max(0, desiredLeft);
+    const topPos = Math.max(0, desiredTop);
+
+    // Calculate max width/height to stay within document
+    const maxWidth = docDimensions.width - leftPos;
+    const maxHeight = docDimensions.height - topPos;
+
+    // Adjust dimensions based on clamping
+    const leftDiff = desiredLeft - leftPos;
+    const topDiff = desiredTop - topPos;
+    const desiredWidth = rect.width + (offset * 2) + leftDiff;
+    const desiredHeight = rect.height + (offset * 2) + topDiff;
+
+    // Apply max constraints
+    const width = Math.min(desiredWidth, maxWidth);
+    const height = Math.min(desiredHeight, maxHeight);
+
+    return {
+      left: leftPos,
+      top: topPos,
+      width,
+      height,
+    };
+  }
+
+  private applyOverlayStyles(
+    overlay: HTMLDivElement,
+    position: { left: number; top: number; width: number; height: number },
+    zIndex?: string,
+  ): void {
+    const styles: Record<string, string> = {
+      position: 'absolute',
+      left: `${position.left}px`,
+      top: `${position.top}px`,
+      width: `${position.width}px`,
+      height: `${position.height}px`,
+    };
+
+    if (zIndex) styles.zIndex = zIndex;
+
+    Object.assign(overlay.style, styles);
+  }
+
+  private hideOverlayForElement(element: HTMLElement): void {
+    const overlayInfo = this.getOverlayInfo(element);
+    if (overlayInfo) {
+      overlayInfo.overlay.style.opacity = '0';
+      overlayInfo.overlay.style.transition = 'opacity 0.2s ease-in-out';
+    }
+  }
+
+  private handleVisibilityChange = (): void => {
+    if (document.hidden) {
+      // Page is hidden (tab switched, minimized, etc.), remove hover overlay
+      this.removeHoverOverlay();
+    }
+  };
 }
