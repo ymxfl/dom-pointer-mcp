@@ -1,4 +1,4 @@
-import { LogLevel } from '@mcp-pointer/shared/Logger';
+import { LogLevel } from '@mcp-pointer/shared/logger';
 
 export interface ExtensionConfig {
   enabled: boolean;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { LogLevel } from '@mcp-pointer/shared/Logger';
+import { LogLevel } from '@mcp-pointer/shared/logger';
 import start from './start';
 import configure from './configure';
 import showConfig from './show-config';

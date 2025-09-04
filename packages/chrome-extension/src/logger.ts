@@ -1,4 +1,4 @@
-import { Logger } from '@mcp-pointer/shared/Logger';
+import { Logger } from '@mcp-pointer/shared/logger';
 import config from './config';
 
 const logger = new Logger(config.logger);
