@@ -32,6 +32,59 @@ brew install pnpm
 curl -fsSL https://get.pnpm.io/install.sh | sh
 ```
 
+## 📦 Publishing & Build Process
+
+This project uses automated publishing via GitHub Actions with cryptographic provenance for security and transparency.
+
+### Build System
+- **Package Manager**: pnpm with workspaces
+- **Build Tool**: esbuild for fast TypeScript compilation  
+- **CLI Distribution**: Single bundled `.cjs` file for standalone execution
+- **Dependencies**: All external packages bundled for zero-dependency installation
+
+### Publishing Workflow
+1. **Automated CI**: Every push/PR runs linting, type checking, and builds
+2. **GitHub Releases**: Create a release to trigger automatic npm publishing
+3. **Provenance**: Cryptographically links published package to source code
+4. **Transparency**: Users can verify the published CLI matches the open source code
+
+```bash
+# Create a release to publish
+git tag v0.1.0
+git push origin v0.1.0
+# Or use GitHub's release UI
+```
+
+## 🏗 Project Structure
+
+```
+packages/
+├── server/              # @mcp-pointer/server - MCP Server (TypeScript)
+│   ├── src/
+│   │   ├── start.ts      # Main server entry point
+│   │   ├── cli.ts        # Command line interface  
+│   │   ├── websocket-server.ts
+│   │   └── mcp-handler.ts
+│   ├── dist/
+│   │   └── cli.cjs       # Bundled standalone CLI
+│   └── package.json
+│
+├── chrome-extension/    # Chrome Extension (TypeScript)
+│   ├── src/
+│   │   ├── background.ts # Service worker
+│   │   ├── content.ts    # Element selection
+│   │   └── element-sender-service.ts
+│   ├── dev/              # Development build (with logging)
+│   ├── dist/             # Production build (minified)
+│   └── manifest.json
+│
+└── shared/             # @mcp-pointer/shared - Shared TypeScript types
+    ├── src/
+    │   ├── Logger.ts
+    │   └── types.ts
+    └── package.json
+```
+
 ## 🚀 Development Setup
 
 ### 1. Fork and Clone

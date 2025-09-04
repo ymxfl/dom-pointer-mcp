@@ -1,68 +1,70 @@
 # 👆 MCP Pointer
 
-**Point at DOM elements for AI analysis!**
+**Point to browser DOM elements for agentic coding tools via MCP!**
 
-MCP Pointer is a Chrome extension + MCP server that allows you to point at any DOM element on a webpage and have your AI assistant analyze it, understand its structure, and help you modify it.
+MCP Pointer is a *local* tool combining a Chrome extension with an MCP server. The extension lets you visually select DOM elements in the browser, and the MCP server makes this **textual context** available through the Model Context Protocol. Agentic coding tools like Claude Code, Cursor, Windsurf, or Continue can then access that information directly, enabling smoother interaction between the web and your AI-powered coding environment.
 
 ## ✨ Features
 
 - 🎯 **Option+Click Selection** - Simply hold Option (Alt on Windows) and click any element
-- 🔍 **Smart Element Analysis** - Extracts CSS selectors, component info, and source file hints  
-- ⚛️ **Framework Detection** - Recognizes React, Vue, Angular components automatically
+- 📋 **Complete Element Data** - Text content, CSS classes, HTML attributes, positioning, and styling
+- ⚛️ **React Component Detection** - Component names and source files via Fiber (experimental)
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
-- 🎨 **Visual Feedback** - Beautiful highlighting and connection status
 - 🤖 **MCP Compatible** - Works with Claude Code and other MCP-enabled AI tools
 
 ## 🚀 Quick Start
 
+> **Note:** Chrome extension is not yet published on Chrome Web Store. You'll need to build and install it manually for now.
 > **For Contributors:** See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and contribution guidelines.
-> **For Testers:** See [SETUP_FOR_TESTERS.md](./SETUP_FOR_TESTERS.md) for testing unreleased versions.
 
 ### 1. Install the MCP Server
 
+**Option A: From npm (when published):**
 ```bash
 # Install globally via npm
 npm install -g @mcp-pointer/server
+```
 
-# Or use npx (no installation needed)
-npx @mcp-pointer/server start
+**Option B: Build from source (current method):**
+```bash
+# Clone and build the repository
+git clone https://github.com/etsd-tech/mcp-pointer
+cd mcp-pointer
+pnpm install
+
+# Build and link the MCP server globally  
+pnpm -C packages/server link:global
 ```
 
 ### 2. Configure with Claude Code
 
-**Recommended (User-wide configuration):**
 ```bash
-# Configure MCP Pointer for all your projects
+# Configure MCP Pointer user-wide
 claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start
-```
-
-**Alternative (Project-specific configuration):**
-```bash
-# Configure MCP Pointer for current project only
-claude mcp add pointer --env MCP_POINTER_PORT=7007 -- mcp-pointer start
 ```
 
 ### 3. Install Chrome Extension
 
-**For end users** (when available):
-- Install from Chrome Web Store (coming soon)
+**Current method (Chrome Web Store not available yet):**
 
-**For developers** or **testing**:
-1. Download or clone this repository
-2. Build the extension: 
-   ```bash
-   cd packages/chrome-extension
-   pnpm build  # Production build
-   ```
-3. Open Chrome → Extensions → Developer mode → Load Unpacked
-4. Select `packages/chrome-extension/dist/` folder
+```bash
+# Build the Chrome extension (if not done in step 1)
+pnpm -C packages/chrome-extension build
+```
+
+**Load in Chrome:**
+1. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
+2. Click "Load unpacked"
+3. Select the `packages/chrome-extension/dist/` folder
+4. The MCP Pointer extension should appear in your extensions list
 
 ### 4. Start Using
 
-1. **Start the server**: `mcp-pointer start` (or let Claude Code start it automatically)
-2. **Navigate to any webpage** 
-3. **Option+Click** any element to select it
-4. **Ask your AI** to analyze the targeted element!
+1. **Navigate to any webpage** 
+2. **Option+Click** any element to select it
+3. **Ask your AI** to analyze the targeted element!
+
+Claude Code will automatically start the MCP server when needed.
 
 ## 📋 Available Commands
 
@@ -82,59 +84,8 @@ Once configured, your AI assistant will have these tools:
 - `clearTargetedElement` - Clear the current selection
 - `getPointerStatus` - Check system status and statistics
 
-## 📦 Publishing & Build Process
-
-This project uses automated publishing via GitHub Actions with cryptographic provenance for security and transparency.
-
-### Build System
-- **Package Manager**: pnpm with workspaces
-- **Build Tool**: esbuild for fast TypeScript compilation
-- **CLI Distribution**: Single bundled `.cjs` file for standalone execution
-- **Dependencies**: All external packages bundled for zero-dependency installation
-
-### Publishing Workflow
-1. **Automated CI**: Every push/PR runs linting, type checking, and builds
-2. **GitHub Releases**: Create a release to trigger automatic npm publishing
-3. **Provenance**: Cryptographically links published package to source code
-4. **Transparency**: Users can verify the published CLI matches the open source code
-
-```bash
-# Create a release to publish
-git tag v0.1.0
-git push origin v0.1.0
-# Or use GitHub's release UI
-```
 
 
-## 🏗 Project Structure
-
-```
-packages/
-├── server/              # @mcp-pointer/server - MCP Server (TypeScript)
-│   ├── src/
-│   │   ├── start.ts      # Main server entry point
-│   │   ├── cli.ts        # Command line interface  
-│   │   ├── websocket-server.ts
-│   │   └── mcp-handler.ts
-│   ├── dist/
-│   │   └── cli.cjs       # Bundled standalone CLI
-│   └── package.json
-│
-├── chrome-extension/    # Chrome Extension (TypeScript)
-│   ├── src/
-│   │   ├── background.ts # Service worker
-│   │   ├── content.ts    # Element selection
-│   │   └── element-sender-service.ts
-│   ├── dev/              # Development build (with logging)
-│   ├── dist/             # Production build (minified)
-│   └── manifest.json
-│
-└── shared/             # @mcp-pointer/shared - Shared TypeScript types
-    ├── src/
-    │   ├── Logger.ts
-    │   └── types.ts
-    └── package.json
-```
 
 ## 🔧 Configuration
 
@@ -183,24 +134,21 @@ mcp-pointer show-config
 
 - **Basic Info**: Tag name, ID, classes, text content
 - **CSS Properties**: Display, position, colors, dimensions
-- **Component Info**: React/Vue component names and source files  
+- **Component Info**: React component names and source files (experimental)  
 - **Attributes**: All HTML attributes
 - **Position**: Exact coordinates and dimensions
 - **Source Hints**: File paths and component origins
 
-## 🔍 Supported Frameworks
+## 🔍 Framework Support
 
-- ⚛️ **React** - Component names and source files via Fiber
-- 💚 **Vue** - Component detection via Vue devtools data
-- 🅰️ **Angular** - Basic component detection
-- 📦 **Generic** - Works with any HTML/CSS/JS
+- ⚛️ **React** - Component names and source files via Fiber (experimental)
+- 📦 **Generic HTML/CSS/JS** - Full support for any web content
+- 🔮 **Planned** - Vue component detection (PRs appreciated)
 
 ## 🌐 Browser Support
 
-- ✅ **Chrome** - Full support
-- ✅ **Edge** - Full support  
-- 🟡 **Firefox** - Extension needs adaptation
-- 🟡 **Safari** - Extension needs adaptation
+- ✅ **Chrome** - Full support (tested)
+- 🟡 **Chromium-based browsers** - Should work (Edge, Brave, Arc - load built extension manually)
 
 ## 🐛 Troubleshooting
 
@@ -222,24 +170,29 @@ mcp-pointer show-config
 2. Try refreshing the page
 3. Check if targeting is enabled (click extension icon)
 
+## 🚀 Roadmap
+
+### 1. **Dynamic Context Control**
+   - LLM-configurable detail levels (visible text only, all text, CSS levels)
+   - Progressive refinement options
+   - Token-conscious data fetching
+
+### 2. **Enhanced Framework Support**
+   - Vue.js component detection
+   - Better React support (React 19 removed `_debugSource`, affecting source mapping in dev builds)
+
+### 3. **Visual Content Support** (for multimodal LLMs)
+   - Base64 encoding for images (img tags)
+   - Screenshot capture of selected elements
+   - Separate MCP tool for direct visual content retrieval
+
 ## 📝 License
 
 MIT License - see LICENSE file for details
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) guide for:
-
-- Development setup instructions
-- Code style guidelines
-- Testing requirements
-- Pull request process
-
-**Quick start for contributors:**
-1. Fork the repository
-2. Follow the setup guide in [CONTRIBUTING.md](./CONTRIBUTING.md)
-3. Make your changes
-4. Submit a pull request
+We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) guide for development setup and guidelines.
 
 ---
 
