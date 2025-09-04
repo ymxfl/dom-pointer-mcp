@@ -266,13 +266,15 @@ export default class OverlayService {
   }
 
   private showOverlay(overlay: HTMLDivElement): void {
-    overlay.style.opacity = '1';
-    overlay.style.transition = 'opacity 0.2s ease-in-out';
+    const element = overlay;
+    element.style.opacity = '1';
+    element.style.transition = 'opacity 0.2s ease-in-out';
   }
 
   private hideOverlay(overlay: HTMLDivElement): void {
-    overlay.style.opacity = '0';
-    overlay.style.transition = 'opacity 0.2s ease-in-out';
+    const element = overlay;
+    element.style.opacity = '0';
+    element.style.transition = 'opacity 0.2s ease-in-out';
   }
 
   private handleVisibilityChange = (): void => {
