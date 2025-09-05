@@ -1,3 +1,5 @@
+![MCP Pointer banner](/docs/banner.png)
+
 # 👆 MCP Pointer
 
 **Point to browser DOM elements for agentic coding tools via MCP!**
