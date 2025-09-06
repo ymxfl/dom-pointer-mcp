@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { type WebSocketMessage, type TargetedElement, WebSocketMessageType } from '@mcp-pointer/shared';
+import { type PointerMessage, type TargetedElement, PointerMessageType } from '@mcp-pointer/shared';
 import { config } from './config';
 import logger from './logger';
 
@@ -23,7 +23,7 @@ export default class PointerWebSocketServer {
 
         ws.on('message', (data) => {
           try {
-            const message: WebSocketMessage = JSON.parse(data.toString());
+            const message: PointerMessage = JSON.parse(data.toString());
             logger.info('📨 Received message from browser:', message.type);
             this.handleMessage(message);
           } catch (error) {
@@ -45,10 +45,10 @@ export default class PointerWebSocketServer {
     });
   }
 
-  private handleMessage(message: WebSocketMessage): void {
-    if (message.type === WebSocketMessageType.ELEMENT_SELECTED && message.data) {
+  private handleMessage(message: PointerMessage): void {
+    if (message.type === PointerMessageType.ELEMENT_SELECTED && message.data) {
       this.currentElement = message.data as TargetedElement;
-    } else if (message.type === WebSocketMessageType.ELEMENT_CLEARED) {
+    } else if (message.type === PointerMessageType.ELEMENT_CLEARED) {
       this.currentElement = null;
     }
   }

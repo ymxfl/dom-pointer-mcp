@@ -1,6 +1,6 @@
 {
   "name": "@mcp-pointer/server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP Server for DOM element pointing - WebSocket bridge for element targeting",
   "type": "module",
   "main": "dist/index.js",
@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "configure": "tsx src/cli.ts configure",
     "link:global": "pnpm build && pnpm link --global",
-    "build:start": "node dist/cli.cjs start"
+    "build:start": "node dist/cli.cjs start",
+    "test": "tsx --test src/__tests__/**/*.test.ts"
   },
   "dependencies": {
     "@mcp-pointer/shared": "workspace:*",
