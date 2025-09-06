@@ -1,7 +1,7 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
-  TargetedElement, WebSocketMessage, WebSocketMessageType, ConnectionStatus,
-} from '@mcp-pointer/shared';
+  TargetedElement, PointerMessage, PointerMessageType, ConnectionStatus,
+} from '@mcp-pointer/shared/types';
 import logger from '../logger';
 
 export type StatusCallback = (status: ConnectionStatus, error?: string) => void;
@@ -44,8 +44,8 @@ export class ElementSenderService {
       // Now sending the element
       statusCallback?.(ConnectionStatus.SENDING);
 
-      const message: WebSocketMessage = {
-        type: WebSocketMessageType.ELEMENT_SELECTED,
+      const message: PointerMessage = {
+        type: PointerMessageType.ELEMENT_SELECTED,
         data: element,
         timestamp: Date.now(),
       };

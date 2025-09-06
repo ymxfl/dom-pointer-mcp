@@ -19,6 +19,7 @@ module.exports = {
   },
   rules: {
     'class-methods-use-this': 'off',
+    'no-await-in-loop': 'off',
   },
   overrides: [
     {

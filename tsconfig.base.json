@@ -18,8 +18,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@mcp-pointer/shared": ["packages/shared/src/types"],
-      "@mcp-pointer/shared/*": ["packages/shared/src/*"]
+      "@mcp-pointer/shared/*": ["packages/shared/src/*.ts"],
     }
-  }
+  },
 }

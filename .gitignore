@@ -5,3 +5,6 @@ dist/
 
 # TypeScript
 *.tsbuildinfo
+
+# Test files
+packages/server/src/__tests__/tmp/

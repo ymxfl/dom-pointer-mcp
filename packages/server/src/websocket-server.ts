@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { type PointerMessage, type TargetedElement, PointerMessageType } from '@mcp-pointer/shared';
+import { PointerMessage, PointerMessageType, TargetedElement } from '@mcp-pointer/shared/types';
 import { config } from './config';
 import logger from './logger';
 

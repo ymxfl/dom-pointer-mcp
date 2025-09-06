@@ -1,4 +1,3 @@
-// Shared types for MCP Pointer
 export interface ElementPosition {
   x: number;
   y: number;
@@ -35,68 +34,18 @@ export interface TargetedElement {
   tabId?: number;
 }
 
-// WebSocket message types between extension and MCP server
-export enum WebSocketMessageType {
+// Pointer message types between extension and MCP server
+export enum PointerMessageType {
   ELEMENT_SELECTED = 'element-selected',
   ELEMENT_CLEARED = 'element-cleared',
   CONNECTION_TEST = 'connection-test',
   SERVER_STATUS = 'server-status',
 }
 
-export interface WebSocketMessage {
-  type: WebSocketMessageType;
+export interface PointerMessage {
+  type: PointerMessageType;
   data?: any;
   timestamp: number;
-}
-
-export interface ElementSelectedMessage extends WebSocketMessage {
-  type: WebSocketMessageType.ELEMENT_SELECTED;
-  data: TargetedElement;
-}
-
-export interface ElementClearedMessage extends WebSocketMessage {
-  type: WebSocketMessageType.ELEMENT_CLEARED;
-}
-
-export interface ConnectionTestMessage extends WebSocketMessage {
-  type: WebSocketMessageType.CONNECTION_TEST;
-  data: { ping: boolean };
-}
-
-export interface ServerStatusMessage extends WebSocketMessage {
-  type: WebSocketMessageType.SERVER_STATUS;
-  data: {
-    connected: boolean;
-    elementsInspected: number;
-    uptime: number;
-  };
-}
-
-// MCP Server status
-export interface ServerStatus {
-  running: boolean;
-  port: number;
-  connected: boolean;
-  elementsInspected: number;
-  uptime: number;
-}
-
-// Chrome extension message types
-export interface ChromeMessage {
-  type: 'toggle-targeting' | 'clear-selection' | 'get-status';
-  data?: any;
-}
-
-export interface ToggleTargetingMessage extends ChromeMessage {
-  type: 'toggle-targeting';
-}
-
-export interface ClearSelectionMessage extends ChromeMessage {
-  type: 'clear-selection';
-}
-
-export interface GetStatusMessage extends ChromeMessage {
-  type: 'get-status';
 }
 
 // Connection status for ElementSenderService

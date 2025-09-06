@@ -142,6 +142,101 @@ packages/
     └── package.json
 ```
 
+## 🏗️ System Architecture
+
+MCP Pointer uses a distributed architecture with multiple server instances and leader election for high availability:
+
+```mermaid
+graph TB
+    subgraph "Browser Environment"
+        WEB[Web Page]
+        CS[Content Script<br/>element-pointer.ts]
+        BG[Background Worker<br/>background.ts]
+        ES[ElementSenderService<br/>ReconnectingWebSocket]
+        WEB -->|Option+Click| CS
+        CS -->|Chrome Runtime API| BG
+        BG -->|sendElement| ES
+    end
+
+    subgraph "MCP Server Instances"
+        subgraph "Instance 1 - Leader"
+            WS1[WebSocketService<br/>✅ Port 7007]
+            MCP1[MCPService]
+            SS1[SharedState<br/>Read/Write]
+        end
+        
+        subgraph "Instance 2 - Follower"
+            WS2[WebSocketService<br/>⏸️ Retrying...]
+            MCP2[MCPService]
+            SS2[SharedState<br/>Read Only]
+        end
+    end
+
+    subgraph "Shared Resources"
+        PORT[Port 7007<br/>First to bind wins]
+        FS[/tmp/mcp-pointer-shared-state.json]
+    end
+
+    subgraph "AI Client"
+        CC[Claude Code]
+    end
+
+    ES -->|WebSocket| WS1
+    WS1 -->|Owns| PORT
+    WS2 -.->|Retry every 5s| PORT
+    SS1 -->|Write| FS
+    SS2 -->|Read| FS
+    CC <-->|MCP Protocol| MCP1
+    CC <-->|MCP Protocol| MCP2
+
+    classDef leader fill:#90EE90
+    classDef follower fill:#FFE4B5
+    
+    class WS1,SS1 leader
+    class WS2,SS2 follower
+```
+
+### How It Works
+
+#### Server-Side (Multiple Instances)
+
+1. **Leader Election:**
+   - Multiple MCP server instances can run simultaneously
+   - First instance to bind port 7007 becomes the leader
+   - Other instances become followers and retry every 5 seconds
+   - Automatic failover when leader crashes (~5 second recovery)
+
+2. **State Management:**
+   - Leader instance saves element data to `/tmp/mcp-pointer-shared-state.json`
+   - All instances (leader and followers) can read shared state
+   - MCP requests work on any instance using shared state
+
+3. **Service Architecture:**
+   - **WebSocketService**: Handles port-based leader election and WebSocket connections
+   - **MCPService**: Provides MCP protocol implementation for AI tools
+   - **SharedStateService**: Manages persistent element state via filesystem
+
+#### Client-Side (Browser Extension)
+
+1. **Connection Management (ElementSenderService):**
+   - Uses ReconnectingWebSocket library for robust WebSocket connections
+   - Exponential backoff: 1s min delay, 10s max delay, 1.5x grow factor
+   - Maximum 5 retry attempts per connection
+   - 5-second connection timeout
+   - Automatic idle disconnection after 2 minutes of inactivity
+
+2. **Element Selection Flow:**
+   - Content script captures element data on Option+Click
+   - Data sent to background worker via Chrome Runtime API
+   - Background worker uses ElementSenderService to send via WebSocket
+   - Connection status callbacks provide user feedback (CONNECTING → CONNECTED → SENDING → SENT)
+
+3. **Resilience Features:**
+   - Automatic reconnection during server restarts or leader changes
+   - Port change handling (disconnects old, connects to new)
+   - Connection status monitoring with detailed logging
+   - Graceful error handling with status reporting
+
 ## 🛠 Development Workflow
 
 ### Chrome Extension Development

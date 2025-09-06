@@ -1,6 +1,5 @@
 {
   "name": "mcp-pointer-monorepo",
-  "version": "0.2.0",
   "description": "👆 MCP Pointer - Point at DOM elements for AI analysis",
   "private": true,
   "packageManager": "pnpm@10.15.0",
@@ -9,6 +8,7 @@
     "build": "pnpm -r run build",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "test": "cd packages/server && pnpm test",
     "typecheck": "tsc --noEmit",
     "changeset": "changeset",
     "version": "changeset version"

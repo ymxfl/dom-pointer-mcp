@@ -1,4 +1,4 @@
-import { PointerMessageType, type TargetedElement } from '@mcp-pointer/shared';
+import { PointerMessageType, type TargetedElement } from '@mcp-pointer/shared/types';
 import WebSocketService from './services/websocket-service';
 import MCPService from './services/mcp-service';
 import SharedStateService from './services/shared-state-service';

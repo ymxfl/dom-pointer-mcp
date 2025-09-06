@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { type TargetedElement } from '@mcp-pointer/shared';
+import { TargetedElement } from '@mcp-pointer/shared/types';
 
 // ES module equivalent of __dirname
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle

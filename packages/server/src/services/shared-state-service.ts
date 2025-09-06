@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { type TargetedElement } from '@mcp-pointer/shared';
+import { type TargetedElement } from '@mcp-pointer/shared/types';
 import logger from '../logger';
 
 // Shared state constants
