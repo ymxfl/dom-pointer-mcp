@@ -1,6 +1,11 @@
 {
   "name": "@mcp-pointer/chrome-extension",
   "version": "0.3.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/etsd-tech/mcp-pointer.git",
+    "directory": "packages/chrome-extension"
+  },
   "private": true,
   "scripts": {
     "clean": "rm -rf dist",

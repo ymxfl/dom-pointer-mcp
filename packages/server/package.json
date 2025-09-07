@@ -2,6 +2,11 @@
   "name": "@mcp-pointer/server",
   "version": "0.3.3",
   "description": "MCP Server for DOM element pointing - WebSocket bridge for element targeting",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/etsd-tech/mcp-pointer.git",
+    "directory": "packages/server"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
