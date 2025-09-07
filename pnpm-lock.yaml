@@ -99,9 +99,6 @@ importers:
 
   packages/server:
     dependencies:
-      '@mcp-pointer/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@modelcontextprotocol/sdk':
         specifier: ^0.5.0
         version: 0.5.0
@@ -112,6 +109,9 @@ importers:
         specifier: ^8.16.0
         version: 8.18.3
     devDependencies:
+      '@mcp-pointer/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@types/ws':
         specifier: ^8.5.10
         version: 8.18.1

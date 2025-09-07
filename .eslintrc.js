@@ -20,6 +20,9 @@ module.exports = {
   rules: {
     'class-methods-use-this': 'off',
     'no-await-in-loop': 'off',
+    'import/no-extraneous-dependencies': ['error', {
+      optionalDependencies: ['@mcp-pointer/shared']
+    }],
   },
   overrides: [
     {
