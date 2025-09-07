@@ -1,5 +1,6 @@
 {
   "name": "@mcp-pointer/shared",
   "version": "0.3.1",
-  "type": "module"
+  "type": "module",
+  "private": true
 }
