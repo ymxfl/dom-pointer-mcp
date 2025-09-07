@@ -1,5 +1,16 @@
 # @mcp-pointer/shared
 
+## 0.3.1
+
+### Patch Changes
+
+- 201b4e7: Add automated release workflow with changesets
+
+  - Implement GitHub Actions workflow for automated versioning and publishing
+  - Add changeset configuration for monorepo version management
+  - Update documentation with changeset workflow instructions
+  - Remove manual publish workflow in favor of automated approach
+
 ## 0.3.0
 
 ### Patch Changes
