@@ -454,19 +454,71 @@ Include screenshots for UI changes
 
 ## 📋 Release Process
 
-This project uses automated publishing:
+This project uses **Changesets** for automated versioning and publishing. Contributors add changeset files to describe their changes, and maintainers manage releases through automated PRs.
 
-1. **Create a PR** with your changes
-2. **Get it reviewed** and merged
-3. **Create a release** on GitHub to trigger publishing
-4. **Automated CI** handles building and npm publishing
+### Using Changesets
 
-For maintainers only:
+When you make changes that should trigger a new release, add a changeset:
+
 ```bash
-# Create a release
-git tag v0.2.0
-git push origin v0.2.0
-# Or use GitHub's release UI
+# Add a changeset describing your changes
+pnpm changeset
+```
+
+This will prompt you to:
+1. **Select packages** that should be updated
+2. **Choose version bump type** (patch/minor/major)
+3. **Write a summary** of your changes
+
+Example changeset session:
+```
+🦋  Which packages would you like to include?
+◉ @mcp-pointer/server
+◉ @mcp-pointer/shared
+◯ @mcp-pointer/chrome-extension
+
+🦋  Which packages should have a major bump?
+◯ @mcp-pointer/server
+◯ @mcp-pointer/shared
+
+🦋  Which packages should have a minor bump?  
+◉ @mcp-pointer/server
+◯ @mcp-pointer/shared
+
+🦋  Please enter a summary for this change
+Added WebSocket connection retry logic with exponential backoff
+```
+
+### Version Types
+
+- **Patch** (0.1.0 → 0.1.1): Bug fixes, small improvements
+- **Minor** (0.1.0 → 0.2.0): New features, backwards compatible
+- **Major** (0.1.0 → 1.0.0): Breaking changes
+
+### Creating a Release
+
+**For maintainers only:**
+
+1. **Review pending changesets** in `.changeset/` folder
+2. **Push to main** - GitHub Actions will create a "Version Packages" PR
+3. **Review the Version PR** - Check version bumps and changelog
+4. **Merge the Version PR** - Packages are published automatically
+
+The automated workflow:
+- Creates git tags (e.g., `@mcp-pointer/server@0.3.1`)  
+- Publishes to npm with provenance
+- Creates GitHub releases with changelogs
+- Handles monorepo versioning automatically
+
+### Release Workflow
+
+```mermaid
+graph LR
+    A[Add Changeset] --> B[Push to Main]
+    B --> C[Version PR Created]
+    C --> D[Review & Merge PR]  
+    D --> E[Auto Publish to npm]
+    E --> F[Git Tags & GitHub Releases]
 ```
 
 ## 🎯 Contribution Ideas

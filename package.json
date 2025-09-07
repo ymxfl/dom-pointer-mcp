@@ -11,7 +11,8 @@
     "test": "cd packages/server && pnpm test",
     "typecheck": "tsc --noEmit",
     "changeset": "changeset",
-    "version": "changeset version"
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
