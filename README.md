@@ -1,10 +1,18 @@
 ![MCP Pointer banner](/docs/banner.png)
 
+[![CI](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml/badge.svg?branch=main&event=check_suite)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml)
+[![Release](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml)
+
 # 👆 MCP Pointer
 
 **Point to browser DOM elements for agentic coding tools via MCP!**
 
-MCP Pointer is a *local* tool combining a Chrome extension with an MCP server. The extension lets you visually select DOM elements in the browser, and the MCP server makes this **textual context** available through the Model Context Protocol. Agentic coding tools like Claude Code, Cursor, Windsurf, or Continue can then access that information directly, enabling smoother interaction between the web and your AI-powered coding environment.
+MCP Pointer is a *local* tool combining an MCP Server with a Chrome Extension:
+
+1. **🖥️ MCP Server** (Node.js package) - Bridges between the browser and AI tools via the Model Context Protocol
+2. **🌐 Chrome Extension** - Captures DOM element selections in the browser using Option+Click
+
+The extension lets you visually select DOM elements in the browser, and the MCP server makes this **textual context** available to agentic coding tools like Claude Code, Cursor, and Windsurf through standardized MCP tools.
 
 ## ✨ Features
 
@@ -14,45 +22,36 @@ MCP Pointer is a *local* tool combining a Chrome extension with an MCP server. T
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
 - 🤖 **MCP Compatible** - Works with Claude Code and other MCP-enabled AI tools
 
-## 🚀 Quick Start
+## 🎬 Example
+
+![MCP Pointer Demo](/docs/demo.gif)
+
+See MCP Pointer in action: Option+Click any element in your browser, then ask your AI assistant to analyze it. The AI gets complete context about the selected element including CSS properties, React source files, and more.
+
+## 🚀 Getting Started
 
 > **Note:** Chrome extension is not yet published on Chrome Web Store. You'll need to build and install it manually for now.
-> **For Contributors:** See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and contribution guidelines.
 
-### 1. Install the MCP Server
+### 1. Configure the MCP Server
 
-**Option A: From npm (when published):**
-```bash
-# Install globally via npm
-npm install -g @mcp-pointer/server
-```
-
-**Option B: Build from source (current method):**
-```bash
-# Clone and build the repository
-git clone https://github.com/etsd-tech/mcp-pointer
-cd mcp-pointer
-pnpm install
-
-# Build and link the MCP server globally  
-pnpm -C packages/server link:global
-```
-
-### 2. Configure with Claude Code
+Use npx to automatically configure the MCP server with your AI tool:
 
 ```bash
-# Configure MCP Pointer user-wide
-claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start
+# Configure MCP Pointer for your AI tool
+npx -y @mcp-pointer/server config claude     # Automatically configures Claude Code
+npx -y @mcp-pointer/server config cursor     # Opens Cursor deeplink for automatic installation
+npx -y @mcp-pointer/server config windsurf   # Automatically updates Windsurf config file
+npx -y @mcp-pointer/server config manual     # Shows manual configuration for other tools
 ```
 
-### 3. Install Chrome Extension
+> **Optional:** You can install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`
+
+### 2. Install Chrome Extension
 
 **Current method (Chrome Web Store not available yet):**
 
-```bash
-# Build the Chrome extension (if not done in step 1)
-pnpm -C packages/chrome-extension build
-```
+1. Download the latest release from [GitHub Releases](https://github.com/etsd-tech/mcp-pointer/releases) *(coming soon)*
+2. **Or build from source:** Follow the build instructions in [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 **Load in Chrome:**
 1. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
@@ -60,69 +59,18 @@ pnpm -C packages/chrome-extension build
 3. Select the `packages/chrome-extension/dist/` folder
 4. The MCP Pointer extension should appear in your extensions list
 
-### 4. Start Using
+### 3. Start Using
 
 1. **Navigate to any webpage** 
 2. **Option+Click** any element to select it
 3. **Ask your AI** to analyze the targeted element!
 
-Claude Code will automatically start the MCP server when needed.
+Your AI tool will automatically start the MCP server when needed using the `npx -y @mcp-pointer/server start` command.
 
-## 📋 Available Commands
-
-### MCP Server Commands
-
-```bash
-mcp-pointer start         # 👆 Start pointing at elements (start server)
-mcp-pointer configure     # Show Claude MCP configuration command
-mcp-pointer show-config   # Show manual configuration
-```
-
-### AI Assistant Tools
-
-Once configured, your AI assistant will have these tools:
-
+**Available AI Tools:**
 - `getTargetedElement` - Get comprehensive info about the selected element
 - `clearTargetedElement` - Clear the current selection
 - `getPointerStatus` - Check system status and statistics
-
-
-
-
-## 🔧 Configuration
-
-### Recommended Configuration
-
-```bash
-# User-wide configuration (recommended)
-claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- mcp-pointer start
-
-# Project-specific configuration  
-claude mcp add pointer --env MCP_POINTER_PORT=7007 -- mcp-pointer start
-```
-
-### Manual Configuration
-
-For non-Claude MCP tools, add to your AI tool's MCP settings (e.g., `~/.claude/settings.json`):
-
-```json
-{
-  "mcpServers": {
-    "@mcp-pointer/server": {
-      "command": "mcp-pointer",
-      "args": ["start"],
-      "env": {
-        "MCP_POINTER_PORT": "7007"
-      }
-    }
-  }
-}
-```
-
-Get this configuration by running:
-```bash
-mcp-pointer show-config
-```
 
 ## 🎯 How It Works
 
@@ -156,15 +104,15 @@ mcp-pointer show-config
 
 ### Extension Not Connecting
 
-1. Make sure MCP server is running: `mcp-pointer start`
+1. Make sure MCP server is running: `npx -y @mcp-pointer/server start`
 2. Check browser console for WebSocket errors
 3. Verify port 7007 is not blocked by firewall
 
 ### MCP Tools Not Available
 
 1. Restart your AI assistant after installing
-2. Check MCP configuration: `mcp-pointer show-config`  
-3. Verify server is running: `mcp-pointer start`
+2. Check MCP configuration: `mcp-pointer config <your-tool>`  
+3. Verify server is running: `npx -y @mcp-pointer/server start`
 
 ### Elements Not Highlighting
 

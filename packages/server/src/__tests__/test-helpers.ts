@@ -1,17 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import os from 'os';
 import { TargetedElement } from '@mcp-pointer/shared/types';
 
-// ES module equivalent of __dirname
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle
-const __filename = fileURLToPath(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle
-const __dirname = path.dirname(__filename);
-
-// Test constants
+// Test constants - use a temp directory that works in Jest
 export const TEST_MCP_POINTER_PORT = 7008;
-export const TEST_TEMP_DIR = path.join(__dirname, 'tmp');
+export const TEST_TEMP_DIR = path.join(os.tmpdir(), 'mcp-pointer-test');
 export const TEST_SHARED_STATE_PATH = path.join(TEST_TEMP_DIR, 'mcp-pointer-test-shared-state.json');
 
 export async function setupTestDir(): Promise<void> {

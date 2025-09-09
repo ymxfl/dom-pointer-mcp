@@ -36,11 +36,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Run tests
+        run: pnpm test
+
       - name: Build all packages
         run: pnpm build
 
-      - name: Run tests
-        run: pnpm test
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v3.0.0
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets

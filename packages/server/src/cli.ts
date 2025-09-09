@@ -3,8 +3,7 @@
 import { Command } from 'commander';
 import { LogLevel } from '@mcp-pointer/shared/logger';
 import start from './start';
-import configure from './configure';
-import showConfig from './show-config';
+import configCommand from './config';
 import CLICommand from './commands';
 import logger from './logger';
 
@@ -53,13 +52,8 @@ program
   .action(start);
 
 program
-  .command(CLICommand.CONFIGURE)
-  .description('Auto-configure Claude Code to use MCP Pointer in current project')
-  .action(configure);
-
-program
-  .command(CLICommand.SHOW_CONFIG)
-  .description('Show manual configuration for AI tools')
-  .action(showConfig);
+  .command(`${CLICommand.CONFIG} [tool]`)
+  .description('Configure MCP Pointer for AI tools (claude, cursor, windsurf, manual)')
+  .action(configCommand);
 
 program.parse();

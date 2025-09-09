@@ -174,7 +174,7 @@ graph TB
 
     subgraph "Shared Resources"
         PORT[Port 7007<br/>First to bind wins]
-        FS[/tmp/mcp-pointer-shared-state.json]
+        FS["/tmp/mcp-pointer-shared-state.json"]
     end
 
     subgraph "AI Client"

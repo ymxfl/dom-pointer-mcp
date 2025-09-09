@@ -17,10 +17,10 @@
     "dev": "tsx watch src/cli.ts start",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "configure": "tsx src/cli.ts configure",
     "link:global": "pnpm build && pnpm link --global",
     "build:start": "node dist/cli.cjs start",
-    "test": "tsx --test src/__tests__/**/*.test.ts"
+    "build:cli": "node dist/cli.cjs",
+    "test": "jest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
@@ -29,8 +29,11 @@
   },
   "devDependencies": {
     "@mcp-pointer/shared": "workspace:*",
+    "@types/jest": "^30.0.0",
     "@types/ws": "^8.5.10",
     "esbuild": "catalog:",
+    "jest": "^30.1.3",
+    "ts-jest": "^29.4.1",
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
