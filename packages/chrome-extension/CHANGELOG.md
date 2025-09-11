@@ -1,5 +1,31 @@
 # @mcp-pointer/chrome-extension
 
+## 0.4.0
+
+### Minor Changes
+
+- 3aef4c2: Major chrome extension architecture overhaul with improved service-based structure
+
+  - Remove bridge.js system for direct Chrome API access in isolated world
+  - Eliminate URL filtering complexity
+  - Split functionality into focused services
+  - Consolidate utilities and improve overlay management
+  - Add proper enable/disable functionality
+
+  This is a breaking change that significantly improves maintainability.
+
+### Patch Changes
+
+- ffcbf38: Major restructure and configuration improvements
+
+  - **README restructure**: Complete rewrite with cleaner organization (Example section, Getting Started, How it Works, etc.)
+  - **New automatic config command**: Replace `configure` and `show-config` with unified `config` command that automatically configures AI tools
+  - **Rename "other" to "manual"**: Clearer naming for manual configuration option suitable for other MCP-compatible tools
+  - **SupportedTool enum**: Convert tool names to enum for better type safety
+  - **Jest configuration**: Auto-detect tsconfig instead of manual TypeScript settings
+  - **Test improvements**: Full test coverage for config command with enum usage
+  - **Chrome extension**: Add icon and improve build process for assets
+
 ## 0.3.1
 
 ### Patch Changes
