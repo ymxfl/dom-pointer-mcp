@@ -16,22 +16,12 @@
         "<all_urls>"
       ],
       "js": [
-        "bridge.js"
+        "content.js"
       ],
       "css": [
         "styles.css"
       ],
       "run_at": "document_end"
-    },
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content.js"
-      ],
-      "run_at": "document_end",
-      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [
@@ -45,8 +35,6 @@
     }
   ],
   "permissions": [
-    "activeTab",
-    "storage",
-    "scripting"
+    "storage"
   ]
 }

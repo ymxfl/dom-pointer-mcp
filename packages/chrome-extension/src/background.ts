@@ -1,15 +1,15 @@
 import { ConnectionStatus } from '@mcp-pointer/shared/types';
-import logger from './logger';
+import logger from './utils/logger';
 import { ElementSenderService } from './services/element-sender-service';
-import { ConfigStorage } from './storage';
-import { ExtensionConfig } from './config';
+import { ExtensionConfig } from './utils/config';
+import ConfigStorageService from './services/config-storage-service';
 
 let elementSender: ElementSenderService;
 let currentConfig: ExtensionConfig;
 
 // Initialize when service worker starts
 async function initialize() {
-  currentConfig = await ConfigStorage.load();
+  currentConfig = await ConfigStorageService.load();
 
   // Create the service (no connection on startup)
   elementSender = new ElementSenderService();
@@ -21,7 +21,7 @@ async function initialize() {
 }
 
 // Listen for config changes
-ConfigStorage.onChange((newConfig: ExtensionConfig) => {
+ConfigStorageService.onChange((newConfig: ExtensionConfig) => {
   logger.info('⚙️ Config changed:', newConfig);
 
   // Simply update the config - ElementSenderService handles port changes automatically

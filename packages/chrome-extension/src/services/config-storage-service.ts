@@ -1,11 +1,9 @@
-import defaultConfig, { ExtensionConfig } from './config';
-import logger from './logger';
+import defaultConfig, { ExtensionConfig } from '../utils/config';
+import logger from '../utils/logger';
 
 const STORAGE_KEY = 'mcp_pointer_config';
 
-/* eslint-disable import/prefer-default-export */
-
-export class ConfigStorage {
+export default class ConfigStorageService {
   static async load(): Promise<ExtensionConfig> {
     try {
       const result = await chrome.storage.sync.get(STORAGE_KEY);

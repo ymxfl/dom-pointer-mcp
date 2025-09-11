@@ -1,33 +1,15 @@
 // Disable ESLint rule for underscore dangle usage in this file (React internals)
 /* eslint-disable no-underscore-dangle */
 
+import {
+  ComponentInfo, CSSProperties, ElementPosition, TargetedElement,
+} from '@mcp-pointer/shared/types';
 import logger from './logger';
 
 export interface ReactSourceInfo {
   fileName: string;
   lineNumber?: number;
   columnNumber?: number;
-}
-
-export interface ComponentInfo {
-  name: string;
-  sourceFile?: string;
-  framework: string;
-}
-
-export interface ElementPosition {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export interface CSSProperties {
-  display: string;
-  position: string;
-  fontSize: string;
-  color: string;
-  backgroundColor: string;
 }
 
 /**
@@ -213,4 +195,20 @@ export function getElementClasses(element: HTMLElement): string[] {
     ? element.className
     : (element.className as any).baseVal || '';
   return classNameStr.split(' ').filter((c: string) => c.trim());
+}
+
+export function adaptTargetToElement(element: HTMLElement): TargetedElement {
+  return {
+    selector: generateSelector(element),
+    tagName: element.tagName,
+    id: element.id || undefined,
+    classes: getElementClasses(element),
+    innerText: element.innerText || element.textContent || '',
+    attributes: getElementAttributes(element),
+    position: getElementPosition(element),
+    cssProperties: getElementCSSProperties(element),
+    componentInfo: getReactFiberInfo(element),
+    timestamp: Date.now(),
+    url: window.location.href,
+  };
 }

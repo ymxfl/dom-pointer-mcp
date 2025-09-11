@@ -2,7 +2,6 @@ import { LogLevel } from '@mcp-pointer/shared/logger';
 
 export interface ExtensionConfig {
   enabled: boolean;
-  urlFilters: string[];
   websocket: {
     port: number;
   };
@@ -14,7 +13,6 @@ export interface ExtensionConfig {
 
 const config: ExtensionConfig = {
   enabled: true,
-  urlFilters: ['<all_urls>'],
   websocket: {
     port: 7007,
   },
