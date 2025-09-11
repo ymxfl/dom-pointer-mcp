@@ -20,6 +20,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.7.4",
     "@mcp-pointer/shared": "workspace:*",
     "reconnecting-websocket": "^4.4.0"
   }
