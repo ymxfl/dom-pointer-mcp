@@ -11,6 +11,7 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write # Required for npm provenance
+  attestations: write # Required for build provenance attestations
 
 jobs:
   release:
@@ -44,6 +45,8 @@ jobs:
 
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v3.0.0
+        with:
+          subject-path: 'packages/*/dist/**'
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
