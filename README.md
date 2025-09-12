@@ -24,7 +24,7 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 
 ## 🎬 Usage example (video)
 
-https://github.com/user-attachments/assets/469a8f43-0af8-426e-9873-c03978ebb621
+https://github.com/user-attachments/assets/98c4adf6-1f05-4c9b-be41-0416ab784e2c
 
 See MCP Pointer in action: Option+Click any element in your browser, then ask your agentic coding tool about it (in this example, Claude Code). The AI gets complete textual context about the selected DOM element including CSS properties, url, selector, and more.
 
