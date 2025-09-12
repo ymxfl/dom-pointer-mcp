@@ -22,11 +22,11 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
 - 🤖 **MCP Compatible** - Works with Claude Code and other MCP-enabled AI tools
 
-## 🎬 Example
+## 🎬 Usage example (video)
 
-![MCP Pointer Demo](/docs/demo.gif)
+https://github.com/user-attachments/assets/469a8f43-0af8-426e-9873-c03978ebb621
 
-See MCP Pointer in action: Option+Click any element in your browser, then ask your AI assistant to analyze it. The AI gets complete context about the selected element including CSS properties, React source files, and more.
+See MCP Pointer in action: Option+Click any element in your browser, then ask your agentic coding tool about it (in this example, Claude Code). The AI gets complete textual context about the selected DOM element including CSS properties, url, selector, and more.
 
 ## 🚀 Getting Started
 
