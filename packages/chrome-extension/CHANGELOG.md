@@ -1,5 +1,17 @@
 # @mcp-pointer/chrome-extension
 
+## 0.4.2
+
+### Patch Changes
+
+- fa28a6b: Improve README badges and release workflow
+
+  - Add version and license badges to README
+  - Emphasize Option+Click usage throughout documentation
+  - Fix release workflow to prevent README commits
+  - Add automatic manifest version bumping
+  - Remove redundant config check in extension
+
 ## 0.4.1
 
 ### Patch Changes
