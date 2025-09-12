@@ -13,9 +13,9 @@ export class ElementSenderService {
 
   private idleTimeout: NodeJS.Timeout | null = null;
 
-  private readonly IDLE_DURATION = 120000; // 2 minutes of inactivity
+  private readonly IDLE_DURATION = 10000; // 10 seconds of inactivity
 
-  private readonly CONNECTION_TIMEOUT = 5000; // 5 seconds to wait for connection
+  private readonly CONNECTION_TIMEOUT = 10000; // 5 seconds to wait for connection
 
   private readonly MAX_RECONNECTION_DELAY = 10000; // 10 seconds max delay
 
@@ -23,7 +23,7 @@ export class ElementSenderService {
 
   private readonly RECONNECTION_DELAY_GROW_FACTOR = 1.5; // Exponential backoff factor
 
-  private readonly MAX_RETRIES = 5; // Maximum connection retry attempts
+  private readonly MAX_RETRIES = 10; // Maximum connection retry attempts
 
   async sendElement(
     element: TargetedElement,
@@ -186,6 +186,8 @@ export class ElementSenderService {
       this.ws.close();
       this.ws = null;
     }
+
+    logger.debug('🔌 WS client disconnected');
   }
 
   private get isConnected(): boolean {

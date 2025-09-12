@@ -18,7 +18,7 @@ const config: ExtensionConfig = {
   },
   logger: {
     enabled: IS_DEV,
-    level: LogLevel.INFO,
+    level: LogLevel.DEBUG,
   },
 };
 

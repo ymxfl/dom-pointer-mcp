@@ -11,6 +11,7 @@
     "clean": "rm -rf dist",
     "clean-dev": "rm -rf dev",
     "typecheck": "tsc --noEmit src/*.ts",
+    "bump-manifest": "node scripts/bump-manifest.js",
     "build": "pnpm clean && esbuild src/background.ts src/content.ts src/popup.ts src/styles.css src/popup.css src/manifest.json src/popup.html src/*.png --bundle --outdir=dist --outbase=src --format=iife --platform=browser --target=chrome100 --minify --define:IS_DEV=false --loader:.css=copy --loader:.html=copy --loader:.json=copy --loader:.png=copy",
     "dev": "pnpm clean-dev && esbuild src/background.ts src/content.ts src/popup.ts src/styles.css src/popup.css src/manifest.json src/popup.html src/*.png --bundle --outdir=dev --outbase=src --format=iife --platform=browser --target=chrome100 --sourcemap --define:IS_DEV=true --loader:.css=copy --loader:.html=copy --loader:.json=copy --loader:.png=copy --watch"
   },

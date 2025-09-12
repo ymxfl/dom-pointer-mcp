@@ -40,8 +40,8 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-      - name: Copy README to server package for npm
-        run: cp README.md packages/server/README.md
+      - name: Bump Chrome extension manifest version
+        run: pnpm -C packages/chrome-extension bump-manifest
 
       - name: Build all packages
         run: pnpm build
@@ -49,6 +49,9 @@ jobs:
       - name: Package Chrome extension for release
         working-directory: packages/chrome-extension/dist
         run: zip -r ../../../mcp-pointer-chrome-extension.zip .
+
+      - name: Copy README for npm package
+        run: cp README.md packages/server/README.md
 
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v3.0.0
@@ -62,6 +65,9 @@ jobs:
           publish: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up copied README
+        run: rm -f packages/server/README.md
 
       - name: Upload Chrome extension to release
         if: steps.changesets.outputs.published == 'true'

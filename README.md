@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml)
 [![Release](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/@mcp-pointer/server?label=Server)](https://www.npmjs.com/package/@mcp-pointer/server)
+[![Chrome Extension](https://img.shields.io/github/package-json/v/etsd-tech/mcp-pointer?filename=packages%2Fchrome-extension%2Fpackage.json&label=Chrome-Extension)](https://github.com/etsd-tech/mcp-pointer/releases)
+[![License: MIT](https://img.shields.io/github/license/etsd-tech/mcp-pointer?label=License)](https://github.com/etsd-tech/mcp-pointer/blob/main/LICENSE)
 
 # 👆 MCP Pointer
 
@@ -10,13 +13,13 @@
 MCP Pointer is a *local* tool combining an MCP Server with a Chrome Extension:
 
 1. **🖥️ MCP Server** (Node.js package) - Bridges between the browser and AI tools via the Model Context Protocol
-2. **🌐 Chrome Extension** - Captures DOM element selections in the browser using Option+Click
+2. **🌐 Chrome Extension** - Captures DOM element selections in the browser using `Option+Click`
 
 The extension lets you visually select DOM elements in the browser, and the MCP server makes this **textual context** available to agentic coding tools like Claude Code, Cursor, and Windsurf through standardized MCP tools.
 
 ## ✨ Features
 
-- 🎯 **Option+Click Selection** - Simply hold Option (Alt on Windows) and click any element
+- 🎯 **`Option+Click` Selection** - Simply hold `Option` (Alt on Windows) and click any element
 - 📋 **Complete Element Data** - Text content, CSS classes, HTML attributes, positioning, and styling
 - ⚛️ **React Component Detection** - Component names and source files via Fiber (experimental)
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
@@ -26,7 +29,7 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 
 https://github.com/user-attachments/assets/98c4adf6-1f05-4c9b-be41-0416ab784e2c
 
-See MCP Pointer in action: Option+Click any element in your browser, then ask your agentic coding tool about it (in this example, Claude Code). The AI gets complete textual context about the selected DOM element including CSS properties, url, selector, and more.
+See MCP Pointer in action: `Option+Click` any element in your browser, then ask your agentic coding tool about it (in this example, Claude Code). The AI gets complete textual context about the selected DOM element including CSS properties, url, selector, and more.
 
 ## 🚀 Getting Started
 
@@ -46,6 +49,8 @@ npx -y @mcp-pointer/server config manual     # Shows manual configuration for ot
 
 > **Optional:** You can install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`
 
+After configuration, **restart your coding tool** to load the MCP connection.
+
 ### 2. Install Chrome Extension
 
 **Option A: Download from Releases (Recommended)**
@@ -56,6 +61,7 @@ npx -y @mcp-pointer/server config manual     # Shows manual configuration for ot
 4. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
 5. Click "Load unpacked" and select the extracted folder
 6. The MCP Pointer extension should appear in your extensions list
+7. **Reload web pages** to activate the extension
 
 **Option B: Build from Source**
 
@@ -63,11 +69,12 @@ npx -y @mcp-pointer/server config manual     # Shows manual configuration for ot
 2. Follow the build instructions in [CONTRIBUTING.md](./CONTRIBUTING.md)
 3. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
 4. Click "Load unpacked" and select the `packages/chrome-extension/dist/` folder
+5. **Reload web pages** to activate the extension
 
 ### 3. Start Using
 
 1. **Navigate to any webpage** 
-2. **Option+Click** any element to select it
+2. **`Option+Click`** any element to select it
 3. **Ask your AI** to analyze the targeted element!
 
 Your AI tool will automatically start the MCP server when needed using the `npx -y @mcp-pointer/server start` command.
@@ -79,7 +86,7 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 
 ## 🎯 How It Works
 
-1. **Element Selection**: Content script captures Option+Click events
+1. **Element Selection**: Content script captures `Option+Click` events
 2. **Data Extraction**: Analyzes element structure, CSS, and framework info
 3. **WebSocket Transport**: Sends data to MCP server on port 7007
 4. **MCP Protocol**: Makes data available to AI tools via MCP tools
@@ -151,6 +158,10 @@ We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) gu
 
 ---
 
+*Inspired by tools like [Click-to-Component](https://github.com/ericclemmons/click-to-component) for component development workflows.*
+
+---
+
 **Made with ❤️ for AI-powered web development**
 
-*Now your AI can analyze any element you point at! 👆*
+*Now your AI can analyze any element you point at with `Option+Click`! 👆*

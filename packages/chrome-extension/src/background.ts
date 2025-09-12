@@ -37,11 +37,6 @@ ConfigStorageService.onChange((newConfig: ExtensionConfig) => {
 // Listen for messages from content script
 chrome.runtime.onMessage
   .addListener((request: any, _sender: any, sendResponse: (response: any) => void) => {
-    if (!currentConfig?.enabled) {
-      sendResponse({ success: false, error: 'Extension is disabled' });
-      return;
-    }
-
     if (request.type === 'ELEMENT_SELECTED' && request.data) {
       // Send element with current port and status callback
       elementSender.sendElement(
