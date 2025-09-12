@@ -110,11 +110,11 @@ describe('configCommand', () => {
 
       // Verify execSync was called twice (remove + add)
       expect(mockExecSync).toHaveBeenCalledTimes(2);
-      
+
       // First call should be remove command
       const removeCommand = mockExecSync.mock.calls[0][0];
       expect(removeCommand).toBe('claude mcp remove pointer -s user');
-      
+
       // Second call should be add command
       const addCommand = mockExecSync.mock.calls[1][0];
       expect(addCommand).toBe('claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- npx -y @mcp-pointer/server start');
@@ -135,7 +135,7 @@ describe('configCommand', () => {
 
       // Verify execSync was still called twice
       expect(mockExecSync).toHaveBeenCalledTimes(2);
-      
+
       // Should still log success message
       expect(mockLoggerInfo).toHaveBeenCalledWith(expect.stringContaining('✅ Successfully configured MCP Pointer for Claude Code'));
       // Should not log removal message when remove fails
