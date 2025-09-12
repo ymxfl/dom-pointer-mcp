@@ -46,6 +46,10 @@ jobs:
       - name: Build all packages
         run: pnpm build
 
+      - name: Package Chrome extension for release
+        working-directory: packages/chrome-extension/dist
+        run: zip -r ../../../mcp-pointer-chrome-extension.zip .
+
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v3.0.0
         with:
@@ -56,5 +60,15 @@ jobs:
         uses: changesets/action@v1
         with:
           publish: pnpm release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Chrome extension to release
+        if: steps.changesets.outputs.published == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          files: mcp-pointer-chrome-extension.zip
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

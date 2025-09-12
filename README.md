@@ -48,16 +48,21 @@ npx -y @mcp-pointer/server config manual     # Shows manual configuration for ot
 
 ### 2. Install Chrome Extension
 
-**Current method (Chrome Web Store not available yet):**
+**Option A: Download from Releases (Recommended)**
 
-1. Download the latest release from [GitHub Releases](https://github.com/etsd-tech/mcp-pointer/releases) *(coming soon)*
-2. **Or build from source:** Follow the build instructions in [CONTRIBUTING.md](./CONTRIBUTING.md)
+1. Go to [GitHub Releases](https://github.com/etsd-tech/mcp-pointer/releases)
+2. Download `mcp-pointer-chrome-extension.zip` from the latest release
+3. Extract the zip file to a folder on your computer
+4. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
+5. Click "Load unpacked" and select the extracted folder
+6. The MCP Pointer extension should appear in your extensions list
 
-**Load in Chrome:**
-1. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
-2. Click "Load unpacked"
-3. Select the `packages/chrome-extension/dist/` folder
-4. The MCP Pointer extension should appear in your extensions list
+**Option B: Build from Source**
+
+1. Clone this repository
+2. Follow the build instructions in [CONTRIBUTING.md](./CONTRIBUTING.md)
+3. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
+4. Click "Load unpacked" and select the `packages/chrome-extension/dist/` folder
 
 ### 3. Start Using
 
