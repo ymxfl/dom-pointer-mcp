@@ -38,6 +38,15 @@ function configureClaudeCode(port: string) {
   try {
     logger.info('🔧 Configuring MCP Pointer for Claude Code...');
 
+    // First, try to remove existing server if it exists (ignore errors)
+    try {
+      execSync(`claude mcp remove ${MCP_SERVER_NAME} -s user`, { stdio: 'pipe' });
+      logger.info('🔄 Removed existing MCP Pointer configuration');
+    } catch {
+      // Ignore errors - server might not exist
+    }
+
+    // Now add the server configuration
     const command = `claude mcp add ${MCP_SERVER_NAME} -s user --env MCP_POINTER_PORT=${port} -- npx -y @mcp-pointer/server start`;
     execSync(command, { stdio: 'pipe' });
 

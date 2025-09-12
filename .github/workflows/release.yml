@@ -40,6 +40,9 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      - name: Copy README to server package for npm
+        run: cp README.md packages/server/README.md
+
       - name: Build all packages
         run: pnpm build
 

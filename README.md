@@ -1,7 +1,7 @@
 ![MCP Pointer banner](/docs/banner.png)
 
-[![CI](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml/badge.svg?branch=main&event=check_suite)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml)
-[![Release](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml)
+[![CI](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml)
+[![Release](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml)
 
 # 👆 MCP Pointer
 

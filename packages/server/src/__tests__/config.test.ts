@@ -82,13 +82,13 @@ describe('configCommand', () => {
     it('should execute claude mcp add command with default port and pointer name', () => {
       configCommand(SupportedTool.CLAUDE);
 
-      // Verify execSync was called once with the correct command
-      expect(mockExecSync).toHaveBeenCalledTimes(1);
-      const command = mockExecSync.mock.calls[0][0];
+      // Verify execSync was called twice (remove + add)
+      expect(mockExecSync).toHaveBeenCalledTimes(2);
+      const addCommand = mockExecSync.mock.calls[1][0];
 
-      // Verify exact command structure
+      // Verify exact command structure for add command
       const expectedCommand = 'claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- npx -y @mcp-pointer/server start';
-      expect(command).toBe(expectedCommand);
+      expect(addCommand).toBe(expectedCommand);
 
       // Verify success message
       expect(mockLoggerInfo).toHaveBeenCalledWith(expect.stringContaining('✅ Successfully configured MCP Pointer for Claude Code'));
@@ -99,10 +99,47 @@ describe('configCommand', () => {
 
       configCommand(SupportedTool.CLAUDE);
 
-      expect(mockExecSync).toHaveBeenCalledTimes(1);
-      const command = mockExecSync.mock.calls[0][0];
+      expect(mockExecSync).toHaveBeenCalledTimes(2);
+      const addCommand = mockExecSync.mock.calls[1][0];
       const expectedCommand = 'claude mcp add pointer -s user --env MCP_POINTER_PORT=8888 -- npx -y @mcp-pointer/server start';
-      expect(command).toBe(expectedCommand);
+      expect(addCommand).toBe(expectedCommand);
+    });
+
+    it('should attempt to remove existing server before adding new one', () => {
+      configCommand(SupportedTool.CLAUDE);
+
+      // Verify execSync was called twice (remove + add)
+      expect(mockExecSync).toHaveBeenCalledTimes(2);
+      
+      // First call should be remove command
+      const removeCommand = mockExecSync.mock.calls[0][0];
+      expect(removeCommand).toBe('claude mcp remove pointer -s user');
+      
+      // Second call should be add command
+      const addCommand = mockExecSync.mock.calls[1][0];
+      expect(addCommand).toBe('claude mcp add pointer -s user --env MCP_POINTER_PORT=7007 -- npx -y @mcp-pointer/server start');
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(expect.stringContaining('🔄 Removed existing MCP Pointer configuration'));
+      expect(mockLoggerInfo).toHaveBeenCalledWith(expect.stringContaining('✅ Successfully configured MCP Pointer for Claude Code'));
+    });
+
+    it('should continue adding even if remove fails', () => {
+      // Mock remove command to fail, but add command to succeed
+      mockExecSync
+        .mockImplementationOnce(() => {
+          throw new Error('Server not found');
+        })
+        .mockImplementationOnce(() => Buffer.from(''));
+
+      configCommand(SupportedTool.CLAUDE);
+
+      // Verify execSync was still called twice
+      expect(mockExecSync).toHaveBeenCalledTimes(2);
+      
+      // Should still log success message
+      expect(mockLoggerInfo).toHaveBeenCalledWith(expect.stringContaining('✅ Successfully configured MCP Pointer for Claude Code'));
+      // Should not log removal message when remove fails
+      expect(mockLoggerInfo).not.toHaveBeenCalledWith(expect.stringContaining('🔄 Removed existing MCP Pointer configuration'));
     });
 
     it('should handle command failure gracefully', () => {
