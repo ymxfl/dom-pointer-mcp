@@ -40,15 +40,8 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-      - name: Bump Chrome extension manifest version
-        run: pnpm -C packages/chrome-extension bump-manifest
-
       - name: Build all packages
         run: pnpm build
-
-      - name: Package Chrome extension for release
-        working-directory: packages/chrome-extension/dist
-        run: zip -r ../../../mcp-pointer-chrome-extension.zip .
 
       - name: Copy README for npm package
         run: cp README.md packages/server/README.md
@@ -68,6 +61,17 @@ jobs:
 
       - name: Clean up copied README
         run: rm -f packages/server/README.md
+
+      - name: Bump Chrome extension manifest version and rebuild
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          pnpm -C packages/chrome-extension bump-manifest
+          pnpm -C packages/chrome-extension build
+
+      - name: Package Chrome extension for release
+        if: steps.changesets.outputs.published == 'true'
+        working-directory: packages/chrome-extension/dist
+        run: zip -r ../../../mcp-pointer-chrome-extension.zip .
 
       - name: Upload Chrome extension to release
         if: steps.changesets.outputs.published == 'true'
