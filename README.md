@@ -33,27 +33,18 @@ See MCP Pointer in action: `Option+Click` any element in your browser, then ask 
 
 ## 🚀 Getting Started
 
-> **Note:** Chrome extension is not yet published on Chrome Web Store. You'll need to build and install it manually for now.
+### 1. Install Chrome Extension
 
-### 1. Configure the MCP Server
+**🎉 Now available on Chrome Web Store!**
 
-Use npx to automatically configure the MCP server with your AI tool:
+[![Install from Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Install-blue?style=for-the-badge&logo=google-chrome)](https://chromewebstore.google.com/detail/mcp-pointer/jfhgaembhafbffidedhpkmnaajdfeiok)
 
-```bash
-# Configure MCP Pointer for your AI tool
-npx -y @mcp-pointer/server config claude     # Automatically configures Claude Code
-npx -y @mcp-pointer/server config cursor     # Opens Cursor deeplink for automatic installation
-npx -y @mcp-pointer/server config windsurf   # Automatically updates Windsurf config file
-npx -y @mcp-pointer/server config manual     # Shows manual configuration for other tools
-```
+Simply click the link above to install from the Chrome Web Store.
 
-> **Optional:** You can install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`
+<details>
+<summary>Alternative: Manual Installation</summary>
 
-After configuration, **restart your coding tool** to load the MCP connection.
-
-### 2. Install Chrome Extension
-
-**Option A: Download from Releases (Recommended)**
+**Option A: Download from Releases**
 
 1. Go to [GitHub Releases](https://github.com/etsd-tech/mcp-pointer/releases)
 2. Download `mcp-pointer-chrome-extension.zip` from the latest release
@@ -70,6 +61,32 @@ After configuration, **restart your coding tool** to load the MCP connection.
 3. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
 4. Click "Load unpacked" and select the `packages/chrome-extension/dist/` folder
 5. **Reload web pages** to activate the extension
+
+</details>
+
+### 2. Configure MCP Server
+
+One command setup for your AI tool:
+
+```bash
+npx -y @mcp-pointer/server config claude  # or cursor, windsurf, and others - see below
+```
+
+<details>
+<summary>Other AI Tools & Options</summary>
+
+```bash
+# For other AI tools
+npx -y @mcp-pointer/server config cursor     # Opens Cursor deeplink for automatic installation
+npx -y @mcp-pointer/server config windsurf   # Automatically updates Windsurf config file
+npx -y @mcp-pointer/server config manual     # Shows manual configuration for other tools
+```
+
+> **Optional:** You can install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`
+
+</details>
+
+After configuration, **restart your coding tool** to load the MCP connection.
 
 ### 3. Start Using
 
