@@ -96,10 +96,8 @@ After configuration, **restart your coding tool** to load the MCP connection.
 
 Your AI tool will automatically start the MCP server when needed using the `npx -y @mcp-pointer/server start` command.
 
-**Available AI Tools:**
-- `getTargetedElement` - Get comprehensive info about the selected element
-- `clearTargetedElement` - Clear the current selection
-- `getPointerStatus` - Check system status and statistics
+**Available MCP Tool:**
+- `get-pointed-element` - Get textual information about the currently pointed DOM element from the browser extension
 
 ## 🎯 How It Works
 
