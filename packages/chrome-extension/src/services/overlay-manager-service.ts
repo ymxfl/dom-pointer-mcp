@@ -2,88 +2,82 @@ import autoAssignOverlayPositionAndSize from '../utils/position';
 
 interface OverlayWrapper {
   overlay: HTMLDivElement;
-  target: HTMLElement | null;
+  target: HTMLElement;
 }
 
-export enum OverlayType {
-  SELECTION = 'selection',
-  HOVER = 'hover',
-}
-
-// defines common class for overlay elements
 const OVERLAY_BASE_CLASS = 'mcp-pointer__overlay';
-const OVERLAY_CONFIG = {
-  [OverlayType.SELECTION]: {
-    typeClassName: 'mcp-pointer__overlay--selection',
-    hasGlow: true,
-    hasGlass: true,
-  },
-  [OverlayType.HOVER]: {
-    typeClassName: 'mcp-pointer__overlay--hover',
-    hasGlow: false,
-    hasGlass: true,
-  },
-};
+const HOVER_CLASS = 'mcp-pointer__overlay--hover';
+const SELECTION_CLASS = 'mcp-pointer__overlay--selection';
 
 export default class OverlayManagerService {
-  private overlayWrappers = new Map<OverlayType, OverlayWrapper>();
+  private hoverOverlay: OverlayWrapper | null = null;
 
-  overlay(type: OverlayType, target: HTMLElement): void {
-    this.assignTargetToOverlay(type, target);
-    this.positionOverlay(type);
-  }
+  private selectionOverlays = new Map<HTMLElement, OverlayWrapper>();
 
-  clearOverlay(type: OverlayType): void {
-    const wrapper = this.overlayWrappers.get(type);
-    const overlay = wrapper?.overlay;
+  // --- Hover (single) ---
 
-    if (overlay) {
-      overlay.remove();
-      this.overlayWrappers.delete(type);
+  overlayHover(target: HTMLElement): void {
+    if (!this.hoverOverlay) {
+      this.hoverOverlay = {
+        overlay: this.buildOverlayElement(HOVER_CLASS, false),
+        target,
+      };
+    } else {
+      this.hoverOverlay.target = target;
     }
+    autoAssignOverlayPositionAndSize(target, this.hoverOverlay.overlay);
   }
 
-  private assignTargetToOverlay(type: OverlayType, target: HTMLElement): void {
-    const wrapper = this.overlayWrappers.get(type);
-
-    const overlay = wrapper?.overlay || this.buildOverlayElement(type);
-
-    this.overlayWrappers.set(type, { overlay, target });
+  clearHover(): void {
+    this.hoverOverlay?.overlay.remove();
+    this.hoverOverlay = null;
   }
 
-  private buildOverlayElement(type: OverlayType): HTMLDivElement {
-    const overlayConfig = OVERLAY_CONFIG[type];
-    const identifier = overlayConfig.typeClassName;
-    const overlayClassName = `${OVERLAY_BASE_CLASS} ${identifier}`;
+  // --- Selection (multi) ---
 
+  overlaySelection(target: HTMLElement): void {
+    if (this.selectionOverlays.has(target)) return;
+    const wrapper: OverlayWrapper = {
+      overlay: this.buildOverlayElement(SELECTION_CLASS, true),
+      target,
+    };
+    this.selectionOverlays.set(target, wrapper);
+    autoAssignOverlayPositionAndSize(target, wrapper.overlay);
+  }
+
+  clearSelection(target: HTMLElement): void {
+    const wrapper = this.selectionOverlays.get(target);
+    if (!wrapper) return;
+    wrapper.overlay.remove();
+    this.selectionOverlays.delete(target);
+  }
+
+  clearAllSelections(): void {
+    this.selectionOverlays.forEach((w) => w.overlay.remove());
+    this.selectionOverlays.clear();
+  }
+
+  getSelectionElements(): HTMLElement[] {
+    return Array.from(this.selectionOverlays.keys());
+  }
+
+  // --- Shared ---
+
+  private buildOverlayElement(typeClass: string, hasGlow: boolean): HTMLDivElement {
     const overlay = document.createElement('div');
-    overlay.className = overlayClassName;
+    overlay.className = `${OVERLAY_BASE_CLASS} ${typeClass}`;
 
-    // Build DOM structure based on type
-    if (overlayConfig.hasGlow) {
+    if (hasGlow) {
       const glow = document.createElement('div');
       glow.className = 'mcp-pointer__overlay-glow';
       overlay.appendChild(glow);
     }
 
-    if (overlayConfig.hasGlass) {
-      const glass = document.createElement('div');
-      glass.className = 'mcp-pointer__overlay-glass';
-      overlay.appendChild(glass);
-    }
+    const glass = document.createElement('div');
+    glass.className = 'mcp-pointer__overlay-glass';
+    overlay.appendChild(glass);
 
     document.body.appendChild(overlay);
-
     return overlay;
-  }
-
-  private positionOverlay(type: OverlayType): void {
-    const wrapper = this.overlayWrappers.get(type);
-    const overlay = wrapper?.overlay;
-    const target = wrapper?.target;
-
-    if (!overlay || !target) return;
-
-    autoAssignOverlayPositionAndSize(target, overlay);
   }
 }
