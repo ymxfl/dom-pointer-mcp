@@ -2,7 +2,7 @@ import {
   ElementPosition,
   CSSProperties,
   ComponentInfo,
-  RawPointedDOMElement,
+  RawPointedSelection,
 } from '@mcp-pointer/shared/types';
 
 // Server-processed data (extracted & enhanced)
@@ -47,10 +47,25 @@ export interface SerializedDOMElement {
   warnings?: string[];
 }
 
+// Selection batch: multiple elements + shared user note
+export interface ProcessedPointedSelection {
+  userNote: string;
+  url: string;
+  timestamp: string;
+  elements: ProcessedPointedDOMElement[];
+}
+
+export interface SerializedSelection {
+  userNote: string;
+  url: string;
+  timestamp: string;
+  elements: SerializedDOMElement[];
+}
+
 // State data structure
 export interface SharedStateData {
-  rawPointedDOMElement: RawPointedDOMElement;
-  processedPointedDOMElement: ProcessedPointedDOMElement;
+  rawPointedSelection: RawPointedSelection;
+  processedPointedSelection: ProcessedPointedSelection;
   metadata: {
     receivedAt: string;
     messageType: string;
