@@ -45,7 +45,7 @@ export class ElementSenderService {
       statusCallback?.(ConnectionStatus.SENDING);
 
       const message: PointerMessage = {
-        type: PointerMessageType.DOM_ELEMENT_POINTED,
+        type: PointerMessageType.SELECTION_SENT,
         data: element,
         timestamp: Date.now(),
       };
