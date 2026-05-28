@@ -12,6 +12,13 @@
   cursor: crosshair !important;
 }
 
+/* Allow pointer events on disabled form controls while pointing,
+   so user can still inspect/select them. UA defaults set
+   pointer-events: none on disabled controls. */
+.mcp-pointer--is-pointing :disabled {
+  pointer-events: auto !important;
+}
+
 /* Block: Main overlay container */
 .mcp-pointer__overlay {
   width: max-content;
