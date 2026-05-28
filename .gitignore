@@ -16,3 +16,4 @@ mcp-pointer-chrome-extension.zip
 # Local IDE / agent state — should not be tracked
 .claude/settings.json
 .joycode/prompt.json
+USAGE.md
