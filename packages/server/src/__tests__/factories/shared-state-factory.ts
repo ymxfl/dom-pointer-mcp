@@ -42,13 +42,32 @@ export const createRawElement = (
 export const createSharedState = (
   rawOverrides: Partial<RawPointedDOMElement> = {},
   processedOverrides: Partial<ProcessedPointedDOMElement> = {},
-): SharedState => ({
-  data: {
-    rawPointedDOMElement: createRawElement(rawOverrides),
-    processedPointedDOMElement: createProcessedElement(processedOverrides),
-    metadata: {
-      receivedAt: '2023-01-01T00:00:00.000Z',
-      messageType: PointerMessageType.DOM_ELEMENT_POINTED,
-    },
-  } as SharedStateData,
-});
+  selectionOverrides: { userNote?: string; url?: string; timestamp?: string | number } = {},
+): SharedState => {
+  const userNote = selectionOverrides.userNote ?? 'test note';
+  const url = selectionOverrides.url ?? 'https://example.com';
+  const rawTimestamp = (selectionOverrides.timestamp as number | undefined) ?? 1672531200000;
+  const processedTimestamp = (selectionOverrides.timestamp as string | undefined)
+    ?? '2023-01-01T00:00:00.000Z';
+
+  return {
+    data: {
+      rawPointedSelection: {
+        url,
+        timestamp: rawTimestamp,
+        userNote,
+        elements: [createRawElement(rawOverrides)],
+      },
+      processedPointedSelection: {
+        userNote,
+        url,
+        timestamp: processedTimestamp,
+        elements: [createProcessedElement(processedOverrides)],
+      },
+      metadata: {
+        receivedAt: '2023-01-01T00:00:00.000Z',
+        messageType: PointerMessageType.SELECTION_SENT,
+      },
+    } as SharedStateData,
+  };
+};

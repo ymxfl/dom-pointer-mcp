@@ -1,4 +1,4 @@
-import { PointerMessageType, type RawPointedDOMElement } from '@mcp-pointer/shared/types';
+import { PointerMessageType, type RawPointedSelection } from '@mcp-pointer/shared/types';
 import logger from './logger';
 import ElementProcessor from './services/element-processor';
 import SharedStateService from './services/shared-state-service';
@@ -6,7 +6,6 @@ import { SharedState, SharedStateData } from './types';
 
 function buildMetadata(messageType: string) {
   const now = new Date().toISOString();
-
   return {
     receivedAt: now,
     messageType,
@@ -18,19 +17,16 @@ function buildState(
   data: any,
   elementProcessor: ElementProcessor,
 ): SharedState {
-  logger.info('Processing raw element format');
-  const raw = data as RawPointedDOMElement;
-  const processed = elementProcessor.processFromRaw(raw);
+  const raw = data as RawPointedSelection;
+  const processed = elementProcessor.processBatchFromRaw(raw);
 
   const stateData: SharedStateData = {
-    rawPointedDOMElement: raw,
-    processedPointedDOMElement: processed,
+    rawPointedSelection: raw,
+    processedPointedSelection: processed,
     metadata: buildMetadata(type),
   };
 
-  return {
-    data: stateData,
-  };
+  return { data: stateData };
 }
 
 function buildStateFromMessage(
@@ -38,8 +34,16 @@ function buildStateFromMessage(
   data: any,
   services: HandlerServices,
 ): SharedState | null {
-  if (type === PointerMessageType.DOM_ELEMENT_POINTED) {
+  if (type === PointerMessageType.SELECTION_SENT) {
     return buildState(type, data, services.elementProcessor);
+  }
+
+  if (type === PointerMessageType.DOM_ELEMENT_POINTED) {
+    logger.warn(
+      'Received legacy DOM_ELEMENT_POINTED message. '
+      + 'Please upgrade the Chrome extension to a version that sends SELECTION_SENT.',
+    );
+    return null;
   }
 
   logger.warn(`Received unknown message type: ${type}`);
@@ -53,7 +57,6 @@ interface HandlerServices {
 
 const messageHandler = async (type: string, data: any, services: HandlerServices) => {
   const buildedState = buildStateFromMessage(type, data, services);
-
   if (buildedState) {
     await services.sharedState.saveState(buildedState);
   }

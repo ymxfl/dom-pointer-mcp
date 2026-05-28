@@ -54,7 +54,7 @@ export default class MCPService {
       tools: [
         {
           name: MCPToolName.GET_POINTED_ELEMENT,
-          description: 'Get information about the currently pointed/shown DOM element. Control returned payload size with optional textDetail (0 none | 1 visible | 2 full) and cssLevel (0-3).',
+          description: 'Get the currently pointed DOM elements (one or more) along with the user\'s note describing what they want to change. Returns { userNote, url, timestamp, elements: [...] }. Control returned payload size with optional textDetail (0 none | 1 visible | 2 full) and cssLevel (0-3).',
           inputSchema: {
             type: 'object',
             properties: {
@@ -81,38 +81,44 @@ export default class MCPService {
       const normalized = normalizeDetailParameters(
         request.params.arguments as DetailParameters | undefined,
       );
-      return this.getPointedElement(normalized);
+      return this.getPointedSelection(normalized);
     }
 
     throw new Error(`Unknown tool: ${request.params.name}`);
   }
 
-  private async getPointedElement(details: NormalizedDetailParameters) {
-    const processedElement = await this.sharedState.getPointedElement();
+  private async getPointedSelection(details: NormalizedDetailParameters) {
+    const selection = await this.sharedState.getPointedSelection();
 
-    if (!processedElement) {
+    if (!selection) {
       return {
         content: [
           {
             type: 'text',
-            text: 'No element is currently pointed. '
-              + 'The user needs to point an element in their browser using Option+Click.',
+            text: 'No selection pointed. The user needs to Option+Click '
+              + 'elements in their browser, write a note describing what '
+              + 'they want changed, then press Cmd/Ctrl+Enter or Send.',
           },
         ],
       };
     }
 
-    const shapedElement = serializeElement(
-      processedElement,
-      details.textDetail,
-      details.cssLevel,
-    );
+    const payload = {
+      userNote: selection.userNote,
+      url: selection.url,
+      timestamp: selection.timestamp,
+      elements: selection.elements.map((el) => serializeElement(
+        el,
+        details.textDetail,
+        details.cssLevel,
+      )),
+    };
 
     return {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(shapedElement, null, 2),
+          text: JSON.stringify(payload, null, 2),
         },
       ],
     };

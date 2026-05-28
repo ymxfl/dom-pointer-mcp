@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { SharedState, ProcessedPointedDOMElement } from '../types';
+import { SharedState, ProcessedPointedSelection } from '../types';
 import logger from '../logger';
 
 export default class SharedStateService {
@@ -9,18 +9,16 @@ export default class SharedStateService {
     try {
       const json = JSON.stringify(state, null, 2);
       await fs.writeFile(SharedStateService.SHARED_STATE_PATH, json, 'utf8');
-
-      logger.debug('Pointed data saved to shared state file');
+      logger.debug('Pointed selection saved to shared state file');
     } catch (error) {
-      logger.error('Failed to save pointed data:', error);
+      logger.error('Failed to save pointed selection:', error);
     }
   }
 
-  public async getPointedElement(): Promise<ProcessedPointedDOMElement | null> {
+  public async getPointedSelection(): Promise<ProcessedPointedSelection | null> {
     const state = await this.readState();
     if (!state) return null;
-
-    return state.data.processedPointedDOMElement;
+    return state.data.processedPointedSelection;
   }
 
   private async readState(): Promise<SharedState | null> {
@@ -32,7 +30,6 @@ export default class SharedStateService {
         logger.debug('Shared state file does not exist');
         return null;
       }
-
       logger.error('Failed to read state file:', error);
       return null;
     }
