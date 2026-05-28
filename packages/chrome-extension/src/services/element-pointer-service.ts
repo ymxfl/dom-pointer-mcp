@@ -106,13 +106,21 @@ export default class ElementPointerService {
     logger.debug('Pointing stopped');
   }
 
-  private sendToBackground(target: HTMLElement): void {
+  private async sendToBackground(target: HTMLElement): Promise<void> {
     logger.info('📤 Sending target to background:', target);
+
+    const raw = await extractRawPointedDOMElement(target);
+
+    // Race protection: user may have clicked another element while awaiting
+    if (this.pointedElement !== target) {
+      logger.debug('🚫 Discarding stale extraction (user clicked another element)');
+      return;
+    }
 
     // Send directly to background script (isolated world has chrome.runtime access)
     chrome.runtime.sendMessage({
       type: 'DOM_ELEMENT_POINTED',
-      data: extractRawPointedDOMElement(target) as RawPointedDOMElement,
+      data: raw as RawPointedDOMElement,
     }, (response: any) => {
       if (chrome.runtime.lastError) {
         logger.error('❌ Error sending to background:', chrome.runtime.lastError);
