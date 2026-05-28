@@ -1,27 +1,5 @@
-// Disable ESLint rule for underscore dangle usage in this file (React internals)
-/* eslint-disable no-underscore-dangle */
-
 import { RawPointedDOMElement } from '@mcp-pointer/shared/types';
-import logger from './logger';
-
-/**
- * Extract raw React Fiber from an element (if present)
- */
-export function getRawReactFiber(element: HTMLElement): any | undefined {
-  try {
-    const fiberKey = Object.keys(element).find((key) => key.startsWith('__reactFiber$')
-      || key.startsWith('__reactInternalInstance$'));
-
-    if (fiberKey) {
-      return (element as any)[fiberKey];
-    }
-
-    return undefined;
-  } catch (error) {
-    logger.error('🚨 Error extracting raw Fiber:', error);
-    return undefined;
-  }
-}
+import { extractComponentInfo } from '../extractors';
 
 /**
  * Get all computed styles as a plain object (Record)
@@ -32,7 +10,6 @@ export function getAllComputedStyles(element: HTMLElement): Record<string, strin
   const computedStyle = window.getComputedStyle(element);
   const styles: Record<string, string> = {};
 
-  // Convert CSSStyleDeclaration to plain object
   for (let i = 0; i < computedStyle.length; i += 1) {
     const property = computedStyle[i];
     styles[property] = computedStyle.getPropertyValue(property);
@@ -53,11 +30,8 @@ export function extractRawPointedDOMElement(element: HTMLElement): RawPointedDOM
     computedStyles: getAllComputedStyles(element),
   };
 
-  // Add React Fiber if present
-  const reactFiber = getRawReactFiber(element);
-  if (reactFiber) {
-    raw.reactFiber = reactFiber;
-  }
+  const componentInfo = extractComponentInfo(element);
+  if (componentInfo) raw.componentInfo = componentInfo;
 
   return raw;
 }
