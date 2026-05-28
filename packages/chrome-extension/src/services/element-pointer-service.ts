@@ -39,6 +39,7 @@ export default class ElementPointerService {
     this.notePanel = new NotePanelService(
       this.store,
       (els, note) => this.sendSelection(els, note),
+      (els, note) => this.buildSelectionJson(els, note),
     );
     this.store.subscribe(this.syncOverlays.bind(this));
   }
@@ -106,15 +107,7 @@ export default class ElementPointerService {
   private async sendSelection(elements: HTMLElement[], note: string): Promise<void> {
     logger.info(`📤 Sending selection (${elements.length} elements) to background`);
 
-    const rawElements = await Promise.all(
-      elements.map((el) => extractRawPointedDOMElement(el)),
-    );
-    const payload: RawPointedSelection = {
-      url: window.location.href,
-      timestamp: Date.now(),
-      userNote: note,
-      elements: rawElements,
-    };
+    const payload = await this.buildPayload(elements, note);
 
     return new Promise((resolve, reject) => {
       chrome.runtime.sendMessage(
@@ -131,5 +124,30 @@ export default class ElementPointerService {
         },
       );
     });
+  }
+
+  private async buildPayload(elements: HTMLElement[], note: string): Promise<RawPointedSelection> {
+    const rawElements = await Promise.all(
+      elements.map((el) => extractRawPointedDOMElement(el)),
+    );
+    return {
+      url: window.location.href,
+      timestamp: Date.now(),
+      userNote: note,
+      elements: rawElements,
+    };
+  }
+
+  /**
+   * Build a JSON string for the Copy button. This serializes the same
+   * RawPointedSelection that goes to the server. Compared to what the
+   * agent receives via mcp__pointer__get-pointed-element, this is a
+   * SUPERSET (contains outerHTML and full computedStyles instead of the
+   * server's filtered cssProperties), so an agent can still consume it.
+   * It does not include the server-generated `selector` field.
+   */
+  private async buildSelectionJson(elements: HTMLElement[], note: string): Promise<string> {
+    const payload = await this.buildPayload(elements, note);
+    return JSON.stringify(payload, null, 2);
   }
 }

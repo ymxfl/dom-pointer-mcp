@@ -416,6 +416,26 @@
   cursor: not-allowed;
 }
 
+.mcp-pointer__note-copy {
+  padding: 4px 12px;
+  margin-right: 6px;
+  background: white;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mcp-pointer__note-copy:hover:not(:disabled) {
+  background: #e3f2fd;
+}
+
+.mcp-pointer__note-copy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Chip-hover flash animation on the corresponding selection overlay */
 @keyframes mcp-pointer__overlay-flash {
   0%, 100% { box-shadow: 0 0 0 2px var(--mcp-pointer-border-color); }

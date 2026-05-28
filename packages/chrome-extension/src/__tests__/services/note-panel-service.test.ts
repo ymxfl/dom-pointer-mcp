@@ -10,17 +10,38 @@ function flushMicrotasks(): Promise<void> {
 describe('NotePanelService', () => {
   let store: SelectionStoreService;
   let onSend: jest.Mock;
+  let onCopy: jest.Mock;
+  let originalClipboard: any;
+  let writeText: jest.Mock;
 
   beforeEach(() => {
     store = new SelectionStoreService();
     onSend = jest.fn().mockResolvedValue(undefined);
+    onCopy = jest.fn().mockResolvedValue('{"copied":true}');
+
+    // Stub navigator.clipboard for the Copy button
+    originalClipboard = (navigator as any).clipboard;
+    writeText = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
     // Constructor subscribes to store; instance kept alive by that subscription.
     // eslint-disable-next-line no-new
-    new NotePanelService(store, onSend);
+    new NotePanelService(store, onSend, onCopy);
   });
 
   afterEach(() => {
     document.querySelectorAll(PANEL_SELECTOR).forEach((el) => el.remove());
+    if (originalClipboard === undefined) {
+      delete (navigator as any).clipboard;
+    } else {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: originalClipboard,
+      });
+    }
   });
 
   it('appends panel to body when selection goes 0 → 1', () => {
@@ -103,5 +124,24 @@ describe('NotePanelService', () => {
     store.toggle(el); // now 0 → panel destroyed again
     newSendBtn.click(); // detached button click; no panel to act on
     expect(onSend).not.toHaveBeenCalled();
+  });
+
+  it('Copy button calls onCopy, writes to clipboard, and does NOT clear textarea', async () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    store.toggle(el);
+
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    textarea.value = 'keep this note';
+    const copyBtn = document.querySelector('.mcp-pointer__note-copy') as HTMLButtonElement;
+    copyBtn.click();
+
+    await flushMicrotasks();
+    await flushMicrotasks();
+
+    expect(onCopy).toHaveBeenCalledWith([el], 'keep this note');
+    expect(writeText).toHaveBeenCalledWith('{"copied":true}');
+    expect(textarea.value).toBe('keep this note'); // unchanged
+    expect(copyBtn.disabled).toBe(false);
   });
 });

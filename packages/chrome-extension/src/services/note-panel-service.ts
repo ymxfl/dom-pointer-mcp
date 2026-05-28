@@ -8,6 +8,7 @@ const CHIP_CLASS = 'mcp-pointer__note-chip';
 const FLASH_CLASS = 'mcp-pointer__overlay--flashing';
 
 export type OnSend = (elements: HTMLElement[], note: string) => Promise<void>;
+export type OnCopy = (elements: HTMLElement[], note: string) => Promise<string>;
 
 export default class NotePanelService {
   private root: HTMLDivElement | null = null;
@@ -18,13 +19,18 @@ export default class NotePanelService {
 
   private sendBtn: HTMLButtonElement | null = null;
 
+  private copyBtn: HTMLButtonElement | null = null;
+
   private errorText: HTMLDivElement | null = null;
 
   private cleanupAutoUpdate: (() => void) | null = null;
 
+  private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(
     private store: SelectionStoreService,
     private onSend: OnSend,
+    private onCopy: OnCopy,
   ) {
     this.store.subscribe(this.handleSelectionChange.bind(this));
   }
@@ -58,6 +64,7 @@ export default class NotePanelService {
       <div class="mcp-pointer__note-error" hidden></div>
       <div class="mcp-pointer__note-footer">
         <span class="mcp-pointer__note-hint">⌘/Ctrl+Enter to send</span>
+        <button type="button" class="mcp-pointer__note-copy" title="Copy selection as JSON for manual paste into any agent">Copy</button>
         <button type="button" class="mcp-pointer__note-send">Send</button>
       </div>
     `;
@@ -66,9 +73,11 @@ export default class NotePanelService {
     this.chipContainer = this.root.querySelector('.mcp-pointer__note-chips');
     this.textarea = this.root.querySelector('textarea');
     this.sendBtn = this.root.querySelector('.mcp-pointer__note-send');
+    this.copyBtn = this.root.querySelector('.mcp-pointer__note-copy');
     this.errorText = this.root.querySelector('.mcp-pointer__note-error');
 
     this.sendBtn!.addEventListener('click', () => { void this.handleSend(); });
+    this.copyBtn!.addEventListener('click', () => { void this.handleCopy(); });
     this.textarea!.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -78,9 +87,8 @@ export default class NotePanelService {
 
     // NOTE: TriggerMouseService listens at document level (capture phase) and
     // is BEFORE this panel root in the event path, so capture-phase
-    // stopPropagation here cannot block it. The plan's task 6
-    // (ElementPointerService integration) is responsible for making
-    // TriggerMouseService skip events whose target is inside the panel.
+    // stopPropagation here cannot block it. ElementPointerService handles
+    // skipping events whose target is inside the panel.
 
     Object.assign(this.root.style, {
       position: 'absolute', top: '0', left: '0', zIndex: '2147483647',
@@ -149,14 +157,54 @@ export default class NotePanelService {
     }
   }
 
+  private async handleCopy(): Promise<void> {
+    if (!this.copyBtn || !this.textarea || !this.errorText) return;
+    if (this.copyBtn.disabled) return;
+    const elements = this.store.getAll();
+    if (elements.length === 0) return;
+
+    const note = this.textarea.value;
+    this.copyBtn.disabled = true;
+    this.errorText.hidden = true;
+
+    try {
+      const json = await this.onCopy(elements, note);
+      await navigator.clipboard.writeText(json);
+      this.flashCopyFeedback('Copied!');
+    } catch (err) {
+      if (this.errorText) {
+        this.errorText.textContent = `Copy failed: ${(err as Error).message}`;
+        this.errorText.hidden = false;
+      }
+    } finally {
+      if (this.copyBtn) this.copyBtn.disabled = false;
+    }
+  }
+
+  private flashCopyFeedback(text: string): void {
+    if (!this.copyBtn) return;
+    const original = 'Copy';
+    this.copyBtn.textContent = text;
+    if (this.feedbackTimer) clearTimeout(this.feedbackTimer);
+    this.feedbackTimer = setTimeout(() => {
+      if (this.copyBtn) this.copyBtn.textContent = original;
+      this.feedbackTimer = null;
+    }, 1500);
+  }
+
   private destroyPanel(): void {
     this.cleanupAutoUpdate?.();
     this.cleanupAutoUpdate = null;
+    if (this.feedbackTimer) {
+      clearTimeout(this.feedbackTimer);
+      this.feedbackTimer = null;
+    }
     this.root?.remove();
     this.root = null;
     this.chipContainer = null;
     this.textarea = null;
     this.sendBtn = null;
+    this.copyBtn = null;
     this.errorText = null;
   }
 }
