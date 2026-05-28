@@ -1,6 +1,7 @@
 import defaultConfig, { ExtensionConfig } from '../utils/config';
 import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
+import { checkReachability, ReachabilityState } from './server-reachability-service';
 
 export default class PopupManagerService {
   private enabledInput: HTMLInputElement;
@@ -13,12 +14,24 @@ export default class PopupManagerService {
 
   private status: HTMLElement;
 
+  private serverStatus: HTMLElement;
+
+  private statusIndicator: HTMLElement;
+
+  private statusText: HTMLElement;
+
+  private recheckBtn: HTMLButtonElement;
+
   constructor() {
     this.enabledInput = document.getElementById('enabled') as HTMLInputElement;
     this.portInput = document.getElementById('port') as HTMLInputElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
     this.status = document.getElementById('status') as HTMLElement;
+    this.serverStatus = document.getElementById('serverStatus') as HTMLElement;
+    this.statusIndicator = document.getElementById('statusIndicator') as HTMLElement;
+    this.statusText = document.getElementById('statusText') as HTMLElement;
+    this.recheckBtn = document.getElementById('recheckBtn') as HTMLButtonElement;
 
     this.setupEventListeners();
     this.loadConfig();
@@ -27,6 +40,7 @@ export default class PopupManagerService {
   private setupEventListeners(): void {
     this.saveBtn.addEventListener('click', () => this.saveConfig());
     this.resetBtn.addEventListener('click', () => this.resetToDefaults());
+    this.recheckBtn.addEventListener('click', () => this.checkServer());
   }
 
   private async loadConfig(): Promise<void> {
@@ -35,6 +49,7 @@ export default class PopupManagerService {
 
       this.enabledInput.checked = config.enabled;
       this.portInput.value = config.websocket.port.toString();
+      this.checkServer();
     } catch (error) {
       this.showStatus('Failed to load configuration', 'error');
       logger.error('Error loading config:', error);
@@ -44,7 +59,7 @@ export default class PopupManagerService {
   private async saveConfig(): Promise<void> {
     try {
       const port = parseInt(this.portInput.value, 10);
-      if (isNaN(port) || port < 1 || port > 65535) {
+      if (Number.isNaN(port) || port < 1 || port > 65535) {
         this.showStatus('Port must be a number between 1 and 65535', 'error');
         return;
       }
@@ -62,6 +77,7 @@ export default class PopupManagerService {
 
       await ConfigStorageService.save(config);
       this.showStatus('Settings saved successfully', 'success');
+      this.checkServer();
     } catch (error) {
       this.showStatus('Failed to save configuration', 'error');
       logger.error('Error saving config:', error);
@@ -86,5 +102,37 @@ export default class PopupManagerService {
     setTimeout(() => {
       this.status.classList.remove('visible');
     }, 3000);
+  }
+
+  private async checkServer(): Promise<void> {
+    const port = parseInt(this.portInput.value, 10);
+    if (Number.isNaN(port) || port < 1 || port > 65535) {
+      this.setStatus('unreachable', `Invalid port: ${this.portInput.value}`);
+      return;
+    }
+
+    this.setStatus('checking', 'Checking server...');
+    const reachable = await checkReachability(port);
+    this.setStatus(
+      reachable ? 'reachable' : 'unreachable',
+      reachable
+        ? `Reachable on port ${port}`
+        : `Cannot reach server on port ${port}`,
+    );
+  }
+
+  private setStatus(state: ReachabilityState, text: string): void {
+    this.serverStatus.className = `server-status ${state}`;
+    let indicator: string;
+    if (state === 'checking') {
+      indicator = '⏳';
+    } else if (state === 'reachable') {
+      indicator = '🟢';
+    } else {
+      indicator = '🔴';
+    }
+    this.statusIndicator.textContent = indicator;
+    this.statusText.textContent = text;
+    this.recheckBtn.disabled = (state === 'checking');
   }
 }
