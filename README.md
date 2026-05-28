@@ -111,16 +111,22 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 
 ## 🎯 How It Works
 
-1. **Element Selection**: Content script captures `Option+Click` events
-2. **Data Extraction**: Analyzes element structure, CSS, and framework info
-3. **WebSocket Transport**: Sends data to MCP server on port 7007
-4. **MCP Protocol**: Makes data available to AI tools via MCP tools
-5. **AI Analysis**: Your assistant can now see and analyze the element!
+1. **Hold Option (Alt) and click** any element on the page — it becomes selected (highlighted).
+2. *(Optional)* Hold Option and click more elements — multi-select adds them to a batch.
+3. A floating **note panel** appears next to the first selected element with a textarea.
+4. Type a description of what you want changed (e.g. "make these buttons primary blue", "in [1] and [2] add a divider").
+5. Press **⌘/Ctrl+Enter** (or click Send) to send the selection + your note to the MCP server.
+6. Your AI agent calls `get-pointed-element` and receives `{ userNote, url, timestamp, elements: [...] }`.
+
+To cancel a selected element, Option+Click it again or click the × on its chip. The note panel stays visible until **all** selections are cancelled — your typed text is never lost from incidental clicks.
+
+> **⚠️ Breaking change in v0.7:** The wire format changed from single-element to batched selection (`{ userNote, elements }`). The Chrome extension and the MCP server must be the **same version**. Agent prompts that consumed the old `get-pointed-element` single-object format need to be updated to handle the new batch structure.
 
 ## 🎨 Element Data Extracted
 
-- **Basic Info**: Tag name, ID, classes, text content
-- **CSS Properties**: Display, position, colors, dimensions
+- **User Note**: A shared description typed by the user about the whole batch
+- **Basic Info**: Tag name, ID, classes, text content (per element)
+- **CSS Properties**: Display, position, colors, dimensions (per element)
 - **Component Info**: React / Vue component names and source files (experimental)
 - **Attributes**: All HTML attributes
 - **Position**: Exact coordinates and dimensions
