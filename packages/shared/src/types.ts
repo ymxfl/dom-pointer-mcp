@@ -70,10 +70,19 @@ export interface RawPointedDOMElement {
   componentInfo?: ComponentInfo;
 }
 
+// Selection batch wire format: multiple elements + shared user note
+export interface RawPointedSelection {
+  url: string;
+  timestamp: number;
+  userNote: string;
+  elements: RawPointedDOMElement[];
+}
+
 // Pointer message types between extension and MCP server
 export enum PointerMessageType {
   LEGACY_ELEMENT_SELECTED = 'element-selected',
   DOM_ELEMENT_POINTED = 'dom-element-pointed',
+  SELECTION_SENT = 'selection-sent',
 }
 
 export interface PointerMessage {
