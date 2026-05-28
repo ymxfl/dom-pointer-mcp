@@ -20,7 +20,7 @@ export default class TriggerClickService {
 
   registerListeners(): void {
     document.addEventListener('mouseover', this.handleMouseOver);
-    document.addEventListener('click', this.handleClick);
+    document.addEventListener('click', this.handleClick, true);
 
     // Simulate a hover event at registration time
     const currentElement = this.getElementUnderCursor();
@@ -31,7 +31,7 @@ export default class TriggerClickService {
 
   unregisterListeners(): void {
     document.removeEventListener('mouseover', this.handleMouseOver);
-    document.removeEventListener('click', this.handleClick);
+    document.removeEventListener('click', this.handleClick, true);
   }
 
   private handleMouseOver(event: MouseEvent): void {
