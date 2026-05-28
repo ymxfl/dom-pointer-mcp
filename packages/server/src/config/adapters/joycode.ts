@@ -2,7 +2,13 @@ import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult, Scope } from '../types';
 import { writeFileEnsuringDir, readJsonOrDefault } from '../adapter-helpers';
-import { TRIGGER_DESCRIPTION, TRIGGER_BODY } from '../trigger-content';
+import {
+  TRIGGER_NAME,
+  COMMAND_DESCRIPTION,
+  COMMAND_BODY,
+  SKILL_DESCRIPTION,
+  SKILL_BODY,
+} from '../trigger-content';
 
 const MCP_SERVER_NAME = 'pointer';
 const PROMPT_NAME = 'pointerPointed';
@@ -24,10 +30,19 @@ function buildPromptEntry() {
   return {
     label: 'pointed',
     name: PROMPT_NAME,
-    description: TRIGGER_DESCRIPTION,
-    prompt: TRIGGER_BODY,
+    description: COMMAND_DESCRIPTION,
+    prompt: COMMAND_BODY,
     source: 'project' as const,
   };
+}
+
+function buildSkillFile(): string {
+  return `---
+name: ${TRIGGER_NAME}
+description: ${JSON.stringify(SKILL_DESCRIPTION)}
+---
+
+${SKILL_BODY}`;
 }
 
 export const joycodeAdapter: ToolAdapter = {
@@ -48,7 +63,8 @@ export const joycodeAdapter: ToolAdapter = {
     }
   },
 
-  async installTrigger(scope): Promise<OperationResult> {
+  async installCommand(scope): Promise<OperationResult> {
+    // JoyCode prompt.json entries are slash commands; project-level only.
     const isDegraded = scope === 'user';
     const effectiveScope: Scope = 'project';
     const filePath = path.join(process.cwd(), '.joycode', 'prompt.json');
@@ -66,7 +82,7 @@ export const joycodeAdapter: ToolAdapter = {
         path: filePath,
         message: isDegraded
           ? 'JoyCode only supports project-level prompts; installed at project scope.'
-          : 'Trigger prompt merged into .joycode/prompt.json',
+          : 'Slash command merged into .joycode/prompt.json',
       };
     } catch (e) {
       return {
@@ -74,6 +90,19 @@ export const joycodeAdapter: ToolAdapter = {
         scope: effectiveScope,
         message: `Write failed: ${(e as Error).message}`,
       };
+    }
+  },
+
+  async installSkill(scope): Promise<OperationResult> {
+    const base = scope === 'user' ? os.homedir() : process.cwd();
+    const filePath = path.join(base, '.joycode', 'skills', TRIGGER_NAME, 'SKILL.md');
+    try {
+      await writeFileEnsuringDir(filePath, buildSkillFile());
+      return {
+        status: 'success', scope, path: filePath, message: 'Skill installed',
+      };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
     }
   },
 };

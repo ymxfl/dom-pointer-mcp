@@ -25,41 +25,62 @@ beforeEach(() => {
 });
 
 describe('claudeAdapter', () => {
-  it('installTrigger user scope writes ~/.claude/skills/pointed/SKILL.md', async () => {
-    const result = await claudeAdapter.installTrigger('user');
-    expect(result.status).toBe('success');
-    const expectedPath = path.join(os.homedir(), '.claude', 'skills', 'pointed', 'SKILL.md');
-    expect(result.path).toBe(expectedPath);
-    expect(mockedWriteFile).toHaveBeenCalledWith(expectedPath, expect.stringContaining('name: pointed'), 'utf8');
+  describe('installCommand', () => {
+    it('user scope writes ~/.claude/commands/pointed.md', async () => {
+      const result = await claudeAdapter.installCommand('user');
+      expect(result.status).toBe('success');
+      const expectedPath = path.join(os.homedir(), '.claude', 'commands', 'pointed.md');
+      expect(result.path).toBe(expectedPath);
+      const writeCall = mockedWriteFile.mock.calls.find((call) => call[0] === expectedPath);
+      expect(writeCall).toBeDefined();
+      expect(String(writeCall![1])).toContain('description:');
+    });
+
+    it('project scope writes <cwd>/.claude/commands/pointed.md', async () => {
+      const result = await claudeAdapter.installCommand('project');
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(path.join(process.cwd(), '.claude', 'commands', 'pointed.md'));
+    });
   });
 
-  it('installTrigger project scope writes <cwd>/.claude/skills/pointed/SKILL.md', async () => {
-    const result = await claudeAdapter.installTrigger('project');
-    expect(result.status).toBe('success');
-    const expectedPath = path.join(process.cwd(), '.claude', 'skills', 'pointed', 'SKILL.md');
-    expect(result.path).toBe(expectedPath);
+  describe('installSkill', () => {
+    it('user scope writes ~/.claude/skills/pointed/SKILL.md', async () => {
+      const result = await claudeAdapter.installSkill!('user');
+      expect(result.status).toBe('success');
+      const expectedPath = path.join(os.homedir(), '.claude', 'skills', 'pointed', 'SKILL.md');
+      expect(result.path).toBe(expectedPath);
+      expect(mockedWriteFile).toHaveBeenCalledWith(expectedPath, expect.stringContaining('name: pointed'), 'utf8');
+    });
+
+    it('project scope writes <cwd>/.claude/skills/pointed/SKILL.md', async () => {
+      const result = await claudeAdapter.installSkill!('project');
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(path.join(process.cwd(), '.claude', 'skills', 'pointed', 'SKILL.md'));
+    });
   });
 
-  it('registerMcp project scope writes .mcp.json with pointer entry', async () => {
-    const result = await claudeAdapter.registerMcp('project', 7007);
-    expect(result.status).toBe('success');
-    expect(result.path).toBe(path.join(process.cwd(), '.mcp.json'));
-    const writeCall = mockedWriteFile.mock.calls.find(
-      (call) => call[0].endsWith('.mcp.json'),
-    );
-    expect(writeCall).toBeDefined();
-    const written = JSON.parse(writeCall![1]);
-    expect(written.mcpServers.pointer.command).toBe('npx');
-    expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
-  });
+  describe('registerMcp', () => {
+    it('project scope writes .mcp.json with pointer entry', async () => {
+      const result = await claudeAdapter.registerMcp('project', 7007);
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(path.join(process.cwd(), '.mcp.json'));
+      const writeCall = mockedWriteFile.mock.calls.find(
+        (call) => call[0].endsWith('.mcp.json'),
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1]);
+      expect(written.mcpServers.pointer.command).toBe('npx');
+      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+    });
 
-  it('registerMcp user scope runs claude mcp add CLI', async () => {
-    const result = await claudeAdapter.registerMcp('user', 7007);
-    expect(result.status).toBe('success');
-    const addCall = mockedExecSync.mock.calls.find(
-      (call) => String(call[0]).includes('claude mcp add'),
-    );
-    expect(addCall).toBeDefined();
-    expect(String(addCall![0])).toContain('MCP_POINTER_PORT=7007');
+    it('user scope runs claude mcp add CLI', async () => {
+      const result = await claudeAdapter.registerMcp('user', 7007);
+      expect(result.status).toBe('success');
+      const addCall = mockedExecSync.mock.calls.find(
+        (call) => String(call[0]).includes('claude mcp add'),
+      );
+      expect(addCall).toBeDefined();
+      expect(String(addCall![0])).toContain('MCP_POINTER_PORT=7007');
+    });
   });
 });

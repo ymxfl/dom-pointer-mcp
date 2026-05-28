@@ -20,16 +20,22 @@ beforeEach(() => {
 });
 
 describe('opencodeAdapter', () => {
-  it('installTrigger user writes ~/.config/opencode/commands/pointed.md', async () => {
-    const result = await opencodeAdapter.installTrigger('user');
-    expect(result.status).toBe('success');
-    expect(result.path).toBe(path.join(os.homedir(), '.config', 'opencode', 'commands', 'pointed.md'));
+  describe('installCommand', () => {
+    it('user writes ~/.config/opencode/commands/pointed.md', async () => {
+      const result = await opencodeAdapter.installCommand('user');
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(path.join(os.homedir(), '.config', 'opencode', 'commands', 'pointed.md'));
+    });
+
+    it('project writes <cwd>/.opencode/commands/pointed.md', async () => {
+      const result = await opencodeAdapter.installCommand('project');
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(path.join(process.cwd(), '.opencode', 'commands', 'pointed.md'));
+    });
   });
 
-  it('installTrigger project writes <cwd>/.opencode/commands/pointed.md', async () => {
-    const result = await opencodeAdapter.installTrigger('project');
-    expect(result.status).toBe('success');
-    expect(result.path).toBe(path.join(process.cwd(), '.opencode', 'commands', 'pointed.md'));
+  it('has no installSkill (opencode commands ARE the slash mechanism)', () => {
+    expect(opencodeAdapter.installSkill).toBeUndefined();
   });
 
   it('registerMcp merges with existing opencode.json mcp servers', async () => {

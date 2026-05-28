@@ -3,17 +3,31 @@ import os from 'os';
 import { execSync } from 'child_process';
 import type { ToolAdapter, OperationResult } from '../types';
 import { writeFileEnsuringDir } from '../adapter-helpers';
-import { TRIGGER_NAME, TRIGGER_DESCRIPTION, TRIGGER_BODY } from '../trigger-content';
+import {
+  TRIGGER_NAME,
+  COMMAND_DESCRIPTION,
+  COMMAND_BODY,
+  SKILL_DESCRIPTION,
+  SKILL_BODY,
+} from '../trigger-content';
 
 const MCP_SERVER_NAME = 'pointer';
+
+function buildCommandFile(): string {
+  return `---
+description: ${JSON.stringify(COMMAND_DESCRIPTION)}
+---
+
+${COMMAND_BODY}`;
+}
 
 function buildSkillFile(): string {
   return `---
 name: ${TRIGGER_NAME}
-description: ${JSON.stringify(TRIGGER_DESCRIPTION)}
+description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${TRIGGER_BODY}`;
+${SKILL_BODY}`;
 }
 
 function buildProjectMcpJson(port: number): string {
@@ -71,16 +85,26 @@ export const claudeAdapter: ToolAdapter = {
     }
   },
 
-  async installTrigger(scope): Promise<OperationResult> {
+  async installCommand(scope): Promise<OperationResult> {
+    const base = scope === 'user' ? os.homedir() : process.cwd();
+    const filePath = path.join(base, '.claude', 'commands', `${TRIGGER_NAME}.md`);
+    try {
+      await writeFileEnsuringDir(filePath, buildCommandFile());
+      return {
+        status: 'success', scope, path: filePath, message: 'Slash command installed',
+      };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
+    }
+  },
+
+  async installSkill(scope): Promise<OperationResult> {
     const base = scope === 'user' ? os.homedir() : process.cwd();
     const filePath = path.join(base, '.claude', 'skills', TRIGGER_NAME, 'SKILL.md');
     try {
       await writeFileEnsuringDir(filePath, buildSkillFile());
       return {
-        status: 'success',
-        scope,
-        path: filePath,
-        message: 'Trigger skill installed',
+        status: 'success', scope, path: filePath, message: 'Skill installed',
       };
     } catch (e) {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };

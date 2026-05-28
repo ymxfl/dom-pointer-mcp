@@ -2,7 +2,11 @@ import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult, Scope } from '../types';
 import { writeFileEnsuringDir, readTextOrEmpty } from '../adapter-helpers';
-import { TRIGGER_NAME, TRIGGER_DESCRIPTION, TRIGGER_BODY } from '../trigger-content';
+import {
+  TRIGGER_NAME,
+  COMMAND_DESCRIPTION,
+  COMMAND_BODY,
+} from '../trigger-content';
 
 const MCP_SERVER_NAME = 'pointer';
 
@@ -51,11 +55,11 @@ function mergeToml(existing: string, port: number): string {
 
 function buildPromptFile(): string {
   return `---
-description: ${JSON.stringify(TRIGGER_DESCRIPTION)}
+description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 argument-hint: command arguments
 ---
 
-${TRIGGER_BODY}`;
+${COMMAND_BODY}`;
 }
 
 export const codexAdapter: ToolAdapter = {
@@ -80,7 +84,8 @@ export const codexAdapter: ToolAdapter = {
     }
   },
 
-  async installTrigger(scope): Promise<OperationResult> {
+  async installCommand(scope): Promise<OperationResult> {
+    // Codex prompts/ directory IS the slash command mechanism, user-only.
     const filePath = path.join(os.homedir(), '.codex', 'prompts', `${TRIGGER_NAME}.md`);
     const isDegraded = scope === 'project';
     const effectiveScope: Scope = 'user';
@@ -92,7 +97,7 @@ export const codexAdapter: ToolAdapter = {
         path: filePath,
         message: isDegraded
           ? 'Codex only supports user-level prompts; installed at user scope instead.'
-          : 'Trigger prompt installed',
+          : 'Slash command (prompt) installed',
       };
     } catch (e) {
       return {
@@ -102,4 +107,5 @@ export const codexAdapter: ToolAdapter = {
       };
     }
   },
+  // No installSkill: Codex has no separate skill mechanism distinct from prompts.
 };

@@ -2,16 +2,20 @@ import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult } from '../types';
 import { writeFileEnsuringDir, readJsonOrDefault } from '../adapter-helpers';
-import { TRIGGER_NAME, TRIGGER_DESCRIPTION, TRIGGER_BODY } from '../trigger-content';
+import {
+  TRIGGER_NAME,
+  COMMAND_DESCRIPTION,
+  COMMAND_BODY,
+} from '../trigger-content';
 
 const MCP_SERVER_NAME = 'pointer';
 
 function buildCommandFile(): string {
   return `---
-description: ${JSON.stringify(TRIGGER_DESCRIPTION)}
+description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${TRIGGER_BODY}`;
+${COMMAND_BODY}`;
 }
 
 function userConfigPath(): string {
@@ -53,15 +57,16 @@ export const opencodeAdapter: ToolAdapter = {
     }
   },
 
-  async installTrigger(scope): Promise<OperationResult> {
+  async installCommand(scope): Promise<OperationResult> {
     const filePath = scope === 'user'
       ? path.join(os.homedir(), '.config', 'opencode', 'commands', `${TRIGGER_NAME}.md`)
       : path.join(process.cwd(), '.opencode', 'commands', `${TRIGGER_NAME}.md`);
     try {
       await writeFileEnsuringDir(filePath, buildCommandFile());
-      return { status: 'success', scope, path: filePath, message: 'Trigger command installed' };
+      return { status: 'success', scope, path: filePath, message: 'Slash command installed' };
     } catch (e) {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
     }
   },
+  // No installSkill: OpenCode has no separate skill mechanism distinct from commands.
 };

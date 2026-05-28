@@ -2,15 +2,21 @@ import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult, Scope } from '../types';
 import { writeFileEnsuringDir, readTextOrEmpty, readJsonOrDefault } from '../adapter-helpers';
-import { TRIGGER_NAME, TRIGGER_DESCRIPTION, TRIGGER_BODY } from '../trigger-content';
+import {
+  TRIGGER_NAME,
+  COMMAND_DESCRIPTION,
+  COMMAND_BODY,
+  SKILL_DESCRIPTION,
+  SKILL_BODY,
+} from '../trigger-content';
 
 const MCP_SERVER_NAME = 'pointer';
-const RULE_BEGIN = '<!-- BEGIN mcp-pointer trigger -->';
-const RULE_END = '<!-- END mcp-pointer trigger -->';
+const RULE_BEGIN = '<!-- BEGIN mcp-pointer skill -->';
+const RULE_END = '<!-- END mcp-pointer skill -->';
 
 function buildRuleSection(): string {
   return `${RULE_BEGIN}
-${TRIGGER_BODY}
+${SKILL_BODY}
 ${RULE_END}`;
 }
 
@@ -41,6 +47,14 @@ function buildMcpConfig(port: number, existingMcpServers: Record<string, unknown
   };
 }
 
+function buildWorkflowFile(): string {
+  return `---
+description: ${JSON.stringify(COMMAND_DESCRIPTION)}
+---
+
+${COMMAND_BODY}`;
+}
+
 export const windsurfAdapter: ToolAdapter = {
   toolId: 'windsurf',
   displayName: 'Windsurf',
@@ -68,7 +82,23 @@ export const windsurfAdapter: ToolAdapter = {
     }
   },
 
-  async installTrigger(scope): Promise<OperationResult> {
+  async installCommand(scope): Promise<OperationResult> {
+    // Windsurf "workflows" are slash commands
+    const base = scope === 'user'
+      ? path.join(os.homedir(), '.codeium', 'windsurf')
+      : path.join(process.cwd(), '.windsurf');
+    const filePath = path.join(base, 'workflows', `${TRIGGER_NAME}.md`);
+    try {
+      await writeFileEnsuringDir(filePath, buildWorkflowFile());
+      return {
+        status: 'success', scope, path: filePath, message: 'Slash command (workflow) installed',
+      };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
+    }
+  },
+
+  async installSkill(scope): Promise<OperationResult> {
     try {
       if (scope === 'user') {
         const filePath = path.join(os.homedir(), '.codeium', 'windsurf', 'global_rules.md');
@@ -76,17 +106,17 @@ export const windsurfAdapter: ToolAdapter = {
         await writeFileEnsuringDir(filePath, mergeGlobalRules(existing));
         return {
           status: 'success', scope, path: filePath,
-          message: 'Trigger rule appended to global_rules.md',
+          message: 'Skill rule appended to global_rules.md',
         };
       }
       const filePath = path.join(process.cwd(), '.windsurf', 'rules', `${TRIGGER_NAME}.md`);
       const ruleFile = `---
-description: ${JSON.stringify(TRIGGER_DESCRIPTION)}
+description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${TRIGGER_BODY}`;
+${SKILL_BODY}`;
       await writeFileEnsuringDir(filePath, ruleFile);
-      return { status: 'success', scope, path: filePath, message: 'Trigger rule installed' };
+      return { status: 'success', scope, path: filePath, message: 'Skill rule installed' };
     } catch (e) {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
     }

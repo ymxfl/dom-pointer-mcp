@@ -17,5 +17,6 @@ export interface ToolAdapter {
   toolId: ToolId;
   displayName: string;
   registerMcp(scope: Scope, port: number): Promise<OperationResult>;
-  installTrigger(scope: Scope): Promise<OperationResult>;
+  installCommand(scope: Scope): Promise<OperationResult>;
+  installSkill?(scope: Scope): Promise<OperationResult>;
 }

@@ -93,10 +93,19 @@ export default async function configCommand(
 
   const mcpResult = await adapter.registerMcp(scope, port);
   printResult('MCP server', mcpResult);
-  const triggerResult = await adapter.installTrigger(scope);
-  printResult('Trigger', triggerResult);
+  const commandResult = await adapter.installCommand(scope);
+  printResult('Slash command', commandResult);
 
-  if (mcpResult.status === 'failed' || triggerResult.status === 'failed') {
+  let skillResult: OperationResult | null = null;
+  if (adapter.installSkill) {
+    skillResult = await adapter.installSkill(scope);
+    printResult('Skill', skillResult);
+  }
+
+  const failed = mcpResult.status === 'failed'
+    || commandResult.status === 'failed'
+    || (skillResult !== null && skillResult.status === 'failed');
+  if (failed) {
     process.exit(1);
   }
 }
