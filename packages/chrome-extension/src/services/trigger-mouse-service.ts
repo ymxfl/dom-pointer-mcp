@@ -15,12 +15,21 @@ export default class TriggerClickService {
     this.onClick = onClick;
 
     this.handleMouseOver = throttle(this.handleMouseOver.bind(this), 40);
-    this.handleClick = this.handleClick.bind(this);
+    this.handlePointerDown = this.handlePointerDown.bind(this);
+    this.suppressEvent = this.suppressEvent.bind(this);
   }
 
   registerListeners(): void {
     document.addEventListener('mouseover', this.handleMouseOver);
-    document.addEventListener('click', this.handleClick, true);
+    // pointerdown drives the selection callback. It fires before click,
+    // and (unlike click) is not suppressed by Chrome on :disabled form
+    // controls when pointer-events: auto is applied.
+    document.addEventListener('pointerdown', this.handlePointerDown, true);
+    // Suppress the follow-up events so the page's default action (navigation,
+    // form submit, onClick handler) never runs.
+    document.addEventListener('mousedown', this.suppressEvent, true);
+    document.addEventListener('mouseup', this.suppressEvent, true);
+    document.addEventListener('click', this.suppressEvent, true);
 
     // Simulate a hover event at registration time
     const currentElement = this.getElementUnderCursor();
@@ -31,19 +40,25 @@ export default class TriggerClickService {
 
   unregisterListeners(): void {
     document.removeEventListener('mouseover', this.handleMouseOver);
-    document.removeEventListener('click', this.handleClick, true);
+    document.removeEventListener('pointerdown', this.handlePointerDown, true);
+    document.removeEventListener('mousedown', this.suppressEvent, true);
+    document.removeEventListener('mouseup', this.suppressEvent, true);
+    document.removeEventListener('click', this.suppressEvent, true);
   }
 
   private handleMouseOver(event: MouseEvent): void {
     this.onHover(event.target as HTMLElement);
   }
 
-  private handleClick(event: MouseEvent): void {
-    // Stop the event from reaching any other handlers
+  private handlePointerDown(event: PointerEvent): void {
     event.stopImmediatePropagation();
     event.preventDefault();
-
     this.onClick(event.target as HTMLElement);
+  }
+
+  private suppressEvent(event: Event): void {
+    event.stopImmediatePropagation();
+    event.preventDefault();
   }
 
   private getElementUnderCursor() {
