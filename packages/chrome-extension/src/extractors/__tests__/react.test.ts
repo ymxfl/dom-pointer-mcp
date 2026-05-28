@@ -44,4 +44,38 @@ describe('extractReact', () => {
     expect(result?.name).toBe('MyComp');
     expect(result?.sourceFile).toBeUndefined();
   });
+
+  it('walks fiber.return through string-type fibers to find component ancestor', () => {
+    // <code> inside <p> inside <header> inside <div> inside <App>
+    const appFiber = { type: { displayName: 'App' } };
+    const divFiber = { type: 'div', return: appFiber };
+    const headerFiber = { type: 'header', return: divFiber };
+    const pFiber = { type: 'p', return: headerFiber };
+    const codeFiber = { type: 'code', return: pFiber };
+    const el = makeElementWithFiber(codeFiber);
+    expect(extractReact(el)).toEqual({ name: 'App', framework: 'react' });
+  });
+
+  it('returns undefined when no component fiber found in return chain', () => {
+    // All HTML element fibers, no component ancestor
+    const rootFiber = { type: 'div', return: null };
+    const childFiber = { type: 'span', return: rootFiber };
+    const el = makeElementWithFiber(childFiber);
+    expect(extractReact(el)).toBeUndefined();
+  });
+
+  it('reads _debugSource from the component fiber, not the element fiber', () => {
+    // Source info lives on the component fiber, not the intermediate HTML fibers
+    const appFiber = {
+      type: { displayName: 'App' },
+      _debugSource: { fileName: '/src/App.tsx', lineNumber: 7 },
+    };
+    const codeFiber = { type: 'code', return: appFiber };
+    const el = makeElementWithFiber(codeFiber);
+    expect(extractReact(el)).toEqual({
+      name: 'App',
+      framework: 'react',
+      sourceFile: 'App.tsx:7',
+    });
+  });
 });
