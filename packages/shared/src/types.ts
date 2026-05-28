@@ -58,16 +58,16 @@ export interface TargetedElement {
 // Raw data from browser (minimal, fail-safe)
 export interface RawPointedDOMElement {
   // Core data (mandatory)
-  outerHTML: string; // Element's HTML serialization
-  url: string; // Page URL
-  timestamp: number; // Unix timestamp
+  outerHTML: string;
+  url: string;
+  timestamp: number;
 
   // Position data (optional but highly recommended)
-  boundingClientRect?: DOMRect; // Position/size
+  boundingClientRect?: DOMRect;
 
   // Optional enhanced data
-  computedStyles?: Record<string, string>; // Full CSS if configured
-  reactFiber?: any; // React internals if available
+  computedStyles?: Record<string, string>;
+  componentInfo?: ComponentInfo;
 }
 
 // Pointer message types between extension and MCP server
