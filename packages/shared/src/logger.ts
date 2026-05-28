@@ -13,6 +13,25 @@ interface LoggerOptions {
   level?: LogLevel;
 }
 
+// In Node (MCP stdio server), stdout is reserved for JSON-RPC traffic.
+// Any other bytes on stdout corrupt the protocol and the MCP client
+// drops the server. Detect Node by the presence of process.stderr and
+// route every log line through stderr there. In the browser, fall back
+// to the standard console.* methods.
+const IS_NODE_WITH_STDERR = typeof process !== 'undefined'
+  && typeof (process as any).stderr?.write === 'function';
+
+function formatArg(arg: any): string {
+  if (arg instanceof Error) return arg.stack || arg.message;
+  if (typeof arg === 'string') return arg;
+  try { return JSON.stringify(arg); } catch { return String(arg); }
+}
+
+function writeToStderr(message: string, args: any[]): void {
+  const extras = args.length > 0 ? ` ${args.map(formatArg).join(' ')}` : '';
+  (process as any).stderr.write(`${message}${extras}\n`);
+}
+
 // Simple logger utility with log levels
 export class Logger {
   private enabled: boolean = true;
@@ -45,6 +64,11 @@ export class Logger {
 
   private log(level: LogLevel, message: string, ...args: any[]): void {
     if (!this.enabled || level < this.level) {
+      return;
+    }
+
+    if (IS_NODE_WITH_STDERR) {
+      writeToStderr(message, args);
       return;
     }
 
