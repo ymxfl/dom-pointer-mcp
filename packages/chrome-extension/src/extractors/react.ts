@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentExtractor } from './types';
 
 export function extractReact(element: HTMLElement): ComponentInfo | undefined {
   const fiberKey = Object.keys(element).find((k) => k.startsWith('__reactFiber$')
@@ -20,3 +21,8 @@ export function extractReact(element: HTMLElement): ComponentInfo | undefined {
 
   return info;
 }
+
+export const reactExtractor: ComponentExtractor = {
+  framework: 'react',
+  extract: extractReact,
+};

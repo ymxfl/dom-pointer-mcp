@@ -7,6 +7,7 @@
  * accessing them triggers getters / dependency collection / side effects.
  */
 import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentExtractor } from './types';
 
 export function extractVue(element: HTMLElement): ComponentInfo | undefined {
   const vue3 = (element as any).__vueParentComponent;
@@ -21,6 +22,11 @@ export function extractVue(element: HTMLElement): ComponentInfo | undefined {
 
   return undefined;
 }
+
+export const vueExtractor: ComponentExtractor = {
+  framework: 'vue',
+  extract: extractVue,
+};
 
 function fromVue3(instance: any): ComponentInfo | undefined {
   const type = instance?.type;

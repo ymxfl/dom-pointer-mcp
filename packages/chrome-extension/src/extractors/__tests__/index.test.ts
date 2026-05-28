@@ -1,6 +1,17 @@
 import { extractComponentInfo } from '../index';
+import logger from '../../utils/logger';
 
 describe('extractComponentInfo orchestrator', () => {
+  let loggerErrorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    loggerErrorSpy.mockRestore();
+  });
+
   it('returns Vue info when element has __vueParentComponent (Vue tried before React)', () => {
     const el = document.createElement('div');
     (el as any).__vueParentComponent = { type: { name: 'V' } };
@@ -19,7 +30,10 @@ describe('extractComponentInfo orchestrator', () => {
       get() { throw new Error('boom'); },
     });
     (el as any).__reactFiber$x = { type: { displayName: 'Fallback' } };
-    expect(() => extractComponentInfo(el)).not.toThrow();
-    expect(extractComponentInfo(el)).toEqual({ name: 'Fallback', framework: 'react' });
+
+    let result: ReturnType<typeof extractComponentInfo>;
+    expect(() => { result = extractComponentInfo(el); }).not.toThrow();
+    expect(result!).toEqual({ name: 'Fallback', framework: 'react' });
+    expect(loggerErrorSpy).toHaveBeenCalled();
   });
 });
