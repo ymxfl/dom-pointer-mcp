@@ -5,6 +5,12 @@ interface TriggerClickServiceParams {
   onClick: (element: HTMLElement) => void;
 }
 
+const PANEL_SELECTOR = '.mcp-pointer__note-panel';
+
+function isInsidePanel(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(PANEL_SELECTOR) !== null;
+}
+
 export default class TriggerClickService {
   private onHover: (element: HTMLElement) => void;
 
@@ -21,17 +27,11 @@ export default class TriggerClickService {
 
   registerListeners(): void {
     document.addEventListener('mouseover', this.handleMouseOver);
-    // pointerdown drives the selection callback. It fires before click,
-    // and (unlike click) is not suppressed by Chrome on :disabled form
-    // controls when pointer-events: auto is applied.
     document.addEventListener('pointerdown', this.handlePointerDown, true);
-    // Suppress the follow-up events so the page's default action (navigation,
-    // form submit, onClick handler) never runs.
     document.addEventListener('mousedown', this.suppressEvent, true);
     document.addEventListener('mouseup', this.suppressEvent, true);
     document.addEventListener('click', this.suppressEvent, true);
 
-    // Simulate a hover event at registration time
     const currentElement = this.getElementUnderCursor();
     if (currentElement) {
       this.onHover(currentElement as HTMLElement);
@@ -47,22 +47,25 @@ export default class TriggerClickService {
   }
 
   private handleMouseOver(event: MouseEvent): void {
+    if (isInsidePanel(event.target)) return;
     this.onHover(event.target as HTMLElement);
   }
 
   private handlePointerDown(event: PointerEvent): void {
+    if (isInsidePanel(event.target)) return;
     event.stopImmediatePropagation();
     event.preventDefault();
     this.onClick(event.target as HTMLElement);
   }
 
   private suppressEvent(event: Event): void {
+    if (isInsidePanel(event.target)) return;
     event.stopImmediatePropagation();
     event.preventDefault();
   }
 
   private getElementUnderCursor() {
     const hovered = document.querySelectorAll(':hover');
-    return hovered[hovered.length - 1]; // deepest element
+    return hovered[hovered.length - 1];
   }
 }

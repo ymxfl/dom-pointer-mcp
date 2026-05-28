@@ -1,8 +1,10 @@
-import { RawPointedDOMElement } from '@mcp-pointer/shared/types';
+import { RawPointedSelection } from '@mcp-pointer/shared/types';
 import logger from '../utils/logger';
 import TriggerMouseService from './trigger-mouse-service';
 import TriggerKeyService from './trigger-key-service';
-import OverlayManagerService, { OverlayType } from './overlay-manager-service';
+import OverlayManagerService from './overlay-manager-service';
+import SelectionStoreService from './selection-store-service';
+import NotePanelService from './note-panel-service';
 import { extractRawPointedDOMElement } from '../utils/element';
 
 const POINTING_CLASS = 'mcp-pointer--is-pointing';
@@ -14,11 +16,14 @@ export default class ElementPointerService {
 
   private overlayManagerService: OverlayManagerService;
 
+  private store: SelectionStoreService;
+
+  // eslint-disable-next-line no-unused-vars
+  private notePanel: NotePanelService;
+
   private pointing: boolean = false;
 
   private hoveredElement: HTMLElement | null = null;
-
-  private pointedElement: HTMLElement | null = null;
 
   constructor() {
     this.triggerKeyService = new TriggerKeyService({
@@ -30,103 +35,101 @@ export default class ElementPointerService {
       onClick: this.onClick.bind(this),
     });
     this.overlayManagerService = new OverlayManagerService();
+    this.store = new SelectionStoreService();
+    this.notePanel = new NotePanelService(
+      this.store,
+      (els, note) => this.sendSelection(els, note),
+    );
+    this.store.subscribe(this.syncOverlays.bind(this));
   }
 
   private onHover(target: HTMLElement): void {
     if (this.hoveredElement === target) return;
 
-    if (this.pointedElement === target) {
-      this.overlayManagerService.clearOverlay(OverlayType.HOVER);
+    if (this.store.getAll().includes(target)) {
+      this.overlayManagerService.clearHover();
       this.hoveredElement = null;
     } else {
-      this.overlayManagerService.overlay(OverlayType.HOVER, target);
+      this.overlayManagerService.overlayHover(target);
       this.hoveredElement = target;
     }
   }
 
   private onClick(target: HTMLElement): void {
     logger.debug('🎯 Option+click detected on:', target);
+    this.store.toggle(target);
+  }
 
-    if (this.pointedElement === target) {
-      this.overlayManagerService.clearOverlay(OverlayType.SELECTION);
-      this.overlayManagerService.overlay(OverlayType.HOVER, target);
-
-      this.pointedElement = null;
-      this.hoveredElement = target;
-    } else {
-      this.overlayManagerService.overlay(OverlayType.SELECTION, target);
-      this.overlayManagerService.clearOverlay(OverlayType.HOVER);
-
-      this.pointedElement = target;
+  private syncOverlays(elements: HTMLElement[]): void {
+    const current = this.overlayManagerService.getSelectionElements();
+    current.filter((e) => !elements.includes(e))
+      .forEach((e) => this.overlayManagerService.clearSelection(e));
+    elements.filter((e) => !current.includes(e))
+      .forEach((e) => this.overlayManagerService.overlaySelection(e));
+    if (this.hoveredElement && elements.includes(this.hoveredElement)) {
+      this.overlayManagerService.clearHover();
       this.hoveredElement = null;
-
-      this.sendToBackground(target);
     }
   }
 
   public enable(): void {
     this.triggerKeyService.registerListeners();
-
     logger.info('✅ Element pointer enabled');
   }
 
   public disable(): void {
-    this.overlayManagerService.clearOverlay(OverlayType.HOVER);
-    this.overlayManagerService.clearOverlay(OverlayType.SELECTION);
-    this.pointedElement = null;
+    this.overlayManagerService.clearHover();
+    this.overlayManagerService.clearAllSelections();
+    this.store.clear();
     this.hoveredElement = null;
-
     this.triggerKeyService.unregisterListeners();
-
     logger.info('⏸️ Element pointer disabled');
   }
 
   private startPointing(): void {
     if (this.pointing) return;
-
     this.triggerMouseService.registerListeners();
-
-    // document cursor pointer
     document.body.classList.add(POINTING_CLASS);
-
     this.pointing = true;
     logger.debug('Pointing started');
   }
 
   private stopPointing(): void {
     if (!this.pointing) return;
-
     this.triggerMouseService.unregisterListeners();
-    this.overlayManagerService.clearOverlay(OverlayType.HOVER);
-
-    // document cursor pointer
+    this.overlayManagerService.clearHover();
     document.body.classList.remove(POINTING_CLASS);
-
     this.pointing = false;
     logger.debug('Pointing stopped');
   }
 
-  private async sendToBackground(target: HTMLElement): Promise<void> {
-    logger.info('📤 Sending target to background:', target);
+  private async sendSelection(elements: HTMLElement[], note: string): Promise<void> {
+    logger.info(`📤 Sending selection (${elements.length} elements) to background`);
 
-    const raw = await extractRawPointedDOMElement(target);
+    const rawElements = await Promise.all(
+      elements.map((el) => extractRawPointedDOMElement(el)),
+    );
+    const payload: RawPointedSelection = {
+      url: window.location.href,
+      timestamp: Date.now(),
+      userNote: note,
+      elements: rawElements,
+    };
 
-    // Race protection: user may have clicked another element while awaiting
-    if (this.pointedElement !== target) {
-      logger.debug('🚫 Discarding stale extraction (user clicked another element)');
-      return;
-    }
-
-    // Send directly to background script (isolated world has chrome.runtime access)
-    chrome.runtime.sendMessage({
-      type: 'DOM_ELEMENT_POINTED',
-      data: raw as RawPointedDOMElement,
-    }, (response: any) => {
-      if (chrome.runtime.lastError) {
-        logger.error('❌ Error sending to background:', chrome.runtime.lastError);
-      } else {
-        logger.debug('✅ Element sent successfully:', response);
-      }
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(
+        { type: 'SELECTION_SENT', data: payload },
+        (response: any) => {
+          if (chrome.runtime.lastError) {
+            const msg = chrome.runtime.lastError.message || 'unknown error';
+            logger.error('❌ Error sending selection:', msg);
+            reject(new Error(msg));
+          } else {
+            logger.debug('✅ Selection sent successfully:', response);
+            resolve();
+          }
+        },
+      );
     });
   }
 }
