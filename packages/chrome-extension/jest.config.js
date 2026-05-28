@@ -6,13 +6,6 @@ export default {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       useESM: true,
-      tsconfig: {
-        module: 'esnext',
-        target: 'es2020',
-        moduleResolution: 'bundler',
-        esModuleInterop: true,
-        strict: true,
-      },
     }],
   },
   moduleNameMapper: {
