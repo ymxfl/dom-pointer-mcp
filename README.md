@@ -22,7 +22,7 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 - 🎯 **`Option+Click` Selection** - Simply hold `Option` (Alt on Windows) and click any element
 - 📋 **Complete Element Data** - Text content, CSS classes, HTML attributes, positioning, and styling
 - 💡 **Dynamic Context Control** - Request visible-only text, suppress text entirely, or dial CSS detail from none → full computed styles per MCP call
-- ⚛️ **React Component Detection** - Component names and source files via Fiber (experimental)
+- ⚛️ **Component Detection** - React / Vue component names and source files via runtime introspection (experimental)
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
 - 🤖 **MCP Compatible** - Works with Claude Code and other MCP-enabled AI tools
 
@@ -41,6 +41,8 @@ See MCP Pointer in action: `Option+Click` any element in your browser, then ask 
 [![Install from Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Install-blue?style=for-the-badge&logo=google-chrome)](https://chromewebstore.google.com/detail/mcp-pointer/jfhgaembhafbffidedhpkmnaajdfeiok)
 
 Simply click the link above to install from the Chrome Web Store.
+
+> **⚠️ Version Compatibility:** The Chrome extension and the MCP server are released in lockstep. When upgrading, please update both to the same version to avoid wire-format mismatches.
 
 <details>
 <summary>Alternative: Manual Installation</summary>
@@ -119,7 +121,7 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 
 - **Basic Info**: Tag name, ID, classes, text content
 - **CSS Properties**: Display, position, colors, dimensions
-- **Component Info**: React component names and source files (experimental)  
+- **Component Info**: React / Vue component names and source files (experimental)
 - **Attributes**: All HTML attributes
 - **Position**: Exact coordinates and dimensions
 - **Source Hints**: File paths and component origins
@@ -127,8 +129,8 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 ## 🔍 Framework Support
 
 - ⚛️ **React** - Component names and source files via Fiber (experimental)
+- 🟢 **Vue 2 / Vue 3** - Component names and source files via runtime instance (experimental; Vue gives filename only, no line numbers)
 - 📦 **Generic HTML/CSS/JS** - Full support for any web content
-- 🔮 **Planned** - Vue component detection (PRs appreciated)
 
 ## 🌐 Browser Support
 
@@ -168,8 +170,8 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
    - Separate MCP tool for direct visual content retrieval
 
 ### 3. **Enhanced Framework Support**
-   - Vue.js component detection
    - Better React support (React 19 removed `_debugSource`, affecting source mapping in dev builds)
+   - Svelte / Solid component detection
 
 ### 4. **Multi Select**
    - Having the ability to select multiple DOM elements
