@@ -8,7 +8,7 @@
     "build": "pnpm -r run build",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "test": "cd packages/server && pnpm test",
+    "test": "pnpm -r --filter='./packages/*' run --if-present test",
     "typecheck": "tsc --noEmit",
     "changeset": "changeset",
     "version": "changeset version",

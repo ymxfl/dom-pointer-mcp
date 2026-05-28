@@ -10,6 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "clean-dev": "rm -rf dev",
+    "test": "jest",
     "typecheck": "tsc --noEmit src/*.ts",
     "bump-manifest": "node scripts/bump-manifest.js",
     "build": "pnpm clean && esbuild src/background.ts src/content.ts src/popup.ts src/styles.css src/popup.css src/manifest.json src/popup.html src/*.png --bundle --outdir=dist --outbase=src --format=iife --platform=browser --target=chrome100 --minify --define:IS_DEV=false --loader:.css=copy --loader:.html=copy --loader:.json=copy --loader:.png=copy",
@@ -17,7 +18,11 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.1.4",
+    "@types/jest": "^30.0.0",
     "esbuild": "catalog:",
+    "jest": "^30.1.3",
+    "jest-environment-jsdom": "^30.1.3",
+    "ts-jest": "^29.4.1",
     "typescript": "catalog:"
   },
   "dependencies": {
