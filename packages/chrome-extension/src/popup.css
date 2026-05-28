@@ -181,3 +181,51 @@ body {
 .status.visible {
   display: block;
 }
+
+.server-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  background: #f5f5f5;
+  font-size: 13px;
+}
+
+.server-status.reachable {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.server-status.unreachable {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.server-status.checking {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.status-text {
+  flex: 1;
+}
+
+.btn-recheck {
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-recheck:hover:not(:disabled) {
+  background: #fafafa;
+}
+
+.btn-recheck:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
