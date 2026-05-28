@@ -321,3 +321,107 @@
   }
 }
 
+
+/* Note panel: floating composer for batched selections */
+.mcp-pointer__note-panel {
+  width: 360px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.mcp-pointer__note-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.mcp-pointer__note-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: #e3f2fd;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #1565c0;
+}
+
+.mcp-pointer__note-chip button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #c62828;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.mcp-pointer__note-textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+  background: white;
+}
+
+.mcp-pointer__note-error {
+  color: #c62828;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.mcp-pointer__note-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.mcp-pointer__note-hint {
+  color: #888;
+  font-size: 11px;
+}
+
+.mcp-pointer__note-send {
+  padding: 4px 12px;
+  background: #1976d2;
+  color: white;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mcp-pointer__note-send:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.mcp-pointer__note-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Chip-hover flash animation on the corresponding selection overlay */
+@keyframes mcp-pointer__overlay-flash {
+  0%, 100% { box-shadow: 0 0 0 2px var(--mcp-pointer-border-color); }
+  50% { box-shadow: 0 0 0 6px var(--mcp-pointer-border-color); }
+}
+
+.mcp-pointer__overlay--flashing {
+  animation: mcp-pointer__overlay-flash 0.4s ease-in-out;
+}
