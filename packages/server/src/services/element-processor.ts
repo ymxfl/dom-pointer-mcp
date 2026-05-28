@@ -1,21 +1,56 @@
-import { RawPointedDOMElement, ElementPosition } from '@mcp-pointer/shared/types';
-import { ProcessedPointedDOMElement } from '../types';
+import {
+  RawPointedDOMElement,
+  RawPointedSelection,
+  ElementPosition,
+} from '@mcp-pointer/shared/types';
+import { ProcessedPointedDOMElement, ProcessedPointedSelection } from '../types';
 import { extractFromHTML, generateSelector } from '../utils/dom-extractor';
 import logger from '../logger';
 
 export default class ElementProcessor {
-  processFromRaw(raw: RawPointedDOMElement): ProcessedPointedDOMElement {
+  processBatchFromRaw(raw: RawPointedSelection): ProcessedPointedSelection {
+    return {
+      userNote: raw.userNote,
+      url: raw.url,
+      timestamp: new Date(raw.timestamp).toISOString(),
+      elements: raw.elements.map((el) => this.processSingleRaw(el)),
+    };
+  }
+
+  private processSingleRaw(raw: RawPointedDOMElement): ProcessedPointedDOMElement {
     const { element, warnings } = extractFromHTML(raw.outerHTML);
     const allWarnings: string[] = [...warnings];
 
+    let tagName = 'UNKNOWN';
+    let id: string | undefined;
+    let classes: string[] = [];
+    let attributes: Record<string, string> = {};
+    let innerText = '';
+    let textContent: string | undefined;
+    let selector = 'unknown';
+
+    if (element) {
+      try {
+        tagName = element.tagName || 'UNKNOWN';
+        id = element.id || undefined;
+        classes = element.classList ? Array.from(element.classList.values()) : [];
+        attributes = element.attributes ? this.getAttributes(element) : {};
+        innerText = element.textContent || '';
+        textContent = element.textContent || undefined;
+        selector = generateSelector(element);
+      } catch (err) {
+        allWarnings.push(`Element extraction failed: ${(err as Error).message}`);
+      }
+    }
+
     const processed: ProcessedPointedDOMElement = {
-      tagName: element?.tagName || 'UNKNOWN',
-      id: element?.id || undefined,
-      classes: element ? Array.from(element.classList.values()) : [],
-      attributes: element ? this.getAttributes(element) : {},
-      innerText: element?.textContent || '',
-      textContent: element?.textContent || undefined,
-      selector: element ? generateSelector(element) : 'unknown',
+      tagName,
+      id,
+      classes,
+      attributes,
+      innerText,
+      textContent,
+      selector,
 
       position: this.getPosition(raw.boundingClientRect),
       url: raw.url,

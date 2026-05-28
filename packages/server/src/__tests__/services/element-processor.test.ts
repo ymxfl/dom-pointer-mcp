@@ -1,7 +1,10 @@
-import { RawPointedDOMElement, ComponentInfo } from '@mcp-pointer/shared/types';
+import { RawPointedSelection, ComponentInfo } from '@mcp-pointer/shared/types';
 import ElementProcessor from '../../services/element-processor';
 
-function makeRaw(overrides: Partial<RawPointedDOMElement> = {}): RawPointedDOMElement {
+function singleElementRaw(overrides: Partial<{
+  outerHTML: string;
+  componentInfo?: ComponentInfo;
+}> = {}) {
   return {
     outerHTML: '<div class="x" id="y">hi</div>',
     url: 'https://example.com',
@@ -14,34 +17,51 @@ function makeRaw(overrides: Partial<RawPointedDOMElement> = {}): RawPointedDOMEl
   };
 }
 
-describe('ElementProcessor.processFromRaw', () => {
+function makeBatch(elementCount = 2, userNote = 'note text'): RawPointedSelection {
+  const elements = [];
+  for (let i = 0; i < elementCount; i += 1) {
+    elements.push(singleElementRaw({ outerHTML: `<div id="e${i}">e${i}</div>` }));
+  }
+  return {
+    url: 'https://example.com',
+    timestamp: 1700000000000,
+    userNote,
+    elements,
+  };
+}
+
+describe('ElementProcessor.processBatchFromRaw', () => {
   const processor = new ElementProcessor();
 
-  it('passes through componentInfo when present', () => {
-    const componentInfo: ComponentInfo = { name: 'MyComp', framework: 'react', sourceFile: 'MyComp.tsx:42' };
-    const result = processor.processFromRaw(makeRaw({ componentInfo }));
-    expect(result.componentInfo).toEqual(componentInfo);
+  it('processes 2 elements with shared user note', () => {
+    const result = processor.processBatchFromRaw(makeBatch(2, 'shared note'));
+    expect(result.userNote).toBe('shared note');
+    expect(result.elements).toHaveLength(2);
+    expect(result.elements[0].id).toBe('e0');
+    expect(result.elements[1].id).toBe('e1');
   });
 
-  it('leaves componentInfo undefined when raw has none', () => {
-    const result = processor.processFromRaw(makeRaw());
-    expect(result.componentInfo).toBeUndefined();
+  it('passes through empty userNote', () => {
+    const result = processor.processBatchFromRaw(makeBatch(1, ''));
+    expect(result.userNote).toBe('');
   });
 
-  it('does not affect other fields when componentInfo is present', () => {
-    const componentInfo: ComponentInfo = { name: 'X', framework: 'vue' };
-    const result = processor.processFromRaw(makeRaw({ componentInfo }));
-    expect(result.tagName).toBe('DIV');
-    expect(result.id).toBe('y');
-    expect(result.classes).toEqual(['x']);
-    expect(result.cssComputed).toEqual({ color: 'red' });
-    expect(result.position).toEqual({ x: 1, y: 2, width: 3, height: 4 });
+  it('isolates parse failure to the affected element', () => {
+    const batch = makeBatch(2, 'note');
+    batch.elements[0].outerHTML = '<<<not html>>>';
+    const result = processor.processBatchFromRaw(batch);
+    // Element 0 may have warnings or fallback tagName; second element must be intact
+    expect(result.elements[1].id).toBe('e1');
   });
 
-  it('passes through malformed componentInfo without throwing (trusts browser-side source)', () => {
-    const malformed = { name: 'OnlyName' } as ComponentInfo;
-    expect(() => processor.processFromRaw(makeRaw({ componentInfo: malformed }))).not.toThrow();
-    const result = processor.processFromRaw(makeRaw({ componentInfo: malformed }));
-    expect(result.componentInfo).toEqual(malformed);
+  it('handles empty elements array defensively', () => {
+    const result = processor.processBatchFromRaw({
+      url: 'https://example.com',
+      timestamp: 1700000000000,
+      userNote: 'nothing',
+      elements: [],
+    });
+    expect(result.elements).toEqual([]);
+    expect(result.userNote).toBe('nothing');
   });
 });
