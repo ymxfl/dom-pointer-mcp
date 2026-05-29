@@ -7,6 +7,7 @@ import {
   runNonInteractiveUninstall,
   executeForAgents,
 } from './config/orchestrator';
+import { selectAction } from './config/prompts';
 import type { Scope } from './config/types';
 
 // ============================================================
@@ -54,20 +55,12 @@ export default async function configCommand(
   const port = parseInt(getPort(), 10);
 
   // Interactive flows (no positional tool)
-  if (!tool && !opts.uninstall) {
+  if (!tool) {
     try {
-      const summary = await runInteractiveInstall(port);
-      if (summary.exitCode !== 0) process.exit(summary.exitCode);
-      return;
-    } catch (e) {
-      logger.error(`❌ ${(e as Error).message}`);
-      process.exit(1);
-      return;
-    }
-  }
-  if (!tool && opts.uninstall) {
-    try {
-      const summary = await runInteractiveUninstall();
+      const action = opts.uninstall ? 'uninstall' : await selectAction();
+      const summary = action === 'uninstall'
+        ? await runInteractiveUninstall()
+        : await runInteractiveInstall(port);
       if (summary.exitCode !== 0) process.exit(summary.exitCode);
       return;
     } catch (e) {
