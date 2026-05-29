@@ -61,36 +61,72 @@ git push origin v0.1.0
 packages/
 ├── server/              # @mcp-pointer/server - MCP Server (TypeScript)
 │   ├── src/
-│   │   ├── start.ts      # Main server entry point
-│   │   ├── cli.ts        # Command line interface
-│   │   ├── message-handler.ts  # Message routing & state building
+│   │   ├── start.ts                 # Main server entry point
+│   │   ├── cli.ts                   # Command line interface (commander)
+│   │   ├── commands.ts              # `start` / `config` command wiring
+│   │   ├── config.ts                # Legacy single-tool install entry
+│   │   ├── config/
+│   │   │   ├── adapters/            # One adapter per AI tool
+│   │   │   │   ├── claude.ts
+│   │   │   │   ├── cursor.ts
+│   │   │   │   ├── windsurf.ts
+│   │   │   │   ├── codex.ts         # TOML-based config
+│   │   │   │   ├── opencode.ts
+│   │   │   │   ├── joycode.ts       # user-level prompt.json
+│   │   │   │   └── index.ts         # adapter registry
+│   │   │   ├── orchestrator.ts      # runInteractiveInstall / runInteractiveUninstall / executeForAgents
+│   │   │   ├── prompts.ts           # @inquirer/prompts wrappers
+│   │   │   ├── scope.ts             # resolveScope (user|project) with TTY fallback
+│   │   │   ├── trigger-content.ts   # Single-source slash command / skill body
+│   │   │   ├── adapter-helpers.ts   # JSON/TOML/file helpers incl. fileExists, removeJsonKey
+│   │   │   └── types.ts             # ToolAdapter contract (install + uninstall symmetric)
+│   │   ├── message-handler.ts       # Message routing & state building
 │   │   ├── services/
-│   │   │   ├── websocket-service.ts      # WebSocket with leader election
-│   │   │   ├── mcp-service.ts            # MCP protocol handler
-│   │   │   ├── element-processor.ts      # Raw→Processed conversion
-│   │   │   └── shared-state-service.ts   # State persistence
+│   │   │   ├── websocket-service.ts        # WebSocket with leader election
+│   │   │   ├── mcp-service.ts              # MCP protocol handler
+│   │   │   ├── element-processor.ts        # Raw→Processed conversion
+│   │   │   └── shared-state-service.ts     # Selection-batch state persistence
 │   │   └── utils/
-│   │       ├── dom-extractor.ts    # HTML parsing utilities
-│   │       └── element-detail.ts   # Dynamic CSS/text filtering
-│   ├── dist/
-│   │   └── cli.cjs       # Bundled standalone CLI
+│   │       ├── dom-extractor.ts            # HTML parsing utilities
+│   │       └── element-detail.ts           # Dynamic CSS/text filtering
+│   ├── dist/cli.cjs                        # Bundled standalone CLI
 │   └── package.json
 │
-├── chrome-extension/    # Chrome Extension (TypeScript)
+├── chrome-extension/    # Chrome Extension (TypeScript, MV3)
 │   ├── src/
-│   │   ├── background.ts # Service worker
-│   │   ├── content.ts    # Element selection
-│   │   └── services/
-│   │       └── element-sender-service.ts  # WebSocket client
-│   ├── dev/              # Development build (with logging)
-│   ├── dist/             # Production build (minified)
-│   └── manifest.json
+│   │   ├── background.ts                   # Service worker (routes SELECTION_SENT)
+│   │   ├── content.ts                      # ISOLATED-world entry
+│   │   ├── popup.ts / popup.html / popup.css  # Popup UI with server status
+│   │   ├── isolated-world/
+│   │   │   └── request-component-info.ts   # ISOLATED→MAIN bridge (request side)
+│   │   ├── main-world/
+│   │   │   └── extractor-main.ts           # MAIN-world listener (reads Fiber / Vue instance)
+│   │   ├── extractors/                     # Framework component extractors
+│   │   │   ├── react.ts
+│   │   │   ├── vue.ts
+│   │   │   ├── index.ts                    # orchestrator using ComponentExtractor interface
+│   │   │   └── types.ts
+│   │   ├── services/
+│   │   │   ├── element-pointer-service.ts          # Option+Click capture
+│   │   │   ├── element-sender-service.ts           # WebSocket client
+│   │   │   ├── overlay-manager-service.ts          # Multi-overlay rendering
+│   │   │   ├── selection-store-service.ts          # Ordered multi-select batch
+│   │   │   ├── note-panel-service.ts               # Floating composer (Send / Copy / ×)
+│   │   │   ├── server-reachability-service.ts      # Popup probe
+│   │   │   ├── popup-manager-service.ts
+│   │   │   ├── config-storage-service.ts
+│   │   │   ├── trigger-key-service.ts
+│   │   │   └── trigger-mouse-service.ts
+│   │   ├── styles.css                      # Overlays, chips, note panel, flash
+│   │   └── manifest.json
+│   ├── dev/                                # Development build (with logging + source maps)
+│   └── dist/                               # Production build (minified)
 │
 └── shared/             # @mcp-pointer/shared - Shared TypeScript types
     ├── src/
-    │   ├── logger.ts
-    │   ├── types.ts
-    │   └── detail.ts   # CSS/text detail level constants
+    │   ├── logger.ts                       # Node logs go to stderr (keeps MCP stdout clean)
+    │   ├── types.ts                        # Wire types incl. RawPointedSelection batch + SELECTION_SENT
+    │   └── detail.ts                       # CSS/text detail level constants
     └── package.json
 ```
 
@@ -119,45 +155,6 @@ pnpm install
 ```bash
 # Build all packages
 pnpm build
-```
-
-## 🏗 Project Structure
-
-```
-packages/
-├── server/              # @mcp-pointer/server - MCP Server (TypeScript)
-│   ├── src/
-│   │   ├── start.ts      # Main server entry point
-│   │   ├── cli.ts        # Command line interface
-│   │   ├── message-handler.ts  # Message routing & state building
-│   │   ├── services/
-│   │   │   ├── websocket-service.ts      # WebSocket with leader election
-│   │   │   ├── mcp-service.ts            # MCP protocol handler
-│   │   │   ├── element-processor.ts      # Raw→Processed conversion
-│   │   │   └── shared-state-service.ts   # State persistence
-│   │   └── utils/
-│   │       ├── dom-extractor.ts    # HTML parsing utilities
-│   │       └── element-detail.ts   # Dynamic CSS/text filtering
-│   ├── dist/
-│   │   └── cli.cjs       # Bundled standalone CLI
-│   └── package.json
-│
-├── chrome-extension/    # Chrome Extension (TypeScript)
-│   ├── src/
-│   │   ├── background.ts # Service worker
-│   │   ├── content.ts    # Element selection
-│   │   └── services/
-│   │       └── element-sender-service.ts  # WebSocket client
-│   ├── dev/              # Development build (with logging)
-│   ├── dist/             # Production build (minified)
-│   └── manifest.json
-│
-└── shared/             # @mcp-pointer/shared - Shared TypeScript types
-    ├── src/
-    │   ├── logger.ts
-    │   ├── types.ts
-    │   └── detail.ts   # CSS/text detail level constants
-    └── package.json
 ```
 
 ## 🏗️ System Architecture
@@ -295,7 +292,11 @@ graph TB
 
 3. **Configure for development**:
    ```bash
-   pnpm -C packages/server configure  # Auto-configure Claude Code
+   # Interactive (recommended) — install/uninstall MCP + slash + skill across one or more agents
+   pnpm -C packages/server build && node packages/server/dist/cli.cjs config
+
+   # Or single-agent legacy form
+   node packages/server/dist/cli.cjs config claude --scope project
    ```
 
 ### Development Commands
@@ -327,11 +328,13 @@ Before submitting a PR, ensure:
 
 - [ ] MCP server starts with `mcp-pointer start`
 - [ ] Chrome extension loads without errors
-- [ ] Option+Click highlights elements on webpages
-- [ ] Claude Code shows the `getTargetedElement` tool
-- [ ] Element data appears when using the tool
-- [ ] WebSocket connection indicator shows "Connected"
-- [ ] All existing tests pass
+- [ ] Option+Click highlights elements and stacks into a multi-select batch
+- [ ] Note panel appears with Send / Copy / × buttons
+- [ ] Send (⌘/Ctrl+Enter) ships `{ userNote, elements: [...] }` to the server
+- [ ] Popup shows 🟢 when server is up and 🔴 when it isn't
+- [ ] Claude Code shows the `get-pointed-element` tool and returns the batch
+- [ ] Interactive `config` install + uninstall both work for at least one adapter
+- [ ] All existing tests pass (`pnpm test`)
 - [ ] New functionality is tested
 
 ### Testing Different Scenarios

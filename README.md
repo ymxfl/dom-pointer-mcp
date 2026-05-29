@@ -20,9 +20,13 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 ## ✨ Features
 
 - 🎯 **`Option+Click` Selection** - Simply hold `Option` (Alt on Windows) and click any element
+- 🧺 **Multi-select Batches** - Stack multiple elements into one batch and send them with a shared note
+- 📝 **Floating Note Panel** - Type a free-form instruction next to your selection, then Send or Copy
 - 📋 **Complete Element Data** - Text content, CSS classes, HTML attributes, positioning, and styling
 - 💡 **Dynamic Context Control** - Request visible-only text, suppress text entirely, or dial CSS detail from none → full computed styles per MCP call
-- ⚛️ **Component Detection** - React / Vue component names and source files via runtime introspection (experimental)
+- ⚛️ **Component Detection** - React / Vue 2 / Vue 3 component names and source files via runtime introspection (experimental)
+- 🟢 **Server Status Indicator** - The popup probes the MCP server and tells you instantly when it's not reachable
+- 🛠️ **Interactive Multi-agent Config** - One `config` command installs/uninstalls MCP + slash command + skill across Claude Code, Cursor, Windsurf, Codex, Opencode, Joycode
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
 - 🤖 **MCP Compatible** - Works with Claude Code and other MCP-enabled AI tools
 
@@ -69,32 +73,46 @@ Simply click the link above to install from the Chrome Web Store.
 
 ### 2. Configure MCP Server
 
-One command setup for your AI tool:
+The `config` command installs the MCP server entry, an optional `/pointed` slash command, and (where supported) a skill, into one or more AI tools at once.
+
+**Interactive (recommended):**
 
 ```bash
-npx -y @mcp-pointer/server config claude  # or cursor, windsurf, and others - see below
+npx -y @mcp-pointer/server config
 ```
+
+You'll be walked through:
+
+1. **Action** — Install or Uninstall.
+2. **Agents** — checkbox-pick any combination of: Claude Code, Cursor, Windsurf, Codex, Opencode, Joycode.
+3. **Scope** — `user` (global) or `project` (current directory only).
+4. **Slash command?** — single y/N applied to all selected agents.
+
+Each agent reports `installed` / `degraded` / `skipped` / `failed` per artifact so you can see exactly what landed where.
 
 <details>
-<summary>Other AI Tools & Options</summary>
+<summary>Non-interactive (scripts, CI)</summary>
 
 ```bash
-# For other AI tools
-npx -y @mcp-pointer/server config cursor     # Opens Cursor deeplink for automatic installation
-npx -y @mcp-pointer/server config windsurf   # Automatically updates Windsurf config file
-npx -y @mcp-pointer/server config manual     # Shows manual configuration for other tools
+# Install a single tool (legacy form, still supported)
+npx -y @mcp-pointer/server config claude       # or cursor, windsurf, codex, opencode, joycode
+npx -y @mcp-pointer/server config claude --scope project
+
+# Uninstall (symmetric — removes MCP entry, skill, and slash command)
+npx -y @mcp-pointer/server config --uninstall            # interactive uninstall
+npx -y @mcp-pointer/server config --uninstall claude     # one tool, user scope
+npx -y @mcp-pointer/server config --uninstall claude --scope project
 ```
 
-> **Optional:** You can install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`
+> Project-scope installs live in the cwd they were installed from; uninstall them by `cd`-ing back to that directory and running the project-scope uninstall. The interactive uninstall flow only touches user scope on purpose.
+
+> **Optional:** install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`.
 
 </details>
 
 After configuration, **restart your coding tool** to load the MCP connection.
 
-> **🔄 Already using MCP Pointer?** Run the config command again to update to auto-updating configuration:
-> ```bash
-> npx -y @mcp-pointer/server config <your-tool>  # Reconfigures to always use latest version
-> ```
+> **🔄 Already using MCP Pointer?** Re-run the config command to upgrade to the new incremental MCP registration (v1.0+); your existing `~/.mcp.json` / other agents' configs are merged in place rather than overwritten.
 
 ### 3. Start Using
 
@@ -105,20 +123,22 @@ After configuration, **restart your coding tool** to load the MCP connection.
 Your AI tool will automatically start the MCP server when needed using the `npx -y @mcp-pointer/server@latest start` command.
 
 **Available MCP Tool:**
-- `get-pointed-element` – Returns textual information about the currently pointed DOM element. Optional arguments:
-  - `textDetail`: `0 | 1 | 2` (default `2`) controls how much text to include (`0 = none`, `1 = visible text only`, `2 = visible + hidden`).
-  - `cssLevel`: `0 | 1 | 2 | 3` (default `1`) controls styling detail, from no CSS (0) up to full computed styles (3).
+- `get-pointed-element` – Returns the current selection batch: `{ userNote, url, timestamp, elements: [...] }`. Optional arguments:
+  - `textDetail`: `0 | 1 | 2` (default `2`) controls how much text to include per element (`0 = none`, `1 = visible text only`, `2 = visible + hidden`).
+  - `cssLevel`: `0 | 1 | 2 | 3` (default `1`) controls styling detail per element, from no CSS (0) up to full computed styles (3).
 
 ## 🎯 How It Works
 
 1. **Hold Option (Alt) and click** any element on the page — it becomes selected (highlighted).
 2. *(Optional)* Hold Option and click more elements — multi-select adds them to a batch.
-3. A floating **note panel** appears next to the first selected element with a textarea.
+3. A floating **note panel** appears next to the first selected element with a textarea and three buttons.
 4. Type a description of what you want changed (e.g. "make these buttons primary blue", "in [1] and [2] add a divider").
-5. Press **⌘/Ctrl+Enter** (or click Send) to send the selection + your note to the MCP server.
+5. **Send** (⌘/Ctrl+Enter) ships the selection + your note to the MCP server; **Copy** puts the same payload on your clipboard; **×** dismisses the panel.
 6. Your AI agent calls `get-pointed-element` and receives `{ userNote, url, timestamp, elements: [...] }`.
 
 To cancel a selected element, Option+Click it again or click the × on its chip. The note panel stays visible until **all** selections are cancelled — your typed text is never lost from incidental clicks.
+
+The extension popup probes the configured server on open and shows a 🟢 / 🔴 status indicator, so you find out the server is down *before* you click Send.
 
 > **⚠️ Breaking change in v0.7:** The wire format changed from single-element to batched selection (`{ userNote, elements }`). The Chrome extension and the MCP server must be the **same version**. Agent prompts that consumed the old `get-pointed-element` single-object format need to be updated to handle the new batch structure.
 
@@ -134,9 +154,11 @@ To cancel a selected element, Option+Click it again or click the × on its chip.
 
 ## 🔍 Framework Support
 
-- ⚛️ **React** - Component names and source files via Fiber (experimental)
-- 🟢 **Vue 2 / Vue 3** - Component names and source files via runtime instance (experimental; Vue gives filename only, no line numbers)
+- ⚛️ **React** - Component names and source files via Fiber (experimental). The extractor walks `fiber.return` so wrapper-DOM clicks still resolve to the nearest component ancestor.
+- 🟢 **Vue 2 / Vue 3** - Component names and source files via runtime instance (experimental; Vue gives filename only, no line numbers). Same-version constraint: the page's Vue major version must match what the extractor expects.
 - 📦 **Generic HTML/CSS/JS** - Full support for any web content
+
+Component extraction runs in the page's MAIN world (so it can read React Fiber / Vue internals) and is bridged to the extension's ISOLATED world via a small request/response protocol.
 
 ## 🌐 Browser Support
 
@@ -154,8 +176,14 @@ To cancel a selected element, Option+Click it again or click the × on its chip.
 ### MCP Tools Not Available
 
 1. Restart your AI assistant after installing
-2. Check MCP configuration: `mcp-pointer config <your-tool>`  
+2. Re-run `npx -y @mcp-pointer/server config` and confirm your tool shows `installed` for both MCP and (optionally) the slash command
 3. Verify server is running: `npx -y @mcp-pointer/server@latest start`
+
+### Popup Says "Server unreachable"
+
+1. The popup probes the port shown in its input — confirm it matches the port your server is bound to (default `7007`).
+2. Click **Recheck** after starting the server.
+3. If you changed the port, click **Save** to persist it; the probe re-runs automatically.
 
 ### Elements Not Highlighting
 
