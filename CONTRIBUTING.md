@@ -1,5 +1,7 @@
 # 🤝 Contributing to MCP Pointer
 
+**Languages**: **English** · [简体中文](./CONTRIBUTING.zh-CN.md)
+
 Thank you for your interest in contributing to MCP Pointer! This guide will help you set up your development environment and understand our contribution process.
 
 ## 📋 Prerequisites

@@ -6,6 +6,8 @@
 [![Chrome Extension](https://img.shields.io/github/package-json/v/etsd-tech/mcp-pointer?filename=packages%2Fchrome-extension%2Fpackage.json&label=Chrome-Extension)](https://github.com/etsd-tech/mcp-pointer/releases)
 [![License: MIT](https://img.shields.io/github/license/etsd-tech/mcp-pointer?label=License)](https://github.com/etsd-tech/mcp-pointer/blob/main/LICENSE)
 
+**Languages**: **English** · [简体中文](./README.zh-CN.md)
+
 # 👆 MCP Pointer
 
 **Point to browser DOM elements for agentic coding tools via MCP!**
@@ -26,7 +28,7 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 - 💡 **Dynamic Context Control** - Request visible-only text, suppress text entirely, or dial CSS detail from none → full computed styles per MCP call
 - ⚛️ **Component Detection** - React / Vue 2 / Vue 3 component names and source files via runtime introspection (experimental)
 - 🟢 **Server Status Indicator** - The popup probes the MCP server and tells you instantly when it's not reachable
-- 🛠️ **Interactive Multi-agent Config** - One `config` command installs/uninstalls MCP + slash command + skill across Claude Code, Cursor, Windsurf, Codex, Opencode, Joycode
+- 🛠️ **Interactive Multi-agent Config** - One `config` command installs/uninstalls MCP + slash command + skill across Claude Code, Cursor, Windsurf, Codex, Opencode, JoyCode
 - 🔗 **WebSocket Connection** - Real-time communication between browser and AI tools
 - 🤖 **MCP Compatible** - Works with Claude Code and other MCP-enabled AI tools
 
@@ -84,7 +86,7 @@ npx -y @mcp-pointer/server config
 You'll be walked through:
 
 1. **Action** — Install or Uninstall.
-2. **Agents** — checkbox-pick any combination of: Claude Code, Cursor, Windsurf, Codex, Opencode, Joycode.
+2. **Agents** — checkbox-pick any combination of: Claude Code, Cursor, Windsurf, Codex, Opencode, JoyCode.
 3. **Scope** — `user` (global) or `project` (current directory only).
 4. **Slash command?** — single y/N applied to all selected agents.
 
