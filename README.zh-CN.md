@@ -42,28 +42,19 @@ https://github.com/user-attachments/assets/98c4adf6-1f05-4c9b-be41-0416ab784e2c
 
 ### 1. 安装 Chrome 扩展
 
-**🎉 已上架 Chrome Web Store！**
+从 GitHub Release 下载安装：
 
-[![Install from Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Install-blue?style=for-the-badge&logo=google-chrome)](https://chromewebstore.google.com/detail/dom-pointer-mcp/jfhgaembhafbffidedhpkmnaajdfeiok)
-
-点上面的按钮即可一键安装。
+1. 从 [最新 release](https://github.com/ymxfl/dom-pointer-mcp/releases/latest) 下载 [`dom-pointer-mcp-chrome-extension.zip`](https://github.com/ymxfl/dom-pointer-mcp/releases/latest/download/dom-pointer-mcp-chrome-extension.zip)
+2. 解压到本地任意目录
+3. Chrome → 设置 → 扩展程序 → 开启 **开发者模式**
+4. 点击"加载已解压的扩展程序"，选择解压目录
+5. 工具栏出现 DOM Pointer MCP 图标
+6. **刷新已打开的网页** 让扩展生效
 
 > **⚠️ 版本兼容：** Chrome 扩展和 MCP server 同步发版。升级时请把两边都升到同一个版本，避免协议格式不一致。
 
 <details>
-<summary>替代方案：手动安装</summary>
-
-**方案 A：从 Releases 下载**
-
-1. 打开 [GitHub Releases](https://github.com/ymxfl/dom-pointer-mcp/releases)
-2. 下载最新版的 `dom-pointer-mcp-chrome-extension.zip`
-3. 解压到本地任意目录
-4. Chrome → 设置 → 扩展程序 → 开启 **开发者模式**
-5. 点击"加载已解压的扩展程序"，选择解压目录
-6. 工具栏出现 DOM Pointer MCP 图标
-7. **刷新已打开的网页** 让扩展生效
-
-**方案 B：从源码构建**
+<summary>从源码构建</summary>
 
 1. 克隆本仓库
 2. 按 [CONTRIBUTING.md](./CONTRIBUTING.md) 构建
