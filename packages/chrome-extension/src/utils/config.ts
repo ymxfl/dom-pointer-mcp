@@ -9,6 +9,9 @@ export interface ExtensionConfig {
     enabled: boolean;
     level: LogLevel;
   };
+  behavior: {
+    clearAfterSend: boolean;
+  };
 }
 
 const config: ExtensionConfig = {
@@ -19,6 +22,9 @@ const config: ExtensionConfig = {
   logger: {
     enabled: IS_DEV,
     level: LogLevel.DEBUG,
+  },
+  behavior: {
+    clearAfterSend: true,
   },
 };
 

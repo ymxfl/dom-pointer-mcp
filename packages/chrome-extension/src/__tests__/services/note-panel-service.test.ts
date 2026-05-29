@@ -144,4 +144,21 @@ describe('NotePanelService', () => {
     expect(textarea.value).toBe('keep this note'); // unchanged
     expect(copyBtn.disabled).toBe(false);
   });
+
+  it('Close button clears the store and destroys the panel', () => {
+    const a = document.createElement('div');
+    const b = document.createElement('span');
+    document.body.appendChild(a);
+    document.body.appendChild(b);
+    store.toggle(a);
+    store.toggle(b);
+    expect(document.querySelector(PANEL_SELECTOR)).not.toBeNull();
+
+    const closeBtn = document.querySelector('.mcp-pointer__note-close') as HTMLButtonElement;
+    expect(closeBtn).not.toBeNull();
+    closeBtn.click();
+
+    expect(store.getAll()).toEqual([]);
+    expect(document.querySelector(PANEL_SELECTOR)).toBeNull();
+  });
 });

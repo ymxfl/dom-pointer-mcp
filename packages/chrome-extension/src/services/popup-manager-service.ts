@@ -6,6 +6,8 @@ import { checkReachability, ReachabilityState } from './server-reachability-serv
 export default class PopupManagerService {
   private enabledInput: HTMLInputElement;
 
+  private clearAfterSendInput: HTMLInputElement;
+
   private portInput: HTMLInputElement;
 
   private saveBtn: HTMLButtonElement;
@@ -24,6 +26,7 @@ export default class PopupManagerService {
 
   constructor() {
     this.enabledInput = document.getElementById('enabled') as HTMLInputElement;
+    this.clearAfterSendInput = document.getElementById('clearAfterSend') as HTMLInputElement;
     this.portInput = document.getElementById('port') as HTMLInputElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
@@ -48,6 +51,7 @@ export default class PopupManagerService {
       const config = await ConfigStorageService.load();
 
       this.enabledInput.checked = config.enabled;
+      this.clearAfterSendInput.checked = config.behavior.clearAfterSend;
       this.portInput.value = config.websocket.port.toString();
       this.checkServer();
     } catch (error) {
@@ -72,6 +76,9 @@ export default class PopupManagerService {
         logger: {
           enabled: defaultConfig.logger.enabled,
           level: defaultConfig.logger.level,
+        },
+        behavior: {
+          clearAfterSend: this.clearAfterSendInput.checked,
         },
       };
 

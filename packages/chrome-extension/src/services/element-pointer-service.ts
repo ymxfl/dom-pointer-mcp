@@ -5,6 +5,7 @@ import TriggerKeyService from './trigger-key-service';
 import OverlayManagerService from './overlay-manager-service';
 import SelectionStoreService from './selection-store-service';
 import NotePanelService from './note-panel-service';
+import ConfigStorageService from './config-storage-service';
 import { extractRawPointedDOMElement } from '../utils/element';
 
 const POINTING_CLASS = 'mcp-pointer--is-pointing';
@@ -142,7 +143,7 @@ export default class ElementPointerService {
     assertExtensionContextValid();
     const payload = await this.buildPayload(elements, note);
 
-    return new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       try {
         chrome.runtime.sendMessage(
           { type: 'SELECTION_SENT', data: payload },
@@ -161,6 +162,15 @@ export default class ElementPointerService {
         reject(translateRuntimeError((err as Error).message));
       }
     });
+
+    try {
+      const config = await ConfigStorageService.load();
+      if (config.behavior.clearAfterSend) {
+        this.store.clear();
+      }
+    } catch (err) {
+      logger.warn('Failed to read clearAfterSend setting; leaving selection intact:', err);
+    }
   }
 
   private async buildPayload(elements: HTMLElement[], note: string): Promise<RawPointedSelection> {

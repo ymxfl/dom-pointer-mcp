@@ -21,6 +21,8 @@ export default class NotePanelService {
 
   private copyBtn: HTMLButtonElement | null = null;
 
+  private closeBtn: HTMLButtonElement | null = null;
+
   private errorText: HTMLDivElement | null = null;
 
   private cleanupAutoUpdate: (() => void) | null = null;
@@ -58,6 +60,7 @@ export default class NotePanelService {
     this.root = document.createElement('div');
     this.root.className = PANEL_CLASS;
     this.root.innerHTML = `
+      <button type="button" class="mcp-pointer__note-close" aria-label="Close" title="Clear all selections">×</button>
       <div class="mcp-pointer__note-chips"></div>
       <textarea class="mcp-pointer__note-textarea"
         placeholder="Describe what you want to change..."></textarea>
@@ -74,10 +77,12 @@ export default class NotePanelService {
     this.textarea = this.root.querySelector('textarea');
     this.sendBtn = this.root.querySelector('.mcp-pointer__note-send');
     this.copyBtn = this.root.querySelector('.mcp-pointer__note-copy');
+    this.closeBtn = this.root.querySelector('.mcp-pointer__note-close');
     this.errorText = this.root.querySelector('.mcp-pointer__note-error');
 
     this.sendBtn!.addEventListener('click', () => { void this.handleSend(); });
     this.copyBtn!.addEventListener('click', () => { void this.handleCopy(); });
+    this.closeBtn!.addEventListener('click', () => { this.store.clear(); });
     this.textarea!.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -205,6 +210,7 @@ export default class NotePanelService {
     this.textarea = null;
     this.sendBtn = null;
     this.copyBtn = null;
+    this.closeBtn = null;
     this.errorText = null;
   }
 }

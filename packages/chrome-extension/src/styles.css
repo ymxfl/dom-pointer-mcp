@@ -330,10 +330,32 @@
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   padding: 12px;
+  padding-right: 32px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 13px;
   color: #333;
   box-sizing: border-box;
+}
+
+.mcp-pointer__note-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #888;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.mcp-pointer__note-close:hover {
+  background: #f3f3f3;
+  color: #c62828;
 }
 
 .mcp-pointer__note-chips {
