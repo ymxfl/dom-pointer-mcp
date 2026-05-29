@@ -57,13 +57,14 @@ describe('joycodeAdapter', () => {
   });
 
   describe('installCommand', () => {
-    it('project merges into prompt.json keeping other entries', async () => {
+    it('project merges into <cwd>/.joycode/prompt.json keeping other entries', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify([
         { name: 'someOtherCommand', label: 'Other', prompt: 'x' },
         { name: 'pointerOld', label: 'Old', prompt: 'stale' },
       ]));
       const result = await joycodeAdapter.installCommand('project');
       expect(result.status).toBe('success');
+      expect(result.scope).toBe('project');
       expect(result.path).toBe(path.join(process.cwd(), '.joycode', 'prompt.json'));
       const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
       expect(Array.isArray(written)).toBe(true);
@@ -71,13 +72,18 @@ describe('joycodeAdapter', () => {
       expect(names).toContain('someOtherCommand');
       expect(names).not.toContain('pointerOld');
       expect(names).toContain('pointerPointed');
+      const pointer = written.find((e: any) => e.name === 'pointerPointed');
+      expect(pointer.source).toBe('project');
     });
 
-    it('user degrades to project scope', async () => {
+    it('user writes ~/.joycode/prompt.json with source=user', async () => {
       const result = await joycodeAdapter.installCommand('user');
-      expect(result.status).toBe('degraded');
-      expect(result.scope).toBe('project');
-      expect(result.message).toMatch(/only supports project-level/i);
+      expect(result.status).toBe('success');
+      expect(result.scope).toBe('user');
+      expect(result.path).toBe(path.join(os.homedir(), '.joycode', 'prompt.json'));
+      const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
+      const pointer = written.find((e: any) => e.name === 'pointerPointed');
+      expect(pointer.source).toBe('user');
     });
   });
 
@@ -222,15 +228,16 @@ describe('joycodeAdapter uninstall', () => {
       expect(result.status).toBe('skipped');
     });
 
-    it('user scope returns degraded with project scope, still removes entry from project file', async () => {
+    it('user scope removes pointer-prefixed entries from ~/.joycode/prompt.json', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify([
         { name: 'pointerPointed', label: 'p', prompt: 'x' },
         { name: 'other', label: 'o', prompt: 'y' },
       ]));
       const result = await joycodeAdapter.uninstallCommand('user');
-      expect(result.status).toBe('degraded');
-      expect(result.scope).toBe('project');
-      const expectedPath = path.join(process.cwd(), '.joycode', 'prompt.json');
+      expect(result.status).toBe('success');
+      expect(result.scope).toBe('user');
+      const expectedPath = path.join(os.homedir(), '.joycode', 'prompt.json');
+      expect(result.path).toBe(expectedPath);
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
       const written = JSON.parse(writeCall![1]);
       expect(written.length).toBe(1);

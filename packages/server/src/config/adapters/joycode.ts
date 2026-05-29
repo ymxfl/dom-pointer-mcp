@@ -28,13 +28,13 @@ function pointerEntry(port: number) {
   };
 }
 
-function buildPromptEntry() {
+function buildPromptEntry(scope: Scope) {
   return {
     label: 'pointed',
     name: PROMPT_NAME,
     description: COMMAND_DESCRIPTION,
     prompt: COMMAND_BODY,
-    source: 'project' as const,
+    source: scope,
   };
 }
 
@@ -76,30 +76,27 @@ export const joycodeAdapter: ToolAdapter = {
   },
 
   async installCommand(scope): Promise<OperationResult> {
-    // JoyCode prompt.json entries are slash commands; project-level only.
-    const isDegraded = scope === 'user';
-    const effectiveScope: Scope = 'project';
-    const filePath = path.join(process.cwd(), '.joycode', 'prompt.json');
+    const filePath = scope === 'user'
+      ? path.join(os.homedir(), '.joycode', 'prompt.json')
+      : path.join(process.cwd(), '.joycode', 'prompt.json');
     try {
       const existing = await readJsonOrDefault<any[]>(filePath, []);
       const arr = Array.isArray(existing) ? existing : [];
       const filtered = arr.filter((e) => !(e && typeof e === 'object'
           && typeof (e as any).name === 'string'
           && (e as any).name.startsWith(POINTER_PREFIX)));
-      const next = [...filtered, buildPromptEntry()];
+      const next = [...filtered, buildPromptEntry(scope)];
       await writeFileEnsuringDir(filePath, JSON.stringify(next, null, 2));
       return {
-        status: isDegraded ? 'degraded' : 'success',
-        scope: effectiveScope,
+        status: 'success',
+        scope,
         path: filePath,
-        message: isDegraded
-          ? 'JoyCode only supports project-level prompts; installed at project scope.'
-          : 'Slash command merged into .joycode/prompt.json',
+        message: 'Slash command merged into prompt.json',
       };
     } catch (e) {
       return {
         status: 'failed',
-        scope: effectiveScope,
+        scope,
         message: `Write failed: ${(e as Error).message}`,
       };
     }
@@ -145,12 +142,12 @@ export const joycodeAdapter: ToolAdapter = {
   },
 
   async uninstallCommand(scope): Promise<OperationResult> {
-    const isDegraded = scope === 'user';
-    const effectiveScope: Scope = 'project';
-    const filePath = path.join(process.cwd(), '.joycode', 'prompt.json');
+    const filePath = scope === 'user'
+      ? path.join(os.homedir(), '.joycode', 'prompt.json')
+      : path.join(process.cwd(), '.joycode', 'prompt.json');
     if (!(await fileExists(filePath))) {
       return {
-        status: 'skipped', scope: effectiveScope, path: filePath, message: 'prompt.json not found',
+        status: 'skipped', scope, path: filePath, message: 'prompt.json not found',
       };
     }
     try {
@@ -162,23 +159,21 @@ export const joycodeAdapter: ToolAdapter = {
       if (filtered.length === arr.length) {
         return {
           status: 'skipped',
-          scope: effectiveScope,
+          scope,
           path: filePath,
           message: 'No pointer-prefixed prompts present',
         };
       }
       await writeFileEnsuringDir(filePath, JSON.stringify(filtered, null, 2));
       return {
-        status: isDegraded ? 'degraded' : 'success',
-        scope: effectiveScope,
+        status: 'success',
+        scope,
         path: filePath,
-        message: isDegraded
-          ? 'JoyCode prompts live at project scope; removed there.'
-          : 'pointer-prefixed prompts removed',
+        message: 'pointer-prefixed prompts removed',
       };
     } catch (e) {
       return {
-        status: 'failed', scope: effectiveScope, message: `Edit failed: ${(e as Error).message}`,
+        status: 'failed', scope, message: `Edit failed: ${(e as Error).message}`,
       };
     }
   },
