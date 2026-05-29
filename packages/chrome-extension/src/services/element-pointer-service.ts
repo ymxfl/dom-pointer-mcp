@@ -9,6 +9,38 @@ import { extractRawPointedDOMElement } from '../utils/element';
 
 const POINTING_CLASS = 'mcp-pointer--is-pointing';
 
+const EXTENSION_RELOADED_MESSAGE =
+  'Extension was reloaded or updated. Please refresh this page to reconnect.';
+
+function isExtensionContextValid(): boolean {
+  try {
+    return typeof chrome !== 'undefined'
+      && !!chrome.runtime
+      && typeof chrome.runtime.sendMessage === 'function'
+      // Accessing chrome.runtime.id throws if context invalidated
+      && !!chrome.runtime.id;
+  } catch {
+    return false;
+  }
+}
+
+function assertExtensionContextValid(): void {
+  if (!isExtensionContextValid()) {
+    throw new Error(EXTENSION_RELOADED_MESSAGE);
+  }
+}
+
+function translateRuntimeError(raw: string): Error {
+  if (
+    raw.includes('Extension context invalidated')
+    || raw.includes("Cannot read properties of undefined (reading 'sendMessage')")
+    || raw.includes('chrome.runtime is undefined')
+  ) {
+    return new Error(EXTENSION_RELOADED_MESSAGE);
+  }
+  return new Error(raw);
+}
+
 export default class ElementPointerService {
   private triggerKeyService: TriggerKeyService;
 
@@ -107,22 +139,27 @@ export default class ElementPointerService {
   private async sendSelection(elements: HTMLElement[], note: string): Promise<void> {
     logger.info(`📤 Sending selection (${elements.length} elements) to background`);
 
+    assertExtensionContextValid();
     const payload = await this.buildPayload(elements, note);
 
     return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        { type: 'SELECTION_SENT', data: payload },
-        (response: any) => {
-          if (chrome.runtime.lastError) {
-            const msg = chrome.runtime.lastError.message || 'unknown error';
-            logger.error('❌ Error sending selection:', msg);
-            reject(new Error(msg));
-          } else {
-            logger.debug('✅ Selection sent successfully:', response);
-            resolve();
-          }
-        },
-      );
+      try {
+        chrome.runtime.sendMessage(
+          { type: 'SELECTION_SENT', data: payload },
+          (response: any) => {
+            if (chrome.runtime?.lastError) {
+              const msg = chrome.runtime.lastError.message || 'unknown error';
+              logger.error('❌ Error sending selection:', msg);
+              reject(translateRuntimeError(msg));
+            } else {
+              logger.debug('✅ Selection sent successfully:', response);
+              resolve();
+            }
+          },
+        );
+      } catch (err) {
+        reject(translateRuntimeError((err as Error).message));
+      }
     });
   }
 
