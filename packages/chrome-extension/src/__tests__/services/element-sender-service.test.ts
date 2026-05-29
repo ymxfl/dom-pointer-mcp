@@ -92,4 +92,68 @@ describe('ElementSenderService', () => {
     expect(status).not.toHaveBeenCalledWith(ConnectionStatus.ERROR, expect.anything());
     expect(createdSockets).toHaveLength(1); // no reconnect
   });
+
+  it('retries after a failed first attempt and ends in SENT', async () => {
+    const svc = new ElementSenderService();
+    const status = jest.fn();
+    const promise = svc.sendElement(makeElement(), 7007, status);
+
+    // First attempt: socket opens, send happens, then server closes inside verify window.
+    await flushMicrotasks();
+    const first = createdSockets[0];
+    first.readyState = 1;
+    first.emit('open');
+    await flushMicrotasks();
+    first.emit('close');
+    await flushMicrotasks();
+
+    // Wait the 1s retry interval.
+    jest.advanceTimersByTime(1000);
+    await flushMicrotasks();
+
+    // Second attempt: a fresh socket is created, opens, and stays open through the verify window.
+    expect(createdSockets).toHaveLength(2);
+    const second = createdSockets[1];
+    second.readyState = 1;
+    second.emit('open');
+    await flushMicrotasks();
+    jest.advanceTimersByTime(300);
+    await flushMicrotasks();
+
+    await promise;
+
+    expect(first.send).toHaveBeenCalledTimes(1);
+    expect(second.send).toHaveBeenCalledTimes(1);
+    expect(status).toHaveBeenCalledWith(ConnectionStatus.SENT);
+    expect(status).not.toHaveBeenCalledWith(ConnectionStatus.ERROR, expect.anything());
+  });
+
+  it('reports ERROR with "5 attempts" message after all attempts fail', async () => {
+    const svc = new ElementSenderService();
+    const status = jest.fn();
+    const promise = svc.sendElement(makeElement(), 7007, status);
+
+    for (let i = 0; i < 5; i++) {
+      // Allow the constructor for this attempt.
+      await flushMicrotasks();
+      const sock = createdSockets[i];
+      sock.readyState = 1;
+      sock.emit('open');
+      await flushMicrotasks();
+      sock.emit('close'); // fail inside verify window
+      await flushMicrotasks();
+      if (i < 4) {
+        // Retry interval before next attempt.
+        jest.advanceTimersByTime(1000);
+        await flushMicrotasks();
+      }
+    }
+
+    await promise;
+
+    expect(createdSockets).toHaveLength(5);
+    const lastCall = status.mock.calls[status.mock.calls.length - 1];
+    expect(lastCall[0]).toBe(ConnectionStatus.ERROR);
+    expect(lastCall[1]).toMatch(/5 attempts/);
+  });
 });
