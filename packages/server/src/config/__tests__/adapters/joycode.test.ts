@@ -5,6 +5,8 @@ jest.mock('fs/promises', () => ({
   mkdir: jest.fn().mockResolvedValue(undefined),
   writeFile: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' })),
+  unlink: jest.fn().mockResolvedValue(undefined),
+  access: jest.fn().mockResolvedValue(undefined),
 }));
 
 import fs from 'fs/promises';
@@ -12,11 +14,18 @@ import { joycodeAdapter } from '../../adapters/joycode';
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
 const mockedReadFile = fs.readFile as jest.Mock;
+const mockedUnlink = fs.unlink as jest.Mock;
+const mockedAccess = fs.access as jest.Mock;
 
 beforeEach(() => {
-  mockedWriteFile.mockClear();
-  mockedReadFile.mockClear();
+  mockedWriteFile.mockReset();
+  mockedWriteFile.mockResolvedValue(undefined);
+  mockedReadFile.mockReset();
   mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+  mockedUnlink.mockReset();
+  mockedUnlink.mockResolvedValue(undefined);
+  mockedAccess.mockReset();
+  mockedAccess.mockResolvedValue(undefined);
 });
 
 describe('joycodeAdapter', () => {
@@ -86,6 +95,146 @@ describe('joycodeAdapter', () => {
       const result = await joycodeAdapter.installSkill!('project');
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.joycode', 'skills', 'pointed', 'SKILL.md'));
+    });
+  });
+});
+
+describe('joycodeAdapter uninstall', () => {
+  describe('uninstallSkill', () => {
+    it('user scope unlinks ~/.joycode/skills/pointed/SKILL.md', async () => {
+      const result = await joycodeAdapter.uninstallSkill!('user');
+      expect(result.status).toBe('success');
+      const expected = path.join(os.homedir(), '.joycode', 'skills', 'pointed', 'SKILL.md');
+      expect(result.path).toBe(expected);
+      expect(mockedUnlink).toHaveBeenCalledWith(expected);
+    });
+
+    it('project scope unlinks <cwd>/.joycode/skills/pointed/SKILL.md', async () => {
+      const result = await joycodeAdapter.uninstallSkill!('project');
+      expect(result.status).toBe('success');
+      const expected = path.join(process.cwd(), '.joycode', 'skills', 'pointed', 'SKILL.md');
+      expect(result.path).toBe(expected);
+      expect(mockedUnlink).toHaveBeenCalledWith(expected);
+    });
+
+    it('returns skipped when skill file is missing', async () => {
+      mockedUnlink.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await joycodeAdapter.uninstallSkill!('user');
+      expect(result.status).toBe('skipped');
+    });
+  });
+
+  describe('unregisterMcp', () => {
+    it('user removes mcpServers.pointer from ~/.joycode/joycode-mcp.json, preserves siblings', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify({
+        mcpServers: {
+          'joycode-resources': { command: 'npx', args: ['@joycode-ide/resources-mcp'] },
+          pointer: { command: 'old' },
+        },
+        unrelated: 'keep me',
+      }));
+      const result = await joycodeAdapter.unregisterMcp('user');
+      expect(result.status).toBe('success');
+      const expectedPath = path.join(os.homedir(), '.joycode', 'joycode-mcp.json');
+      expect(result.path).toBe(expectedPath);
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1]);
+      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['joycode-resources'].command).toBe('npx');
+      expect(written.unrelated).toBe('keep me');
+    });
+
+    it('project removes mcpServers.pointer from <cwd>/.joycode/mcp.json', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify({
+        mcpServers: {
+          other: { command: 'node' },
+          pointer: { command: 'old' },
+        },
+      }));
+      const result = await joycodeAdapter.unregisterMcp('project');
+      expect(result.status).toBe('success');
+      const expectedPath = path.join(process.cwd(), '.joycode', 'mcp.json');
+      expect(result.path).toBe(expectedPath);
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
+      const written = JSON.parse(writeCall![1]);
+      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers.other.command).toBe('node');
+    });
+
+    it('returns skipped when the file is missing', async () => {
+      mockedAccess.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
+      mockedReadFile.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await joycodeAdapter.unregisterMcp('user');
+      expect(result.status).toBe('skipped');
+    });
+
+    it('returns skipped when pointer key is absent', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify({
+        mcpServers: { other: { command: 'node' } },
+      }));
+      const result = await joycodeAdapter.unregisterMcp('project');
+      expect(result.status).toBe('skipped');
+    });
+  });
+
+  describe('uninstallCommand', () => {
+    it('project removes pointer-prefixed entries and preserves others', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify([
+        { name: 'pointerPointed', label: 'p', prompt: 'x' },
+        { name: 'other', label: 'o', prompt: 'y' },
+      ]));
+      const result = await joycodeAdapter.uninstallCommand('project');
+      expect(result.status).toBe('success');
+      expect(result.scope).toBe('project');
+      const expectedPath = path.join(process.cwd(), '.joycode', 'prompt.json');
+      expect(result.path).toBe(expectedPath);
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
+      const written = JSON.parse(writeCall![1]);
+      expect(written.length).toBe(1);
+      expect(written[0].name).toBe('other');
+    });
+
+    it('project leaves [] when only pointerPointed entry present', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify([
+        { name: 'pointerPointed', label: 'p', prompt: 'x' },
+      ]));
+      const result = await joycodeAdapter.uninstallCommand('project');
+      expect(result.status).toBe('success');
+      const expectedPath = path.join(process.cwd(), '.joycode', 'prompt.json');
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
+      const written = JSON.parse(writeCall![1]);
+      expect(written).toEqual([]);
+    });
+
+    it('returns skipped when prompt.json is missing', async () => {
+      mockedAccess.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
+      mockedReadFile.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await joycodeAdapter.uninstallCommand('project');
+      expect(result.status).toBe('skipped');
+    });
+
+    it('returns skipped when no pointer-prefixed entry exists', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify([
+        { name: 'other', label: 'o', prompt: 'y' },
+      ]));
+      const result = await joycodeAdapter.uninstallCommand('project');
+      expect(result.status).toBe('skipped');
+    });
+
+    it('user scope returns degraded with project scope, still removes entry from project file', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify([
+        { name: 'pointerPointed', label: 'p', prompt: 'x' },
+        { name: 'other', label: 'o', prompt: 'y' },
+      ]));
+      const result = await joycodeAdapter.uninstallCommand('user');
+      expect(result.status).toBe('degraded');
+      expect(result.scope).toBe('project');
+      const expectedPath = path.join(process.cwd(), '.joycode', 'prompt.json');
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
+      const written = JSON.parse(writeCall![1]);
+      expect(written.length).toBe(1);
+      expect(written[0].name).toBe('other');
     });
   });
 });
