@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/server
 
+## 1.0.2
+
+### Patch Changes
+
+- 57007a6: Fix off-screen note panel for viewport-filling elements, add automatic reconnect-and-retry on send failure, and support ESC to clear the current selection.
+
 ## 1.0.1
 
 ### Changes
