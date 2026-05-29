@@ -161,4 +161,148 @@ describe('NotePanelService', () => {
     expect(store.getAll()).toEqual([]);
     expect(document.querySelector(PANEL_SELECTOR)).toBeNull();
   });
+
+  describe('positioning with virtual anchor', () => {
+    const VIEW_W = 1000;
+    const VIEW_H = 800;
+    const PANEL_W = 280;
+    const PANEL_H = 200;
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: VIEW_W });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: VIEW_H });
+    });
+
+    function stubRect(el: HTMLElement, rect: Partial<DOMRect>) {
+      const full: DOMRect = {
+        x: rect.x ?? rect.left ?? 0,
+        y: rect.y ?? rect.top ?? 0,
+        left: rect.left ?? 0,
+        top: rect.top ?? 0,
+        right: rect.right ?? 0,
+        bottom: rect.bottom ?? 0,
+        width: rect.width ?? ((rect.right ?? 0) - (rect.left ?? 0)),
+        height: rect.height ?? ((rect.bottom ?? 0) - (rect.top ?? 0)),
+        toJSON() { return this; },
+      };
+      // eslint-disable-next-line no-param-reassign
+      el.getBoundingClientRect = () => full;
+    }
+
+    function stubPanelRect(): HTMLElement {
+      const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+      // Track the latest left/top floating-ui assigned via style so the stubbed
+      // rect reflects the panel's current position. jsdom otherwise returns 0x0.
+      panel.getBoundingClientRect = () => {
+        const left = parseFloat(panel.style.left) || 0;
+        const top = parseFloat(panel.style.top) || 0;
+        return {
+          x: left,
+          y: top,
+          left,
+          top,
+          right: left + PANEL_W,
+          bottom: top + PANEL_H,
+          width: PANEL_W,
+          height: PANEL_H,
+          toJSON() { return this; },
+        } as DOMRect;
+      };
+      // floating-ui-dom reads offsetWidth/offsetHeight for floating element
+      // dimensions (see getCssDimensions). jsdom returns 0 for both, so we
+      // must override these as well or shift sees a 0x0 panel and never moves it.
+      Object.defineProperty(panel, 'offsetWidth', { configurable: true, value: PANEL_W });
+      Object.defineProperty(panel, 'offsetHeight', { configurable: true, value: PANEL_H });
+      return panel;
+    }
+
+    async function waitForPositioning(): Promise<void> {
+      // floating-ui's autoUpdate may run multiple async passes; flush a few frames.
+      const raf = () => new Promise<void>((r) => { requestAnimationFrame(() => r()); });
+      const tick = () => new Promise<void>((r) => { setTimeout(r, 0); });
+      for (let i = 0; i < 5; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await raf();
+        // eslint-disable-next-line no-await-in-loop
+        await tick();
+      }
+    }
+
+    it('keeps a realistically-sized panel inside the viewport when anchor fills it', async () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      stubRect(el, {
+        left: 0, top: 0, right: VIEW_W, bottom: VIEW_H, width: VIEW_W, height: VIEW_H,
+      });
+      store.toggle(el);
+      stubPanelRect();
+      await waitForPositioning();
+
+      const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+      const left = parseFloat(panel.style.left);
+      const top = parseFloat(panel.style.top);
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(left + PANEL_W).toBeLessThanOrEqual(VIEW_W);
+      expect(top + PANEL_H).toBeLessThanOrEqual(VIEW_H);
+    });
+
+    it('keeps a realistically-sized panel inside the viewport when anchor extends past it', async () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      // Long body scrolled half-way: extends beyond viewport in both directions.
+      stubRect(el, {
+        left: 0, top: -500, right: VIEW_W, bottom: 2500, width: VIEW_W, height: 3000,
+      });
+      store.toggle(el);
+      stubPanelRect();
+      await waitForPositioning();
+
+      const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+      const left = parseFloat(panel.style.left);
+      const top = parseFloat(panel.style.top);
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(left + PANEL_W).toBeLessThanOrEqual(VIEW_W);
+      expect(top + PANEL_H).toBeLessThanOrEqual(VIEW_H);
+    });
+  });
+
+  describe('ESC closes the selection', () => {
+    it('pressing ESC while panel is mounted clears the store and destroys the panel', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      store.toggle(el);
+      expect(document.querySelector(PANEL_SELECTOR)).not.toBeNull();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+      expect(store.getAll()).toEqual([]);
+      expect(document.querySelector(PANEL_SELECTOR)).toBeNull();
+    });
+
+    it('pressing ESC clears the store even when textarea is focused', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      store.toggle(el);
+
+      const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+      textarea.focus();
+      textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(store.getAll()).toEqual([]);
+    });
+
+    it('removes its ESC listener when the panel is destroyed', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      store.toggle(el); // mount
+      store.toggle(el); // unmount
+
+      const spy = jest.spyOn(store, 'clear');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+  });
 });

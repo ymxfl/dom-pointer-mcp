@@ -4,6 +4,10 @@ import {
 } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
+}
+
 export type StatusCallback = (status: ConnectionStatus, error?: string) => void;
 
 export class ElementSenderService {
@@ -25,40 +29,94 @@ export class ElementSenderService {
 
   private readonly MAX_RETRIES = 10; // Maximum connection retry attempts
 
+  private readonly SEND_RETRY_MAX_ATTEMPTS = 5;
+
+  private readonly SEND_RETRY_INTERVAL = 1000; // 1s between attempts
+
+  private readonly SEND_VERIFY_WINDOW = 300; // 300ms post-send watch for close/error
+
   async sendElement(
     element: RawPointedDOMElement,
     port: number,
     statusCallback?: StatusCallback,
   ): Promise<void> {
-    try {
-      // Clear any existing idle timer
-      this.clearIdleTimer();
+    this.clearIdleTimer();
 
-      // Ensure we have a connection
-      const connected = await this.ensureConnection(port, statusCallback);
-      if (!connected) return;
+    for (let attempt = 0; attempt < this.SEND_RETRY_MAX_ATTEMPTS; attempt += 1) {
+      if (attempt > 0) {
+        this.disconnect();
+        statusCallback?.(ConnectionStatus.CONNECTING);
+        await sleep(this.SEND_RETRY_INTERVAL);
+      }
 
-      // Start idle timer just before sending
-      this.startIdleTimer();
-
-      // Now sending the element
-      statusCallback?.(ConnectionStatus.SENDING);
-
-      const message: PointerMessage = {
-        type: PointerMessageType.SELECTION_SENT,
-        data: element,
-        timestamp: Date.now(),
-      };
-
-      this.ws!.send(JSON.stringify(message));
-      logger.info('📤 Element sent:', element);
-
-      // Successfully sent
-      statusCallback?.(ConnectionStatus.SENT);
-    } catch (error) {
-      logger.error('Failed to send element:', error);
-      statusCallback?.(ConnectionStatus.ERROR, (error as Error).message);
+      const ok = await this.attemptSend(element, port, statusCallback);
+      if (ok) {
+        statusCallback?.(ConnectionStatus.SENT);
+        this.startIdleTimer();
+        return;
+      }
     }
+
+    statusCallback?.(
+      ConnectionStatus.ERROR,
+      `Failed to send after ${this.SEND_RETRY_MAX_ATTEMPTS} attempts`,
+    );
+    this.disconnect();
+  }
+
+  private async attemptSend(
+    element: RawPointedDOMElement,
+    port: number,
+    statusCallback?: StatusCallback,
+  ): Promise<boolean> {
+    const connected = await this.ensureConnection(port, statusCallback);
+    if (!connected) return false;
+
+    statusCallback?.(ConnectionStatus.SENDING);
+
+    const message: PointerMessage = {
+      type: PointerMessageType.SELECTION_SENT,
+      data: element,
+      timestamp: Date.now(),
+    };
+
+    try {
+      this.ws!.send(JSON.stringify(message));
+    } catch (error) {
+      logger.error('Synchronous send failure:', error);
+      return false;
+    }
+
+    logger.info('📤 Element sent:', element);
+
+    return this.verifyDelivery();
+  }
+
+  private verifyDelivery(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const { ws } = this;
+      if (!ws) {
+        resolve(false);
+        return;
+      }
+      let settled = false;
+      let timer: ReturnType<typeof setTimeout>;
+      const settle = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        ws.removeEventListener('close', onClose);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        ws.removeEventListener('error', onError);
+        resolve(ok);
+      };
+      const onClose = () => settle(false);
+      const onError = () => settle(false);
+      ws.addEventListener('close', onClose);
+      ws.addEventListener('error', onError);
+      timer = setTimeout(() => settle(true), this.SEND_VERIFY_WINDOW);
+    });
   }
 
   private handlePortChange(port: number, statusCallback?: StatusCallback): boolean {
