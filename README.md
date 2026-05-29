@@ -42,28 +42,19 @@ See DOM Pointer MCP in action: `Option+Click` any element in your browser, then 
 
 ### 1. Install Chrome Extension
 
-**🎉 Now available on Chrome Web Store!**
+Download and install from the latest GitHub Release:
 
-[![Install from Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Install-blue?style=for-the-badge&logo=google-chrome)](https://chromewebstore.google.com/detail/dom-pointer-mcp/jfhgaembhafbffidedhpkmnaajdfeiok)
-
-Simply click the link above to install from the Chrome Web Store.
+1. Download [`dom-pointer-mcp-chrome-extension.zip`](https://github.com/ymxfl/dom-pointer-mcp/releases/latest/download/dom-pointer-mcp-chrome-extension.zip) from the [latest release](https://github.com/ymxfl/dom-pointer-mcp/releases/latest)
+2. Extract the zip file to a folder on your computer
+3. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
+4. Click "Load unpacked" and select the extracted folder
+5. The DOM Pointer MCP extension should appear in your extensions list
+6. **Reload web pages** to activate the extension
 
 > **⚠️ Version Compatibility:** The Chrome extension and the MCP server are released in lockstep. When upgrading, please update both to the same version to avoid wire-format mismatches.
 
 <details>
-<summary>Alternative: Manual Installation</summary>
-
-**Option A: Download from Releases**
-
-1. Go to [GitHub Releases](https://github.com/ymxfl/dom-pointer-mcp/releases)
-2. Download `dom-pointer-mcp-chrome-extension.zip` from the latest release
-3. Extract the zip file to a folder on your computer
-4. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
-5. Click "Load unpacked" and select the extracted folder
-6. The DOM Pointer MCP extension should appear in your extensions list
-7. **Reload web pages** to activate the extension
-
-**Option B: Build from Source**
+<summary>Build from source instead</summary>
 
 1. Clone this repository
 2. Follow the build instructions in [CONTRIBUTING.md](./CONTRIBUTING.md)
