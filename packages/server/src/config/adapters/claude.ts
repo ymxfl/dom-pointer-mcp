@@ -17,7 +17,7 @@ import {
   SKILL_BODY,
 } from '../trigger-content';
 
-const MCP_SERVER_NAME = 'pointer';
+const MCP_SERVER_NAME = 'dom-pointer';
 
 function buildCommandFile(): string {
   return `---

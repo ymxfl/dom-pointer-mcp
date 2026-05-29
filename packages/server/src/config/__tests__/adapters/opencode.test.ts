@@ -55,8 +55,8 @@ describe('opencodeAdapter', () => {
     expect(result.path).toBe(path.join(process.cwd(), 'opencode.json'));
     const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
     expect(written.mcp.context7).toBeDefined();
-    expect(written.mcp.pointer).toBeDefined();
-    expect(written.mcp.pointer.command).toBeDefined();
+    expect(written.mcp['dom-pointer']).toBeDefined();
+    expect(written.mcp['dom-pointer'].command).toBeDefined();
     expect(written.otherTopLevel.keep).toBe(true);
   });
 });
@@ -95,11 +95,11 @@ describe('opencodeAdapter uninstall', () => {
   });
 
   describe('unregisterMcp', () => {
-    it('user scope removes mcp.pointer, preserves mcp.other and top-level non-mcp keys', async () => {
+    it('user scope removes mcp.dom-pointer, preserves mcp.other and top-level non-mcp keys', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcp: {
           other: { type: 'remote', url: 'x' },
-          pointer: { type: 'local', command: ['old'] },
+          'dom-pointer': { type: 'local', command: ['old'] },
         },
         otherTopLevel: { keep: true },
       }));
@@ -111,7 +111,7 @@ describe('opencodeAdapter uninstall', () => {
       );
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcp.pointer).toBeUndefined();
+      expect(written.mcp['dom-pointer']).toBeUndefined();
       expect(written.mcp.other).toBeDefined();
       expect(written.otherTopLevel.keep).toBe(true);
     });
@@ -134,7 +134,7 @@ describe('opencodeAdapter uninstall', () => {
 
     it('user scope leaves mcp:{} when pointer was the only key (does not unlink)', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
-        mcp: { pointer: { type: 'local', command: ['old'] } },
+        mcp: { 'dom-pointer': { type: 'local', command: ['old'] } },
       }));
       const unlinkMock = fs.unlink as jest.Mock;
       unlinkMock.mockReset();
@@ -151,7 +151,7 @@ describe('opencodeAdapter uninstall', () => {
 
     it('project scope operates on <cwd>/opencode.json', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
-        mcp: { pointer: { type: 'local', command: ['old'] } },
+        mcp: { 'dom-pointer': { type: 'local', command: ['old'] } },
       }));
       const result = await opencodeAdapter.unregisterMcp('project');
       expect(result.status).toBe('success');
