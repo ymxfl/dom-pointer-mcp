@@ -2,8 +2,7 @@
 export const TRIGGER_NAME = 'pointed';
 
 // --- Slash command (打 /pointed 触发) ---
-export const COMMAND_DESCRIPTION =
-  "Fetch the user's currently pointed elements (set in browser via Option+Click) "
+export const COMMAND_DESCRIPTION = "Fetch the user's currently pointed elements (set in browser via Option+Click) "
   + 'and act on their note. Any text after /pointed is treated as a refinement.';
 
 export const COMMAND_BODY = `# /pointed
@@ -31,8 +30,7 @@ or Send before retrying.
 `;
 
 // --- Description-triggered skill (用户随口说话也命中) ---
-export const SKILL_DESCRIPTION =
-  'When the user issues a short request about elements they have selected in the '
+export const SKILL_DESCRIPTION = 'When the user issues a short request about elements they have selected in the '
   + 'browser via Option+Click (e.g. "做一下", "pointed", "改一下选中的", "看看选中的"), '
   + 'IMMEDIATELY call mcp__pointer__get-pointed-element without first asking for '
   + "clarification. The returned payload has userNote (the user's actual request) and "

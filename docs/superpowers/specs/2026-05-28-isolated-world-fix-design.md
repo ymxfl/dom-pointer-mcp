@@ -2,7 +2,7 @@
 
 ## 背景
 
-`docs/superpowers/specs/2026-05-28-vue-support-design.md` 已落地（commit `ab65238`），实现了 React + Vue 2/3 的组件信息提取。但**手测发现 extractor 在真实页面上从未生效过**：`/tmp/mcp-pointer-shared-state.json` 里 `componentInfo` 永远是 `null`。
+`docs/superpowers/specs/2026-05-28-vue-support-design.md` 已落地（commit `ab65238`），实现了 React + Vue 2/3 的组件信息提取。但**手测发现 extractor 在真实页面上从未生效过**：`/tmp/dom-pointer-mcp-shared-state.json` 里 `componentInfo` 永远是 `null`。
 
 ### 根因
 
@@ -71,7 +71,7 @@ sendToBackground(raw)
 | 注入方式 | 声明式 MAIN content script | 比 chrome.scripting.executeScript 简单；不需要新增 `"scripting"` 权限；与现有 manifest 模型一致 |
 | 通信通道 | `CustomEvent` + `dispatchEvent` | Chrome 文档推荐；命名空间事件名天然过滤；payload 直接走 `detail` |
 | 通信模式 | ISOLATED 请求 / MAIN 响应 | 显式可追踪；不依赖事件时序；click 判定逻辑只在 ISOLATED 里写一次 |
-| 跨 world 元素引用 | 临时 `data-mcp-pointer-extract-id` attribute | DOM 节点对象不跨 world，但 attribute 跨 world 可见，是唯一可靠机制 |
+| 跨 world 元素引用 | 临时 `data-dom-pointer-mcp-extract-id` attribute | DOM 节点对象不跨 world，但 attribute 跨 world 可见，是唯一可靠机制 |
 | MAIN script 加载时机 | `run_at: document_start` | 早于 ISOLATED 的 `document_end`，确保 listener 在用户点击前 ready |
 | 已有 extractor 模块 | 0 修改 | 桥接层在它们外面，extractor 纯函数和 16 个单元测试全部继续 work |
 
@@ -128,11 +128,11 @@ packages/chrome-extension/src/
 ### `shared/bridge-events.ts`
 
 ```ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
-export const EXTRACT_REQUEST_EVENT = 'mcp-pointer:extract-request';
-export const EXTRACT_RESPONSE_EVENT = 'mcp-pointer:extract-response';
-export const EXTRACT_ID_ATTR = 'data-mcp-pointer-extract-id';
+export const EXTRACT_REQUEST_EVENT = 'dom-pointer-mcp:extract-request';
+export const EXTRACT_RESPONSE_EVENT = 'dom-pointer-mcp:extract-response';
+export const EXTRACT_ID_ATTR = 'data-dom-pointer-mcp-extract-id';
 export const DEFAULT_TIMEOUT_MS = 100;
 
 export interface ExtractRequestDetail {
@@ -184,7 +184,7 @@ window.addEventListener(EXTRACT_REQUEST_EVENT, (e: Event) => {
 ### `isolated-world/request-component-info.ts`
 
 ```ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import {
   EXTRACT_REQUEST_EVENT,
   EXTRACT_RESPONSE_EVENT,
@@ -231,7 +231,7 @@ export async function requestComponentInfo(
 ### `utils/element.ts`（异步化）
 
 ```ts
-import { RawPointedDOMElement } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
 import { requestComponentInfo } from '../isolated-world/request-component-info';
 
 export function getAllComputedStyles(element: HTMLElement): Record<string, string> {
@@ -328,7 +328,7 @@ private async sendToBackground(target: HTMLElement): Promise<void> {
 ### 临时 attribute 的可观察性
 
 - 100ms 内 setAttribute → removeAttribute
-- 触发页面 MutationObserver。多数业务 JS 不监听 `data-mcp-pointer-*` 这类 attribute
+- 触发页面 MutationObserver。多数业务 JS 不监听 `data-dom-pointer-mcp-*` 这类 attribute
 - 如有页面强制清理 attribute（罕见），querySelector 失败 → 降级
 - 不做额外防护
 
@@ -343,7 +343,7 @@ private async sendToBackground(target: HTMLElement): Promise<void> {
 ### 安全
 
 CustomEvent 是 window-level，页面 JS 也能 listen 和 dispatch：
-- **页面伪造 response**：理论上恶意页面可监听 `extract-request` 然后 dispatch 假 `extract-response`。但 mcp-pointer 是开发工具，extractor 数据只送给用户自己的 agent，无敏感数据可被诱骗。**不防御**。
+- **页面伪造 response**：理论上恶意页面可监听 `extract-request` 然后 dispatch 假 `extract-response`。但 dom-pointer-mcp 是开发工具，extractor 数据只送给用户自己的 agent，无敏感数据可被诱骗。**不防御**。
 - **页面拦截 request**：页面能看到我们发的 requestId 和 attribute，但这些都不是秘密。**不防御**。
 - **结论**：威胁模型与现有 content script 共存于 page DOM 的威胁模型一致，无新增风险。
 
@@ -376,7 +376,7 @@ mock 策略：jsdom 原生支持 CustomEvent + dispatchEvent。`crypto.randomUUI
 
 原 7 条手测继续保留。新增 3 条**专门验证桥接**：
 
-8. **桥接联通性（金标准）**：Vue 3 dev 页面 Option+Click 任意元素 → `cat /tmp/mcp-pointer-shared-state.json | grep componentInfo` → **非 null**，name 是真实组件名
+8. **桥接联通性（金标准）**：Vue 3 dev 页面 Option+Click 任意元素 → `cat /tmp/dom-pointer-mcp-shared-state.json | grep componentInfo` → **非 null**，name 是真实组件名
 9. **快速连点不乱序**：Option+Click 元素 A，立即（<100ms 内）Option+Click 元素 B → 最终 state.json 是 B 的 componentInfo（不是 A 也不是混淆）
 10. **严格 CSP 站点降级**：在 https://github.com 等严格 CSP 站点 Option+Click → 主流程不崩；componentInfo 缺失或 null，其他字段（selector/tagName/cssComputed）正常
 

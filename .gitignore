@@ -6,7 +6,7 @@ dist/
 # TypeScript
 *.tsbuildinfo
 
-# tsc build artifacts in @mcp-pointer/shared (source is .ts only)
+# tsc build artifacts in @dom-pointer-mcp/shared (source is .ts only)
 packages/shared/src/*.js
 packages/shared/src/*.js.map
 packages/shared/src/*.d.ts
@@ -16,7 +16,7 @@ packages/shared/src/*.d.ts.map
 packages/server/src/__tests__/tmp/
 
 # Release artifacts
-mcp-pointer-chrome-extension.zip
+dom-pointer-mcp-chrome-extension.zip
 
 .claude/*.local.md
 # Local IDE / agent state — should not be tracked

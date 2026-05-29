@@ -9,7 +9,7 @@ import {
 
 describe('fileExists', () => {
   it('returns true when file exists', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-exists.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-exists.tmp`);
     await fs.writeFile(p, 'x', 'utf8');
     try {
       await expect(fileExists(p)).resolves.toBe(true);
@@ -19,21 +19,21 @@ describe('fileExists', () => {
   });
 
   it('returns false when file does not exist', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-missing.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-missing.tmp`);
     await expect(fileExists(p)).resolves.toBe(false);
   });
 });
 
 describe('deleteFileIfExists', () => {
   it('returns "deleted" when the file existed', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-del.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-del.tmp`);
     await fs.writeFile(p, 'x', 'utf8');
     await expect(deleteFileIfExists(p)).resolves.toBe('deleted');
     await expect(fileExists(p)).resolves.toBe(false);
   });
 
   it('returns "missing" when the file was absent', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-nope.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-nope.tmp`);
     await expect(deleteFileIfExists(p)).resolves.toBe('missing');
   });
 });

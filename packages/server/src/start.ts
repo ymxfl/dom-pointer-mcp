@@ -30,7 +30,7 @@ function performCleanup(): void {
 }
 
 function gracefulShutdown(): void {
-  logger.info('👆 Shutting down MCP Pointer...');
+  logger.info('👆 Shutting down DOM Pointer MCP...');
   process.exit(0); // Will trigger 'exit' event -> performCleanup()
 }
 
@@ -69,7 +69,7 @@ async function startServices(): Promise<void> {
     // Start MCP service (critical - must succeed)
     await startMCPService();
 
-    logger.info('👆 MCP Pointer started! Ready to point at elements.');
+    logger.info('👆 DOM Pointer MCP started! Ready to point at elements.');
   } catch (error) {
     handleStartupError(error);
   }

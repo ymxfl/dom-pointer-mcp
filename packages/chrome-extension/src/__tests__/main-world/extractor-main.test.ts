@@ -16,14 +16,17 @@ function captureResponse(): Promise<ExtractResponseDetail> {
 }
 
 describe('extractor-main', () => {
-  beforeAll(() => {
-    require('../../main-world/extractor-main');
+  beforeAll(async () => {
+    await import('../../main-world/extractor-main');
   });
 
   it('dispatches response with componentInfo when element found', async () => {
     const el = document.createElement('div');
     el.setAttribute(EXTRACT_ID_ATTR, 'req-1');
-    (el as any).__vueParentComponent = { type: { name: 'Foo' } };
+    Object.defineProperty(el, '__vueParentComponent', {
+      value: { type: { name: 'Foo' } },
+      configurable: true,
+    });
     document.body.appendChild(el);
 
     const responsePromise = captureResponse();

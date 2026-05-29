@@ -2,13 +2,19 @@ import { extractVue } from '../vue';
 
 function makeElementWithVue3(type: any): HTMLElement {
   const el = document.createElement('div');
-  (el as any).__vueParentComponent = { type };
+  Object.defineProperty(el, '__vueParentComponent', {
+    value: { type },
+    configurable: true,
+  });
   return el;
 }
 
 function makeElementWithVue2(options: any): HTMLElement {
   const el = document.createElement('div');
-  (el as any).__vue__ = { $options: options };
+  Object.defineProperty(el, '__vue__', {
+    value: { $options: options },
+    configurable: true,
+  });
   return el;
 }
 

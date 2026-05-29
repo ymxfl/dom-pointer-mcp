@@ -1,4 +1,4 @@
-import { RawPointedSelection } from '@mcp-pointer/shared/types';
+import { RawPointedSelection } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 import TriggerMouseService from './trigger-mouse-service';
 import TriggerKeyService from './trigger-key-service';
@@ -8,10 +8,9 @@ import NotePanelService from './note-panel-service';
 import ConfigStorageService from './config-storage-service';
 import { extractRawPointedDOMElement } from '../utils/element';
 
-const POINTING_CLASS = 'mcp-pointer--is-pointing';
+const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
 
-const EXTENSION_RELOADED_MESSAGE =
-  'Extension was reloaded or updated. Please refresh this page to reconnect.';
+const EXTENSION_RELOADED_MESSAGE = 'Extension was reloaded or updated. Please refresh this page to reconnect.';
 
 function isExtensionContextValid(): boolean {
   try {

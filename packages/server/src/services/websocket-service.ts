@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { PointerMessage } from '@mcp-pointer/shared/types';
+import { PointerMessage } from '@dom-pointer-mcp/shared/types';
 import { config } from '../config';
 import logger from '../logger';
 import { sleep } from '../utils';
@@ -53,7 +53,7 @@ export default class WebSocketService {
         if (error.code === 'EADDRINUSE') {
           if (!announcedFollower) {
             logger.info(
-              `ℹ️  Port ${this.port} is already used by another mcp-pointer instance — `
+              `ℹ️  Port ${this.port} is already used by another dom-pointer-mcp instance — `
               + 'this is fine. MCP requests will be answered from the shared state file. '
               + 'Will take over WebSocket if the current leader exits.',
             );

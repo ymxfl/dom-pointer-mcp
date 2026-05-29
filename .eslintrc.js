@@ -21,8 +21,9 @@ module.exports = {
     'class-methods-use-this': 'off',
     'no-await-in-loop': 'off',
     'import/no-extraneous-dependencies': ['error', {
-      optionalDependencies: ['@mcp-pointer/shared']
+      optionalDependencies: ['@dom-pointer-mcp/shared']
     }],
+    'import/prefer-default-export': 'off',
   },
   overrides: [
     {

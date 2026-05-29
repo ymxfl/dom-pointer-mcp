@@ -39,7 +39,7 @@ ${SKILL_BODY}`;
 function pointerEntry(port: number) {
   return {
     command: 'npx',
-    args: ['-y', '@mcp-pointer/server@latest', 'start'],
+    args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
     env: { MCP_POINTER_PORT: String(port) },
   };
 }
@@ -56,7 +56,7 @@ export const claudeAdapter: ToolAdapter = {
         } catch { /* ignore: not installed */ }
         execSync(
           `claude mcp add ${MCP_SERVER_NAME} -s user --env MCP_POINTER_PORT=${port} `
-          + '-- npx -y @mcp-pointer/server@latest start',
+          + '-- npx -y @dom-pointer-mcp/server@latest start',
           { stdio: 'pipe' },
         );
         return {

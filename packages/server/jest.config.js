@@ -14,6 +14,6 @@ export default {
     }],
   },
   moduleNameMapper: {
-    '^@mcp-pointer/shared/(.*)$': '<rootDir>/../shared/src/$1',
+    '^@dom-pointer-mcp/shared/(.*)$': '<rootDir>/../shared/src/$1',
   },
 };

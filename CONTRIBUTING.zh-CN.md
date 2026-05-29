@@ -1,8 +1,8 @@
-# 🤝 贡献 MCP Pointer
+# 🤝 贡献 DOM Pointer MCP
 
 **Languages**: [English](./CONTRIBUTING.md) · **简体中文**
 
-感谢你想为 MCP Pointer 贡献！本指南会带你搭建开发环境并了解贡献流程。
+感谢你想为 DOM Pointer MCP 贡献！本指南会带你搭建开发环境并了解贡献流程。
 
 ## 📋 前置条件
 
@@ -61,7 +61,7 @@ git push origin v0.1.0
 
 ```
 packages/
-├── server/              # @mcp-pointer/server —— MCP Server（TypeScript）
+├── server/              # @dom-pointer-mcp/server —— MCP Server（TypeScript）
 │   ├── src/
 │   │   ├── start.ts                 # 服务入口
 │   │   ├── cli.ts                   # 命令行入口（commander）
@@ -124,7 +124,7 @@ packages/
 │   ├── dev/                                # 开发构建（带日志 + sourcemap）
 │   └── dist/                               # 生产构建（minified）
 │
-└── shared/             # @mcp-pointer/shared —— 共享 TS 类型
+└── shared/             # @dom-pointer-mcp/shared —— 共享 TS 类型
     ├── src/
     │   ├── logger.ts                       # Node 日志走 stderr（避免污染 MCP stdout）
     │   ├── types.ts                        # 通信类型，含 RawPointedSelection batch + SELECTION_SENT
@@ -138,11 +138,11 @@ packages/
 
 ```bash
 # 在 GitHub 上 fork，然后克隆你的 fork
-git clone https://github.com/etsd-tech/mcp-pointer.git
-cd mcp-pointer
+git clone https://github.com/ymxfl/dom-pointer-mcp.git
+cd dom-pointer-mcp
 
 # 加 upstream
-git remote add upstream https://github.com/etsd-tech/mcp-pointer.git
+git remote add upstream https://github.com/ymxfl/dom-pointer-mcp.git
 ```
 
 ### 2. 安装依赖
@@ -159,7 +159,7 @@ pnpm build
 
 ## 🏗️ 系统架构
 
-MCP Pointer 是分布式架构：多个 server 实例 + leader 选举，提供高可用。
+DOM Pointer MCP 是分布式架构：多个 server 实例 + leader 选举，提供高可用。
 
 ```mermaid
 graph TB
@@ -189,7 +189,7 @@ graph TB
 
     subgraph "Shared Resources"
         PORT[Port 7007<br/>First to bind wins]
-        FS["/tmp/mcp-pointer-shared-state.json"]
+        FS["/tmp/dom-pointer-mcp-shared-state.json"]
     end
 
     subgraph "AI Client"
@@ -222,7 +222,7 @@ graph TB
    - leader 崩溃后约 5 秒内自动故障切换
 
 2. **状态管理**：
-   - Leader 把元素数据写入 `/tmp/mcp-pointer-shared-state.json`
+   - Leader 把元素数据写入 `/tmp/dom-pointer-mcp-shared-state.json`
    - 所有实例（leader / follower）都能读共享状态
    - 任意实例都能服务 MCP 请求
 
@@ -323,7 +323,7 @@ pnpm dev
 
 ### PR 前自查清单
 
-- [ ] `mcp-pointer start` 能启动 MCP server
+- [ ] `dom-pointer-mcp start` 能启动 MCP server
 - [ ] Chrome 扩展加载没有报错
 - [ ] Option+Click 能高亮元素，并叠加成多选 batch
 - [ ] Note panel 出现，含 Send / Copy / × 三个按钮
@@ -452,7 +452,7 @@ UI 改动请贴截图
    - 在扩展页重新加载
 
 3. **WebSocket 连接问题**：
-   - 确认 MCP server 已启动（`mcp-pointer start`）
+   - 确认 MCP server 已启动（`dom-pointer-mcp start`）
    - 7007 端口没被占
    - 浏览器 console 看连接报错
 
@@ -463,7 +463,7 @@ UI 改动请贴截图
 
 ### 求助
 
-- 先看 [GitHub Issues](https://github.com/etsd-tech/mcp-pointer/issues)
+- 先看 [GitHub Issues](https://github.com/ymxfl/dom-pointer-mcp/issues)
 - 新建 issue 请附：
   - 清晰描述
   - 复现步骤
@@ -491,17 +491,17 @@ pnpm changeset
 例：
 ```
 🦋  Which packages would you like to include?
-◉ @mcp-pointer/server
-◉ @mcp-pointer/shared
-◯ @mcp-pointer/chrome-extension
+◉ @dom-pointer-mcp/server
+◉ @dom-pointer-mcp/shared
+◯ @dom-pointer-mcp/chrome-extension
 
 🦋  Which packages should have a major bump?
-◯ @mcp-pointer/server
-◯ @mcp-pointer/shared
+◯ @dom-pointer-mcp/server
+◯ @dom-pointer-mcp/shared
 
 🦋  Which packages should have a minor bump?
-◉ @mcp-pointer/server
-◯ @mcp-pointer/shared
+◉ @dom-pointer-mcp/server
+◯ @dom-pointer-mcp/shared
 
 🦋  Please enter a summary for this change
 Added WebSocket connection retry logic with exponential backoff
@@ -524,7 +524,7 @@ Added WebSocket connection retry logic with exponential backoff
 
 自动化流程会：
 
-- 打 git tag（例如 `@mcp-pointer/server@0.3.1`）
+- 打 git tag（例如 `@dom-pointer-mcp/server@0.3.1`）
 - 带 provenance 发布到 npm
 - 创建 GitHub release 与 changelog
 - 处理 monorepo 版本
@@ -572,10 +572,10 @@ graph LR
 
 ## 📄 许可证
 
-为 MCP Pointer 贡献即表示你同意以 MIT License 授权你的贡献。
+为 DOM Pointer MCP 贡献即表示你同意以 MIT License 授权你的贡献。
 
 ---
 
-**感谢贡献 MCP Pointer！👆**
+**感谢贡献 DOM Pointer MCP！👆**
 
 每一份贡献都让 AI 驱动的 Web 开发更强大、更易用。

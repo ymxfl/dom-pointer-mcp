@@ -3,7 +3,7 @@ import ConfigStorageService from './services/config-storage-service';
 import ElementPointerService from './services/element-pointer-service';
 import logger from './utils/logger';
 
-logger.debug('🌍 MCP Pointer content script loaded');
+logger.debug('🌍 DOM Pointer MCP content script loaded');
 
 let pointer: ElementPointerService | null = null;
 

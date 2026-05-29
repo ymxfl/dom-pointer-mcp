@@ -2,7 +2,7 @@
 
 ## 背景
 
-当前 mcp-pointer 的工作流是 "Option+Click 元素 → 立刻把数据发给 agent"。用户在 agent 那一侧仍需把"我想对这个元素做什么"重新打一遍。这一往返浪费精力，且常常出现"用户描述的元素"和"实际点中的元素"对不上。
+当前 dom-pointer-mcp 的工作流是 "Option+Click 元素 → 立刻把数据发给 agent"。用户在 agent 那一侧仍需把"我想对这个元素做什么"重新打一遍。这一往返浪费精力，且常常出现"用户描述的元素"和"实际点中的元素"对不上。
 
 需求改造工作流为：
 
@@ -21,7 +21,7 @@
 ## 非目标
 
 - 历史发送记录 / 多 session 管理
-- 在 agent 端调用 mcp-pointer 后**双向通知**（agent 修改完了不会反馈给浏览器）
+- 在 agent 端调用 dom-pointer-mcp 后**双向通知**（agent 修改完了不会反馈给浏览器）
 - 单元素描述（已经 N 个选中后"对元素 [3] 单独说一句"——所有 elements 共享同一段 note）
 - 向后兼容旧的 `RawPointedDOMElement` 单元素 wire 格式（同 monorepo 同步发版）
 - 浮动面板的可拖拽 / 可缩放 / 主题切换
@@ -198,8 +198,8 @@ export default class SelectionStoreService {
 ```ts
 import { autoUpdate, computePosition, flip, shift } from '@floating-ui/dom';
 
-const PANEL_CLASS = 'mcp-pointer__note-panel';
-const CHIP_CLASS = 'mcp-pointer__note-chip';
+const PANEL_CLASS = 'dom-pointer-mcp__note-panel';
+const CHIP_CLASS = 'dom-pointer-mcp__note-chip';
 
 export default class NotePanelService {
   private root: HTMLDivElement | null = null;
@@ -239,21 +239,21 @@ export default class NotePanelService {
     this.root = document.createElement('div');
     this.root.className = PANEL_CLASS;
     this.root.innerHTML = `
-      <div class="mcp-pointer__note-chips"></div>
-      <textarea class="mcp-pointer__note-textarea"
+      <div class="dom-pointer-mcp__note-chips"></div>
+      <textarea class="dom-pointer-mcp__note-textarea"
         placeholder="Describe what you want to change..."></textarea>
-      <div class="mcp-pointer__note-error" hidden></div>
-      <div class="mcp-pointer__note-footer">
-        <span class="mcp-pointer__note-hint">⌘/Ctrl+Enter to send</span>
-        <button type="button" class="mcp-pointer__note-send">Send</button>
+      <div class="dom-pointer-mcp__note-error" hidden></div>
+      <div class="dom-pointer-mcp__note-footer">
+        <span class="dom-pointer-mcp__note-hint">⌘/Ctrl+Enter to send</span>
+        <button type="button" class="dom-pointer-mcp__note-send">Send</button>
       </div>
     `;
     document.body.appendChild(this.root);
 
-    this.chipContainer = this.root.querySelector('.mcp-pointer__note-chips')!;
+    this.chipContainer = this.root.querySelector('.dom-pointer-mcp__note-chips')!;
     this.textarea = this.root.querySelector('textarea')!;
-    this.sendBtn = this.root.querySelector('.mcp-pointer__note-send')!;
-    this.errorText = this.root.querySelector('.mcp-pointer__note-error')!;
+    this.sendBtn = this.root.querySelector('.dom-pointer-mcp__note-send')!;
+    this.errorText = this.root.querySelector('.dom-pointer-mcp__note-error')!;
 
     this.sendBtn.addEventListener('click', () => this.handleSend());
     this.textarea.addEventListener('keydown', (e) => {
@@ -295,8 +295,8 @@ export default class NotePanelService {
       chip.querySelector('button')!.addEventListener('click', () => {
         this.store.remove(el);
       });
-      chip.addEventListener('mouseenter', () => el.classList.add('mcp-pointer__overlay--flashing'));
-      chip.addEventListener('mouseleave', () => el.classList.remove('mcp-pointer__overlay--flashing'));
+      chip.addEventListener('mouseenter', () => el.classList.add('dom-pointer-mcp__overlay--flashing'));
+      chip.addEventListener('mouseleave', () => el.classList.remove('dom-pointer-mcp__overlay--flashing'));
       this.chipContainer.appendChild(chip);
     });
   }
@@ -393,7 +393,7 @@ private async sendSelection(elements: HTMLElement[], note: string): Promise<void
 ### `styles.css` 新增
 
 ```css
-.mcp-pointer__note-panel {
+.dom-pointer-mcp__note-panel {
   width: 360px;
   background: white;
   border: 1px solid #ccc;
@@ -405,14 +405,14 @@ private async sendSelection(elements: HTMLElement[], note: string): Promise<void
   color: #333;
 }
 
-.mcp-pointer__note-chips {
+.dom-pointer-mcp__note-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 8px;
 }
 
-.mcp-pointer__note-chip {
+.dom-pointer-mcp__note-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -423,7 +423,7 @@ private async sendSelection(elements: HTMLElement[], note: string): Promise<void
   font-family: monospace;
 }
 
-.mcp-pointer__note-chip button {
+.dom-pointer-mcp__note-chip button {
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -432,7 +432,7 @@ private async sendSelection(elements: HTMLElement[], note: string): Promise<void
   padding: 0 2px;
 }
 
-.mcp-pointer__note-textarea {
+.dom-pointer-mcp__note-textarea {
   width: 100%;
   min-height: 60px;
   resize: vertical;
@@ -444,25 +444,25 @@ private async sendSelection(elements: HTMLElement[], note: string): Promise<void
   border-radius: 4px;
 }
 
-.mcp-pointer__note-error {
+.dom-pointer-mcp__note-error {
   color: #c62828;
   font-size: 12px;
   margin-top: 6px;
 }
 
-.mcp-pointer__note-footer {
+.dom-pointer-mcp__note-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
 }
 
-.mcp-pointer__note-hint {
+.dom-pointer-mcp__note-hint {
   color: #888;
   font-size: 11px;
 }
 
-.mcp-pointer__note-send {
+.dom-pointer-mcp__note-send {
   padding: 4px 12px;
   background: #1976d2;
   color: white;
@@ -472,18 +472,18 @@ private async sendSelection(elements: HTMLElement[], note: string): Promise<void
   font-size: 12px;
 }
 
-.mcp-pointer__note-send:disabled {
+.dom-pointer-mcp__note-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-@keyframes mcp-pointer__overlay-flash {
-  0%, 100% { box-shadow: 0 0 0 2px var(--mcp-pointer-border-color); }
-  50% { box-shadow: 0 0 0 6px var(--mcp-pointer-border-color); }
+@keyframes dom-pointer-mcp__overlay-flash {
+  0%, 100% { box-shadow: 0 0 0 2px var(--dom-pointer-mcp-border-color); }
+  50% { box-shadow: 0 0 0 6px var(--dom-pointer-mcp-border-color); }
 }
 
-.mcp-pointer__overlay--flashing {
-  animation: mcp-pointer__overlay-flash 0.4s ease-in-out;
+.dom-pointer-mcp__overlay--flashing {
+  animation: dom-pointer-mcp__overlay-flash 0.4s ease-in-out;
 }
 ```
 

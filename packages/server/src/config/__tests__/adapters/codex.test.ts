@@ -1,6 +1,9 @@
 import path from 'path';
 import os from 'os';
 
+import fs from 'fs/promises';
+import { codexAdapter } from '../../adapters/codex';
+
 jest.mock('fs/promises', () => ({
   mkdir: jest.fn().mockResolvedValue(undefined),
   writeFile: jest.fn().mockResolvedValue(undefined),
@@ -8,9 +11,6 @@ jest.mock('fs/promises', () => ({
   unlink: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockResolvedValue(undefined),
 }));
-
-import fs from 'fs/promises';
-import { codexAdapter } from '../../adapters/codex';
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
 const mockedReadFile = fs.readFile as jest.Mock;
@@ -125,7 +125,7 @@ describe('codexAdapter uninstall', () => {
       '',
       '[mcp_servers.pointer]',
       'command = "npx"',
-      'args = ["-y", "@mcp-pointer/server@latest", "start"]',
+      'args = ["-y", "@dom-pointer-mcp/server@latest", "start"]',
       '',
       '[mcp_servers.pointer.env]',
       'MCP_POINTER_PORT = "7007"',

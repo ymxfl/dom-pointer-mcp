@@ -1,7 +1,7 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
   RawPointedDOMElement, PointerMessage, PointerMessageType, ConnectionStatus,
-} from '@mcp-pointer/shared/types';
+} from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 
 export type StatusCallback = (status: ConnectionStatus, error?: string) => void;

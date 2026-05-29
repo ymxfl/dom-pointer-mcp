@@ -5,7 +5,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { version } from 'process';
-import { CSS_DETAIL_OPTIONS, TEXT_DETAIL_OPTIONS } from '@mcp-pointer/shared/detail';
+import { CSS_DETAIL_OPTIONS, TEXT_DETAIL_OPTIONS } from '@dom-pointer-mcp/shared/detail';
 import SharedStateService from './shared-state-service';
 import {
   normalizeDetailParameters,
@@ -19,7 +19,7 @@ enum MCPToolName {
 }
 
 enum MCPServerName {
-  MCP_POINTER = 'mcp-pointer',
+  MCP_POINTER = 'dom-pointer-mcp',
 }
 
 export default class MCPService {

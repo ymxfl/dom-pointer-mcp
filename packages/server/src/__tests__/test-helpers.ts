@@ -1,12 +1,12 @@
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { TargetedElement, TextDetailLevel, CSSDetailLevel } from '@mcp-pointer/shared/types';
+import { TargetedElement, TextDetailLevel, CSSDetailLevel } from '@dom-pointer-mcp/shared/types';
 
 // Test constants - use a temp directory that works in Jest
 export const TEST_MCP_POINTER_PORT = 7008;
-export const TEST_TEMP_DIR = path.join(os.tmpdir(), 'mcp-pointer-test');
-export const TEST_SHARED_STATE_PATH = path.join(TEST_TEMP_DIR, 'mcp-pointer-test-shared-state.json');
+export const TEST_TEMP_DIR = path.join(os.tmpdir(), 'dom-pointer-mcp-test');
+export const TEST_SHARED_STATE_PATH = path.join(TEST_TEMP_DIR, 'dom-pointer-mcp-test-shared-state.json');
 
 export async function setupTestDir(): Promise<void> {
   try {

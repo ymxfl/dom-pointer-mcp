@@ -81,14 +81,14 @@ jobs:
       - name: Package Chrome extension for release
         if: steps.changesets.outputs.published == 'true'
         working-directory: packages/chrome-extension/dist
-        run: zip -r ../../../mcp-pointer-chrome-extension.zip .
+        run: zip -r ../../../dom-pointer-mcp-chrome-extension.zip .
 
       - name: Upload Chrome extension to release
         if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          files: mcp-pointer-chrome-extension.zip
+          files: dom-pointer-mcp-chrome-extension.zip
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

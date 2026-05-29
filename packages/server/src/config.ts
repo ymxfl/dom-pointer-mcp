@@ -94,7 +94,7 @@ export default async function configCommand(
     process.exit(1);
     return;
   }
-  logger.info(`🔧 Configuring MCP Pointer for ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
   const summary = await executeForAgents([adapter], {
     mode: 'install', scope, port, withSlash: true,
   });

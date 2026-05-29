@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make `mcp-pointer config` (no args) drop into an interactive flow for multi-agent install/uninstall, while keeping the existing non-interactive form working.
+**Goal:** Make `dom-pointer-mcp config` (no args) drop into an interactive flow for multi-agent install/uninstall, while keeping the existing non-interactive form working.
 
 **Architecture:** Split `config.ts` into a CLI entry, an orchestrator that runs install/uninstall across N adapters, and a `prompts.ts` module that wraps `@inquirer/prompts`. Each adapter gets three new symmetric methods (`unregisterMcp`, `uninstallCommand`, `uninstallSkill?`) and the registry stays untouched.
 
@@ -39,7 +39,7 @@
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server add @inquirer/prompts@^7
+pnpm --filter @dom-pointer-mcp/server add @inquirer/prompts@^7
 ```
 Expected: `package.json` `dependencies` gains `"@inquirer/prompts": "^7.x.y"`, `pnpm-lock.yaml` updates.
 
@@ -47,7 +47,7 @@ Expected: `package.json` `dependencies` gains `"@inquirer/prompts": "^7.x.y"`, `
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server build
+pnpm --filter @dom-pointer-mcp/server build
 ```
 Expected: `packages/server/dist/cli.cjs` regenerates without errors. (`@inquirer/prompts` is bundled by esbuild because `--bundle` is on.)
 
@@ -81,7 +81,7 @@ import {
 
 describe('fileExists', () => {
   it('returns true when file exists', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-exists.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-exists.tmp`);
     await fs.writeFile(p, 'x', 'utf8');
     try {
       await expect(fileExists(p)).resolves.toBe(true);
@@ -91,21 +91,21 @@ describe('fileExists', () => {
   });
 
   it('returns false when file does not exist', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-missing.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-missing.tmp`);
     await expect(fileExists(p)).resolves.toBe(false);
   });
 });
 
 describe('deleteFileIfExists', () => {
   it('returns "deleted" when the file existed', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-del.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-del.tmp`);
     await fs.writeFile(p, 'x', 'utf8');
     await expect(deleteFileIfExists(p)).resolves.toBe('deleted');
     await expect(fileExists(p)).resolves.toBe(false);
   });
 
   it('returns "missing" when the file was absent', async () => {
-    const p = path.join(os.tmpdir(), `mcp-pointer-${Date.now()}-nope.tmp`);
+    const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-nope.tmp`);
     await expect(deleteFileIfExists(p)).resolves.toBe('missing');
   });
 });
@@ -141,7 +141,7 @@ describe('removeJsonKey', () => {
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapter-helpers
+pnpm --filter @dom-pointer-mcp/server test -- adapter-helpers
 ```
 Expected: FAIL — `fileExists`, `deleteFileIfExists`, `removeJsonKey` not exported.
 
@@ -188,7 +188,7 @@ export function removeJsonKey(obj: Record<string, any>, keyPath: string[]): bool
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapter-helpers
+pnpm --filter @dom-pointer-mcp/server test -- adapter-helpers
 ```
 Expected: PASS (all helper tests green).
 
@@ -246,7 +246,7 @@ export interface ToolAdapter {
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server typecheck
+pnpm --filter @dom-pointer-mcp/server typecheck
 ```
 Expected: FAIL — each of the six adapters in `packages/server/src/config/adapters/*.ts` is missing `unregisterMcp` and `uninstallCommand`. This is intentional; the next six tasks fix one adapter each.
 
@@ -384,7 +384,7 @@ jest.mock('fs/promises', () => ({
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/claude
+pnpm --filter @dom-pointer-mcp/server test -- adapters/claude
 ```
 Expected: FAIL — `unregisterMcp`, `uninstallCommand`, `uninstallSkill` are not implemented.
 
@@ -459,7 +459,7 @@ import { fileExists, deleteFileIfExists, removeJsonKey } from '../adapter-helper
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/claude
+pnpm --filter @dom-pointer-mcp/server test -- adapters/claude
 ```
 Expected: PASS — all install + uninstall tests green.
 
@@ -506,7 +506,7 @@ Use `expect(written.mcpServers.pointer).toBeUndefined()` etc.
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/cursor
+pnpm --filter @dom-pointer-mcp/server test -- adapters/cursor
 ```
 Expected: FAIL — methods not implemented.
 
@@ -569,7 +569,7 @@ import { fileExists, deleteFileIfExists, removeJsonKey } from '../adapter-helper
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/cursor
+pnpm --filter @dom-pointer-mcp/server test -- adapters/cursor
 ```
 Expected: PASS.
 
@@ -593,7 +593,7 @@ Windsurf is the most awkward:
 - `unregisterMcp` — user-only file `~/.codeium/windsurf/mcp_config.json`. Remove `mcpServers.pointer`. For `scope='project'`, return `degraded` with same effective behaviour (or skipped if no key present), matching install side's `degraded` story.
 - `uninstallCommand(scope)` — delete the workflow file at user or project path.
 - `uninstallSkill(scope)`:
-  - **user:** strip the `<!-- BEGIN mcp-pointer skill --> … <!-- END mcp-pointer skill -->` block from `~/.codeium/windsurf/global_rules.md`. If the markers aren't found → `skipped`. If after stripping the file is empty/whitespace-only, write back an empty string (do not unlink).
+  - **user:** strip the `<!-- BEGIN dom-pointer-mcp skill --> … <!-- END dom-pointer-mcp skill -->` block from `~/.codeium/windsurf/global_rules.md`. If the markers aren't found → `skipped`. If after stripping the file is empty/whitespace-only, write back an empty string (do not unlink).
   - **project:** delete `<cwd>/.windsurf/rules/pointed.md`.
 
 - [ ] **Step 1: Write failing tests**
@@ -615,7 +615,7 @@ Update `jest.mock('fs/promises', …)` with `unlink` and `access`.
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/windsurf
+pnpm --filter @dom-pointer-mcp/server test -- adapters/windsurf
 ```
 Expected: FAIL — methods not implemented.
 
@@ -699,7 +699,7 @@ Inside `windsurfAdapter`:
         const existing = await readTextOrEmpty(filePath);
         const { changed, next } = stripRuleBlock(existing);
         if (!changed) {
-          return { status: 'skipped', scope, path: filePath, message: 'No mcp-pointer block found' };
+          return { status: 'skipped', scope, path: filePath, message: 'No dom-pointer-mcp block found' };
         }
         await writeFileEnsuringDir(filePath, next);
         return { status: 'success', scope, path: filePath, message: 'Rule block removed from global_rules.md' };
@@ -719,7 +719,7 @@ Inside `windsurfAdapter`:
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/windsurf
+pnpm --filter @dom-pointer-mcp/server test -- adapters/windsurf
 ```
 Expected: PASS.
 
@@ -762,7 +762,7 @@ command = "other"
 
 [mcp_servers.pointer]
 command = "npx"
-args = ["-y", "@mcp-pointer/server@latest", "start"]
+args = ["-y", "@dom-pointer-mcp/server@latest", "start"]
 
 [mcp_servers.pointer.env]
 MCP_POINTER_PORT = "7007"
@@ -780,7 +780,7 @@ Update `jest.mock('fs/promises', …)` with `unlink` and `access`.
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/codex
+pnpm --filter @dom-pointer-mcp/server test -- adapters/codex
 ```
 Expected: FAIL.
 
@@ -862,7 +862,7 @@ import { fileExists, deleteFileIfExists } from '../adapter-helpers';
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/codex
+pnpm --filter @dom-pointer-mcp/server test -- adapters/codex
 ```
 Expected: PASS.
 
@@ -900,7 +900,7 @@ Update fs/promises mock to include `unlink` + `access`.
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/opencode
+pnpm --filter @dom-pointer-mcp/server test -- adapters/opencode
 ```
 Expected: FAIL.
 
@@ -951,7 +951,7 @@ import { fileExists, deleteFileIfExists, removeJsonKey } from '../adapter-helper
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/opencode
+pnpm --filter @dom-pointer-mcp/server test -- adapters/opencode
 ```
 Expected: PASS.
 
@@ -997,7 +997,7 @@ Update fs/promises mock.
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- adapters/joycode
+pnpm --filter @dom-pointer-mcp/server test -- adapters/joycode
 ```
 Expected: FAIL.
 
@@ -1077,8 +1077,8 @@ import { fileExists, deleteFileIfExists, removeJsonKey } from '../adapter-helper
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test
-pnpm --filter @mcp-pointer/server typecheck
+pnpm --filter @dom-pointer-mcp/server test
+pnpm --filter @dom-pointer-mcp/server typecheck
 ```
 Expected: all adapter tests pass; typecheck now passes (all six adapters implement the new interface).
 
@@ -1111,7 +1111,7 @@ function ensureTTY(): void {
   if (!process.stdin.isTTY) {
     throw new Error(
       'Interactive mode requires a TTY. Pass a tool name and --scope explicitly '
-      + '(e.g. `mcp-pointer config claude --scope user`).',
+      + '(e.g. `dom-pointer-mcp config claude --scope user`).',
     );
   }
 }
@@ -1121,8 +1121,8 @@ export async function selectAction(): Promise<Action> {
   return select<Action>({
     message: 'What do you want to do?',
     choices: [
-      { name: 'Install — set up MCP Pointer for one or more agents', value: 'install' },
-      { name: 'Uninstall — remove MCP Pointer from one or more agents', value: 'uninstall' },
+      { name: 'Install — set up DOM Pointer MCP for one or more agents', value: 'install' },
+      { name: 'Uninstall — remove DOM Pointer MCP from one or more agents', value: 'uninstall' },
     ],
   });
 }
@@ -1176,7 +1176,7 @@ export async function confirmUninstall(agentNames: string[]): Promise<boolean> {
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server typecheck
+pnpm --filter @dom-pointer-mcp/server typecheck
 ```
 Expected: PASS.
 
@@ -1265,7 +1265,7 @@ describe('executeForAgents — uninstall', () => {
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- orchestrator
+pnpm --filter @dom-pointer-mcp/server test -- orchestrator
 ```
 Expected: FAIL — `executeForAgents` not exported.
 
@@ -1368,7 +1368,7 @@ export async function runInteractiveUninstall(): Promise<RunSummary> {
   const summary = await executeForAgents(adapters, { mode: 'uninstall', scope: 'user' });
   logger.info('');
   logger.info('💡 To remove project-scope installs, cd into the project and run:');
-  logger.info('   mcp-pointer config --uninstall <tool> --scope project');
+  logger.info('   dom-pointer-mcp config --uninstall <tool> --scope project');
   return summary;
 }
 
@@ -1380,7 +1380,7 @@ export async function runNonInteractiveUninstall(
     logger.error(`❌ Unsupported tool: ${toolId}`);
     return { exitCode: 1 };
   }
-  logger.info(`🗑  Uninstalling MCP Pointer from ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🗑  Uninstalling DOM Pointer MCP from ${adapter.displayName} (${scope} scope)...`);
   return executeForAgents([adapter], { mode: 'uninstall', scope });
 }
 ```
@@ -1389,8 +1389,8 @@ export async function runNonInteractiveUninstall(
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server test -- orchestrator
-pnpm --filter @mcp-pointer/server typecheck
+pnpm --filter @dom-pointer-mcp/server test -- orchestrator
+pnpm --filter @dom-pointer-mcp/server typecheck
 ```
 Expected: PASS.
 
@@ -1482,7 +1482,7 @@ export default async function configCommand(
     process.exit(1);
     return;
   }
-  logger.info(`🔧 Configuring MCP Pointer for ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
   const summary = await executeForAgents([adapter], {
     mode: 'install', scope, port, withSlash: true,
   });
@@ -1499,8 +1499,8 @@ Replace the `config` command registration in `packages/server/src/cli.ts`:
 program
   .command(`${CLICommand.CONFIG} [tool]`)
   .option('--scope <scope>', 'Install scope: user or project (interactive if omitted)')
-  .option('--uninstall', 'Remove MCP Pointer instead of installing')
-  .description('Configure MCP Pointer for AI tools (interactive when no tool is given)')
+  .option('--uninstall', 'Remove DOM Pointer MCP instead of installing')
+  .description('Configure DOM Pointer MCP for AI tools (interactive when no tool is given)')
   .action(configCommand);
 ```
 
@@ -1508,8 +1508,8 @@ program
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server typecheck
-pnpm --filter @mcp-pointer/server test
+pnpm --filter @dom-pointer-mcp/server typecheck
+pnpm --filter @dom-pointer-mcp/server test
 ```
 Expected: all green.
 
@@ -1517,7 +1517,7 @@ Expected: all green.
 
 Run:
 ```bash
-pnpm --filter @mcp-pointer/server build
+pnpm --filter @dom-pointer-mcp/server build
 ```
 Expected: `packages/server/dist/cli.cjs` rebuilt.
 

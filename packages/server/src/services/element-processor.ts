@@ -2,7 +2,7 @@ import {
   RawPointedDOMElement,
   RawPointedSelection,
   ElementPosition,
-} from '@mcp-pointer/shared/types';
+} from '@dom-pointer-mcp/shared/types';
 import { ProcessedPointedDOMElement, ProcessedPointedSelection } from '../types';
 import { extractFromHTML, generateSelector } from '../utils/dom-extractor';
 import logger from '../logger';

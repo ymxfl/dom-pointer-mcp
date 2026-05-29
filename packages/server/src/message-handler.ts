@@ -1,4 +1,4 @@
-import { PointerMessageType, type RawPointedSelection } from '@mcp-pointer/shared/types';
+import { PointerMessageType, type RawPointedSelection } from '@dom-pointer-mcp/shared/types';
 import logger from './logger';
 import ElementProcessor from './services/element-processor';
 import SharedStateService from './services/shared-state-service';

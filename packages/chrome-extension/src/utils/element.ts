@@ -1,4 +1,4 @@
-import { RawPointedDOMElement } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
 import { requestComponentInfo } from '../isolated-world/request-component-info';
 
 export function getAllComputedStyles(element: HTMLElement): Record<string, string> {

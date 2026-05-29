@@ -1,9 +1,9 @@
 {
-  "name": "@mcp-pointer/shared",
+  "name": "@dom-pointer-mcp/shared",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/etsd-tech/mcp-pointer.git",
+    "url": "https://github.com/ymxfl/dom-pointer-mcp.git",
     "directory": "packages/shared"
   },
   "type": "module",

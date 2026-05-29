@@ -1,12 +1,16 @@
+import { executeForAgents } from '../orchestrator';
+import type { ToolAdapter, OperationResult } from '../types';
+
 jest.mock('../../logger', () => ({
   __esModule: true,
   default: { info: jest.fn(), error: jest.fn() },
 }));
 
-import { executeForAgents } from '../orchestrator';
-import type { ToolAdapter, OperationResult } from '../types';
-
-function stub(toolId: any, displayName: string, results: Partial<Record<string, OperationResult>>): ToolAdapter {
+function stub(
+  toolId: any,
+  displayName: string,
+  results: Partial<Record<string, OperationResult>>,
+): ToolAdapter {
   const ok: OperationResult = { status: 'success', message: 'ok' };
   return {
     toolId,

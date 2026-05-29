@@ -6,27 +6,8 @@
  * Never touch proxy / ctx / setupState / refs — those are Reactive Proxies and
  * accessing them triggers getters / dependency collection / side effects.
  */
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import type { ComponentExtractor } from './types';
-
-export function extractVue(element: HTMLElement): ComponentInfo | undefined {
-  const vue3 = (element as any).__vueParentComponent;
-  if (vue3) return fromVue3(vue3);
-
-  let node: HTMLElement | null = element;
-  while (node) {
-    const vue2 = (node as any).__vue__;
-    if (vue2) return fromVue2(vue2);
-    node = node.parentElement;
-  }
-
-  return undefined;
-}
-
-export const vueExtractor: ComponentExtractor = {
-  framework: 'vue',
-  extract: extractVue,
-};
 
 function fromVue3(instance: any): ComponentInfo | undefined {
   const type = instance?.type;
@@ -51,3 +32,22 @@ function fromVue2(instance: any): ComponentInfo | undefined {
   }
   return info;
 }
+
+export function extractVue(element: HTMLElement): ComponentInfo | undefined {
+  const vue3 = (element as any).__vueParentComponent;
+  if (vue3) return fromVue3(vue3);
+
+  let node: HTMLElement | null = element;
+  while (node) {
+    const vue2 = (node as any).__vue__;
+    if (vue2) return fromVue2(vue2);
+    node = node.parentElement;
+  }
+
+  return undefined;
+}
+
+export const vueExtractor: ComponentExtractor = {
+  framework: 'vue',
+  extract: extractVue,
+};

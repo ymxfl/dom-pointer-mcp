@@ -4,7 +4,7 @@
 
 **Goal:** 通过新增 MAIN-world content script 和 CustomEvent 桥接，让 React/Vue extractor 真正能读到页面 expando 属性，从而在生产页面上生效。
 
-**Architecture:** 新增第二个 content script (MAIN world)；ISOLATED 端用 `requestComponentInfo()` 异步函数通过 CustomEvent 请求/响应；临时 `data-mcp-pointer-extract-id` attribute 作为跨 world 元素引用。
+**Architecture:** 新增第二个 content script (MAIN world)；ISOLATED 端用 `requestComponentInfo()` 异步函数通过 CustomEvent 请求/响应；临时 `data-dom-pointer-mcp-extract-id` attribute 作为跨 world 元素引用。
 
 参考 spec: `docs/superpowers/specs/2026-05-28-isolated-world-fix-design.md`
 
@@ -18,11 +18,11 @@
 - [ ] **Step 1: 写文件**
 
 ```ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
-export const EXTRACT_REQUEST_EVENT = 'mcp-pointer:extract-request';
-export const EXTRACT_RESPONSE_EVENT = 'mcp-pointer:extract-response';
-export const EXTRACT_ID_ATTR = 'data-mcp-pointer-extract-id';
+export const EXTRACT_REQUEST_EVENT = 'dom-pointer-mcp:extract-request';
+export const EXTRACT_RESPONSE_EVENT = 'dom-pointer-mcp:extract-response';
+export const EXTRACT_ID_ATTR = 'data-dom-pointer-mcp-extract-id';
 export const DEFAULT_TIMEOUT_MS = 100;
 
 export interface ExtractRequestDetail {
@@ -60,7 +60,7 @@ import {
   ExtractRequestDetail,
   ExtractResponseDetail,
 } from '../../shared/bridge-events';
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import { requestComponentInfo } from '../../isolated-world/request-component-info';
 
 function captureRequest(): Promise<string> {
@@ -165,7 +165,7 @@ Expected: 5 failed, "Cannot find module"
 - [ ] **Step 3: 实现**
 
 ```ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import {
   EXTRACT_REQUEST_EVENT,
   EXTRACT_RESPONSE_EVENT,
@@ -343,7 +343,7 @@ git commit -m "feat: add MAIN-world extractor listener"
 - [ ] **Step 1: 完全重写文件**
 
 ```ts
-import { RawPointedDOMElement } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
 import { requestComponentInfo } from '../isolated-world/request-component-info';
 
 export function getAllComputedStyles(element: HTMLElement): Record<string, string> {
@@ -527,7 +527,7 @@ git commit -m "build: register MAIN-world content script and bump target to chro
 
 - [ ] **Step 1: 重载插件**
 
-在 `chrome://extensions` 找到 MCP Pointer，点刷新图标。
+在 `chrome://extensions` 找到 DOM Pointer MCP，点刷新图标。
 如果加载的是旧路径，先 remove，再 "Load unpacked" `packages/chrome-extension/dist/`。
 
 - [ ] **Step 2: 启动 server**
@@ -546,7 +546,7 @@ cd packages/server && pnpm dev
 - [ ] **Step 5: 验证 state.json**
 
 ```bash
-cat /tmp/mcp-pointer-shared-state.json | python3 -c "
+cat /tmp/dom-pointer-mcp-shared-state.json | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 proc = data['data']['processedPointedDOMElement']

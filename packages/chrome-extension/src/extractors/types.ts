@@ -1,4 +1,4 @@
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
 export interface ComponentExtractor {
   framework: 'react' | 'vue';

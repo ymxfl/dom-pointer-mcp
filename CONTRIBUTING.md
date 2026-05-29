@@ -1,8 +1,8 @@
-# 🤝 Contributing to MCP Pointer
+# 🤝 Contributing to DOM Pointer MCP
 
 **Languages**: **English** · [简体中文](./CONTRIBUTING.zh-CN.md)
 
-Thank you for your interest in contributing to MCP Pointer! This guide will help you set up your development environment and understand our contribution process.
+Thank you for your interest in contributing to DOM Pointer MCP! This guide will help you set up your development environment and understand our contribution process.
 
 ## 📋 Prerequisites
 
@@ -61,7 +61,7 @@ git push origin v0.1.0
 
 ```
 packages/
-├── server/              # @mcp-pointer/server - MCP Server (TypeScript)
+├── server/              # @dom-pointer-mcp/server - MCP Server (TypeScript)
 │   ├── src/
 │   │   ├── start.ts                 # Main server entry point
 │   │   ├── cli.ts                   # Command line interface (commander)
@@ -124,7 +124,7 @@ packages/
 │   ├── dev/                                # Development build (with logging + source maps)
 │   └── dist/                               # Production build (minified)
 │
-└── shared/             # @mcp-pointer/shared - Shared TypeScript types
+└── shared/             # @dom-pointer-mcp/shared - Shared TypeScript types
     ├── src/
     │   ├── logger.ts                       # Node logs go to stderr (keeps MCP stdout clean)
     │   ├── types.ts                        # Wire types incl. RawPointedSelection batch + SELECTION_SENT
@@ -138,11 +138,11 @@ packages/
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/etsd-tech/mcp-pointer.git
-cd mcp-pointer
+git clone https://github.com/ymxfl/dom-pointer-mcp.git
+cd dom-pointer-mcp
 
 # Add upstream remote
-git remote add upstream https://github.com/etsd-tech/mcp-pointer.git
+git remote add upstream https://github.com/ymxfl/dom-pointer-mcp.git
 ```
 
 ### 2. Install Dependencies
@@ -161,7 +161,7 @@ pnpm build
 
 ## 🏗️ System Architecture
 
-MCP Pointer uses a distributed architecture with multiple server instances and leader election for high availability:
+DOM Pointer MCP uses a distributed architecture with multiple server instances and leader election for high availability:
 
 ```mermaid
 graph TB
@@ -191,7 +191,7 @@ graph TB
 
     subgraph "Shared Resources"
         PORT[Port 7007<br/>First to bind wins]
-        FS["/tmp/mcp-pointer-shared-state.json"]
+        FS["/tmp/dom-pointer-mcp-shared-state.json"]
     end
 
     subgraph "AI Client"
@@ -224,7 +224,7 @@ graph TB
    - Automatic failover when leader crashes (~5 second recovery)
 
 2. **State Management:**
-   - Leader instance saves element data to `/tmp/mcp-pointer-shared-state.json`
+   - Leader instance saves element data to `/tmp/dom-pointer-mcp-shared-state.json`
    - All instances (leader and followers) can read shared state
    - MCP requests work on any instance using shared state
 
@@ -328,7 +328,7 @@ pnpm dev
 
 Before submitting a PR, ensure:
 
-- [ ] MCP server starts with `mcp-pointer start`
+- [ ] MCP server starts with `dom-pointer-mcp start`
 - [ ] Chrome extension loads without errors
 - [ ] Option+Click highlights elements and stacks into a multi-select batch
 - [ ] Note panel appears with Send / Copy / × buttons
@@ -457,7 +457,7 @@ Include screenshots for UI changes
    - Reload extension in Chrome Extensions page
 
 3. **WebSocket connection issues**:
-   - Ensure MCP server is running (`mcp-pointer start`)
+   - Ensure MCP server is running (`dom-pointer-mcp start`)
    - Check port 7007 is not blocked
    - Look for connection errors in browser console
 
@@ -468,7 +468,7 @@ Include screenshots for UI changes
 
 ### Getting Help
 
-- Check existing [GitHub Issues](https://github.com/etsd-tech/mcp-pointer/issues)
+- Check existing [GitHub Issues](https://github.com/ymxfl/dom-pointer-mcp/issues)
 - Create a new issue with:
   - Clear description of the problem
   - Steps to reproduce
@@ -496,17 +496,17 @@ This will prompt you to:
 Example changeset session:
 ```
 🦋  Which packages would you like to include?
-◉ @mcp-pointer/server
-◉ @mcp-pointer/shared
-◯ @mcp-pointer/chrome-extension
+◉ @dom-pointer-mcp/server
+◉ @dom-pointer-mcp/shared
+◯ @dom-pointer-mcp/chrome-extension
 
 🦋  Which packages should have a major bump?
-◯ @mcp-pointer/server
-◯ @mcp-pointer/shared
+◯ @dom-pointer-mcp/server
+◯ @dom-pointer-mcp/shared
 
 🦋  Which packages should have a minor bump?  
-◉ @mcp-pointer/server
-◯ @mcp-pointer/shared
+◉ @dom-pointer-mcp/server
+◯ @dom-pointer-mcp/shared
 
 🦋  Please enter a summary for this change
 Added WebSocket connection retry logic with exponential backoff
@@ -528,7 +528,7 @@ Added WebSocket connection retry logic with exponential backoff
 4. **Merge the Version PR** - Packages are published automatically
 
 The automated workflow:
-- Creates git tags (e.g., `@mcp-pointer/server@0.3.1`)  
+- Creates git tags (e.g., `@dom-pointer-mcp/server@0.3.1`)  
 - Publishes to npm with provenance
 - Creates GitHub releases with changelogs
 - Handles monorepo versioning automatically
@@ -576,10 +576,10 @@ Looking for ways to contribute? Here are some ideas:
 
 ## 📄 License
 
-By contributing to MCP Pointer, you agree that your contributions will be licensed under the MIT License.
+By contributing to DOM Pointer MCP, you agree that your contributions will be licensed under the MIT License.
 
 ---
 
-**Thank you for contributing to MCP Pointer! 👆**
+**Thank you for contributing to DOM Pointer MCP! 👆**
 
 Every contribution helps make web development with AI more powerful and accessible.

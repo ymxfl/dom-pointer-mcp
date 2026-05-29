@@ -8,7 +8,7 @@ import type { OperationResult, Scope, ToolAdapter } from './types';
 export interface RunOptions {
   mode: 'install' | 'uninstall';
   scope: Scope;
-  port?: number;       // install only
+  port?: number; // install only
   withSlash?: boolean; // install only
 }
 
@@ -34,7 +34,9 @@ export async function executeForAgents(
 ): Promise<RunSummary> {
   const results: OperationResult[] = [];
 
-  for (const adapter of adapters) {
+  await adapters.reduce(async (previous, adapter) => {
+    await previous;
+
     if (opts.mode === 'install') {
       const mcp = await adapter.registerMcp(opts.scope, opts.port ?? 7007);
       printResult(adapter, 'MCP server', mcp);
@@ -66,7 +68,7 @@ export async function executeForAgents(
       printResult(adapter, 'Slash command', cmd);
       results.push(cmd);
     }
-  }
+  }, Promise.resolve());
 
   const exitCode: 0 | 1 = results.some((r) => r.status === 'failed') ? 1 : 0;
   return { exitCode };
@@ -95,7 +97,7 @@ export async function runInteractiveUninstall(): Promise<RunSummary> {
   const summary = await executeForAgents(adapters, { mode: 'uninstall', scope: 'user' });
   logger.info('');
   logger.info('💡 To remove project-scope installs, cd into the project and run:');
-  logger.info('   mcp-pointer config --uninstall <tool> --scope project');
+  logger.info('   dom-pointer-mcp config --uninstall <tool> --scope project');
   return summary;
 }
 
@@ -108,6 +110,6 @@ export async function runNonInteractiveUninstall(
     logger.error(`❌ Unsupported tool: ${toolId}`);
     return { exitCode: 1 };
   }
-  logger.info(`🗑  Uninstalling MCP Pointer from ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🗑  Uninstalling DOM Pointer MCP from ${adapter.displayName} (${scope} scope)...`);
   return executeForAgents([adapter], { mode: 'uninstall', scope });
 }

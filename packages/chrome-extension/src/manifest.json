@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "MCP Pointer",
+  "name": "DOM Pointer MCP",
   "version": "1.0.0",
   "description": "Point to DOM elements for your agentic coding tools",
   "icons": {
@@ -13,7 +13,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "MCP Pointer Settings",
+    "default_title": "DOM Pointer MCP Settings",
     "default_icon": "icon.png"
   },
   "content_scripts": [

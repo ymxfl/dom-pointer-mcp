@@ -2,7 +2,7 @@
 
 ## 背景
 
-`mcp-pointer config <tool>` 的当前 trigger 安装机制只装一种"trigger 文件"——本意是让 agent 看到用户的短指令时自动调 `mcp__pointer__get-pointed-element`。但实际场景里用户期望更明确的触发：在 agent 里打 `/pointed` 立即拿数据，可以加补充文字（`/pointed 顺便改成蓝色`）。
+`dom-pointer-mcp config <tool>` 的当前 trigger 安装机制只装一种"trigger 文件"——本意是让 agent 看到用户的短指令时自动调 `mcp__pointer__get-pointed-element`。但实际场景里用户期望更明确的触发：在 agent 里打 `/pointed` 立即拿数据，可以加补充文字（`/pointed 顺便改成蓝色`）。
 
 这种 **slash command** 触发方式比"看 description 命中"靠谱得多。同时 **skill**（description 触发）仍有价值——用户随口说"做一下"也能命中。两种共存。
 
@@ -45,7 +45,7 @@
 ## 架构
 
 ```
-mcp-pointer config <tool> [--scope user|project]
+dom-pointer-mcp config <tool> [--scope user|project]
                   │
                   ▼
         resolveScope

@@ -8,7 +8,7 @@ import {
 import { extractComponentInfo } from '../extractors';
 
 window.addEventListener(EXTRACT_REQUEST_EVENT, (e: Event) => {
-  const detail = (e as CustomEvent<ExtractRequestDetail>).detail;
+  const { detail } = (e as CustomEvent<ExtractRequestDetail>);
   if (!detail?.requestId) return;
 
   const el = document.querySelector(

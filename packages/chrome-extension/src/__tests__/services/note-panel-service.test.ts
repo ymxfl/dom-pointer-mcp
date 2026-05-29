@@ -1,7 +1,7 @@
 import NotePanelService from '../../services/note-panel-service';
 import SelectionStoreService from '../../services/selection-store-service';
 
-const PANEL_SELECTOR = '.mcp-pointer__note-panel';
+const PANEL_SELECTOR = '.dom-pointer-mcp__note-panel';
 
 function flushMicrotasks(): Promise<void> {
   return new Promise((resolve) => { setTimeout(resolve, 0); });
@@ -69,7 +69,7 @@ describe('NotePanelService', () => {
     store.toggle(a);
     store.toggle(b);
 
-    const chips = document.querySelectorAll('.mcp-pointer__note-chip');
+    const chips = document.querySelectorAll('.dom-pointer-mcp__note-chip');
     expect(chips).toHaveLength(2);
     const removeBtn = chips[1].querySelector('button') as HTMLButtonElement;
     removeBtn.click();
@@ -100,7 +100,7 @@ describe('NotePanelService', () => {
 
     const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
     textarea.value = 'keep me';
-    const sendBtn = document.querySelector('.mcp-pointer__note-send') as HTMLButtonElement;
+    const sendBtn = document.querySelector('.dom-pointer-mcp__note-send') as HTMLButtonElement;
     sendBtn.click();
 
     await flushMicrotasks();
@@ -108,7 +108,7 @@ describe('NotePanelService', () => {
 
     expect(textarea.value).toBe('keep me');
     expect(sendBtn.disabled).toBe(false);
-    const errorBox = document.querySelector('.mcp-pointer__note-error') as HTMLElement;
+    const errorBox = document.querySelector('.dom-pointer-mcp__note-error') as HTMLElement;
     expect(errorBox.hidden).toBe(false);
     expect(errorBox.textContent).toMatch(/network down/);
   });
@@ -120,7 +120,7 @@ describe('NotePanelService', () => {
     store.toggle(el);
     store.toggle(el); // back to 0 → panel destroyed
     store.toggle(el); // re-add → panel rebuilt
-    const newSendBtn = document.querySelector('.mcp-pointer__note-send') as HTMLButtonElement;
+    const newSendBtn = document.querySelector('.dom-pointer-mcp__note-send') as HTMLButtonElement;
     store.toggle(el); // now 0 → panel destroyed again
     newSendBtn.click(); // detached button click; no panel to act on
     expect(onSend).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe('NotePanelService', () => {
 
     const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
     textarea.value = 'keep this note';
-    const copyBtn = document.querySelector('.mcp-pointer__note-copy') as HTMLButtonElement;
+    const copyBtn = document.querySelector('.dom-pointer-mcp__note-copy') as HTMLButtonElement;
     copyBtn.click();
 
     await flushMicrotasks();
@@ -154,7 +154,7 @@ describe('NotePanelService', () => {
     store.toggle(b);
     expect(document.querySelector(PANEL_SELECTOR)).not.toBeNull();
 
-    const closeBtn = document.querySelector('.mcp-pointer__note-close') as HTMLButtonElement;
+    const closeBtn = document.querySelector('.dom-pointer-mcp__note-close') as HTMLButtonElement;
     expect(closeBtn).not.toBeNull();
     closeBtn.click();
 

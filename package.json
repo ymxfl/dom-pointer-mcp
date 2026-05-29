@@ -1,6 +1,6 @@
 {
-  "name": "mcp-pointer-monorepo",
-  "description": "👆 MCP Pointer - Point to DOM elements for your agentic coding tools",
+  "name": "dom-pointer-mcp-monorepo",
+  "description": "👆 DOM Pointer MCP - Point to DOM elements for your agentic coding tools",
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "scripts": {
@@ -35,6 +35,6 @@
     "devtools",
     "typescript"
   ],
-  "author": "MCP Pointer Team",
+  "author": "ymxfl",
   "license": "MIT"
 }

@@ -251,7 +251,7 @@ git commit -m "feat: add SelectionStoreService for ordered multi-select state"
 
 ```css
 /* Note panel: floating composer for batched selections */
-.mcp-pointer__note-panel {
+.dom-pointer-mcp__note-panel {
   width: 360px;
   background: white;
   border: 1px solid #ccc;
@@ -264,14 +264,14 @@ git commit -m "feat: add SelectionStoreService for ordered multi-select state"
   box-sizing: border-box;
 }
 
-.mcp-pointer__note-chips {
+.dom-pointer-mcp__note-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 8px;
 }
 
-.mcp-pointer__note-chip {
+.dom-pointer-mcp__note-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -283,7 +283,7 @@ git commit -m "feat: add SelectionStoreService for ordered multi-select state"
   color: #1565c0;
 }
 
-.mcp-pointer__note-chip button {
+.dom-pointer-mcp__note-chip button {
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -293,7 +293,7 @@ git commit -m "feat: add SelectionStoreService for ordered multi-select state"
   line-height: 1;
 }
 
-.mcp-pointer__note-textarea {
+.dom-pointer-mcp__note-textarea {
   width: 100%;
   min-height: 60px;
   resize: vertical;
@@ -307,25 +307,25 @@ git commit -m "feat: add SelectionStoreService for ordered multi-select state"
   background: white;
 }
 
-.mcp-pointer__note-error {
+.dom-pointer-mcp__note-error {
   color: #c62828;
   font-size: 12px;
   margin-top: 6px;
 }
 
-.mcp-pointer__note-footer {
+.dom-pointer-mcp__note-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
 }
 
-.mcp-pointer__note-hint {
+.dom-pointer-mcp__note-hint {
   color: #888;
   font-size: 11px;
 }
 
-.mcp-pointer__note-send {
+.dom-pointer-mcp__note-send {
   padding: 4px 12px;
   background: #1976d2;
   color: white;
@@ -335,23 +335,23 @@ git commit -m "feat: add SelectionStoreService for ordered multi-select state"
   font-size: 12px;
 }
 
-.mcp-pointer__note-send:hover:not(:disabled) {
+.dom-pointer-mcp__note-send:hover:not(:disabled) {
   background: #1565c0;
 }
 
-.mcp-pointer__note-send:disabled {
+.dom-pointer-mcp__note-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Chip-hover flash animation on the corresponding selection overlay */
-@keyframes mcp-pointer__overlay-flash {
-  0%, 100% { box-shadow: 0 0 0 2px var(--mcp-pointer-border-color); }
-  50% { box-shadow: 0 0 0 6px var(--mcp-pointer-border-color); }
+@keyframes dom-pointer-mcp__overlay-flash {
+  0%, 100% { box-shadow: 0 0 0 2px var(--dom-pointer-mcp-border-color); }
+  50% { box-shadow: 0 0 0 6px var(--dom-pointer-mcp-border-color); }
 }
 
-.mcp-pointer__overlay--flashing {
-  animation: mcp-pointer__overlay-flash 0.4s ease-in-out;
+.dom-pointer-mcp__overlay--flashing {
+  animation: dom-pointer-mcp__overlay-flash 0.4s ease-in-out;
 }
 ```
 
@@ -377,7 +377,7 @@ git commit -m "feat: add note panel + chip + flash styles"
 import NotePanelService from '../../services/note-panel-service';
 import SelectionStoreService from '../../services/selection-store-service';
 
-const PANEL_SELECTOR = '.mcp-pointer__note-panel';
+const PANEL_SELECTOR = '.dom-pointer-mcp__note-panel';
 
 function flushMicrotasks(): Promise<void> {
   return new Promise((resolve) => { setTimeout(resolve, 0); });
@@ -423,7 +423,7 @@ describe('NotePanelService', () => {
     store.toggle(a);
     store.toggle(b);
 
-    const chips = document.querySelectorAll('.mcp-pointer__note-chip');
+    const chips = document.querySelectorAll('.dom-pointer-mcp__note-chip');
     expect(chips).toHaveLength(2);
     const removeBtn = chips[1].querySelector('button') as HTMLButtonElement;
     removeBtn.click();
@@ -454,7 +454,7 @@ describe('NotePanelService', () => {
 
     const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
     textarea.value = 'keep me';
-    const sendBtn = document.querySelector('.mcp-pointer__note-send') as HTMLButtonElement;
+    const sendBtn = document.querySelector('.dom-pointer-mcp__note-send') as HTMLButtonElement;
     sendBtn.click();
 
     await flushMicrotasks();
@@ -462,7 +462,7 @@ describe('NotePanelService', () => {
 
     expect(textarea.value).toBe('keep me');
     expect(sendBtn.disabled).toBe(false);
-    const errorBox = document.querySelector('.mcp-pointer__note-error') as HTMLElement;
+    const errorBox = document.querySelector('.dom-pointer-mcp__note-error') as HTMLElement;
     expect(errorBox.hidden).toBe(false);
     expect(errorBox.textContent).toMatch(/network down/);
   });
@@ -475,11 +475,11 @@ describe('NotePanelService', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
     store.toggle(el);
-    const sendBtn = document.querySelector('.mcp-pointer__note-send') as HTMLButtonElement;
+    const sendBtn = document.querySelector('.dom-pointer-mcp__note-send') as HTMLButtonElement;
     store.toggle(el); // back to 0 → panel destroyed
     // sendBtn detached from doc; click would noop. Re-create selection then verify guard.
     store.toggle(el);
-    const newSendBtn = document.querySelector('.mcp-pointer__note-send') as HTMLButtonElement;
+    const newSendBtn = document.querySelector('.dom-pointer-mcp__note-send') as HTMLButtonElement;
     // simulate user clicking send while we synchronously empty the store
     store.toggle(el); // now 0
     newSendBtn.click(); // panel is already gone; nothing to call
@@ -502,9 +502,9 @@ import {
 } from '@floating-ui/dom';
 import SelectionStoreService from './selection-store-service';
 
-const PANEL_CLASS = 'mcp-pointer__note-panel';
-const CHIP_CLASS = 'mcp-pointer__note-chip';
-const FLASH_CLASS = 'mcp-pointer__overlay--flashing';
+const PANEL_CLASS = 'dom-pointer-mcp__note-panel';
+const CHIP_CLASS = 'dom-pointer-mcp__note-chip';
+const FLASH_CLASS = 'dom-pointer-mcp__overlay--flashing';
 
 export type OnSend = (elements: HTMLElement[], note: string) => Promise<void>;
 
@@ -551,21 +551,21 @@ export default class NotePanelService {
     this.root = document.createElement('div');
     this.root.className = PANEL_CLASS;
     this.root.innerHTML = `
-      <div class="mcp-pointer__note-chips"></div>
-      <textarea class="mcp-pointer__note-textarea"
+      <div class="dom-pointer-mcp__note-chips"></div>
+      <textarea class="dom-pointer-mcp__note-textarea"
         placeholder="Describe what you want to change..."></textarea>
-      <div class="mcp-pointer__note-error" hidden></div>
-      <div class="mcp-pointer__note-footer">
-        <span class="mcp-pointer__note-hint">⌘/Ctrl+Enter to send</span>
-        <button type="button" class="mcp-pointer__note-send">Send</button>
+      <div class="dom-pointer-mcp__note-error" hidden></div>
+      <div class="dom-pointer-mcp__note-footer">
+        <span class="dom-pointer-mcp__note-hint">⌘/Ctrl+Enter to send</span>
+        <button type="button" class="dom-pointer-mcp__note-send">Send</button>
       </div>
     `;
     document.body.appendChild(this.root);
 
-    this.chipContainer = this.root.querySelector('.mcp-pointer__note-chips');
+    this.chipContainer = this.root.querySelector('.dom-pointer-mcp__note-chips');
     this.textarea = this.root.querySelector('textarea');
-    this.sendBtn = this.root.querySelector('.mcp-pointer__note-send');
-    this.errorText = this.root.querySelector('.mcp-pointer__note-error');
+    this.sendBtn = this.root.querySelector('.dom-pointer-mcp__note-send');
+    this.errorText = this.root.querySelector('.dom-pointer-mcp__note-error');
 
     this.sendBtn!.addEventListener('click', () => { void this.handleSend(); });
     this.textarea!.addEventListener('keydown', (e) => {
@@ -696,9 +696,9 @@ interface OverlayWrapper {
   target: HTMLElement;
 }
 
-const OVERLAY_BASE_CLASS = 'mcp-pointer__overlay';
-const HOVER_CLASS = 'mcp-pointer__overlay--hover';
-const SELECTION_CLASS = 'mcp-pointer__overlay--selection';
+const OVERLAY_BASE_CLASS = 'dom-pointer-mcp__overlay';
+const HOVER_CLASS = 'dom-pointer-mcp__overlay--hover';
+const SELECTION_CLASS = 'dom-pointer-mcp__overlay--selection';
 
 export default class OverlayManagerService {
   private hoverOverlay: OverlayWrapper | null = null;
@@ -760,12 +760,12 @@ export default class OverlayManagerService {
 
     if (hasGlow) {
       const glow = document.createElement('div');
-      glow.className = 'mcp-pointer__overlay-glow';
+      glow.className = 'dom-pointer-mcp__overlay-glow';
       overlay.appendChild(glow);
     }
 
     const glass = document.createElement('div');
-    glass.className = 'mcp-pointer__overlay-glass';
+    glass.className = 'dom-pointer-mcp__overlay-glass';
     overlay.appendChild(glass);
 
     document.body.appendChild(overlay);
@@ -798,7 +798,7 @@ git commit -m "refactor: OverlayManager supports multiple concurrent selection o
 - [ ] **Step 1: 完全重写 element-pointer-service.ts**
 
 ```ts
-import { RawPointedSelection } from '@mcp-pointer/shared/types';
+import { RawPointedSelection } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 import TriggerMouseService from './trigger-mouse-service';
 import TriggerKeyService from './trigger-key-service';
@@ -807,7 +807,7 @@ import SelectionStoreService from './selection-store-service';
 import NotePanelService from './note-panel-service';
 import { extractRawPointedDOMElement } from '../utils/element';
 
-const POINTING_CLASS = 'mcp-pointer--is-pointing';
+const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
 
 export default class ElementPointerService {
   private triggerKeyService: TriggerKeyService;
@@ -1010,7 +1010,7 @@ export interface SharedStateData {
 
 - [ ] **Step 3: 更新顶部 import**
 
-把 `import { ... RawPointedDOMElement } from '@mcp-pointer/shared/types';` 改为：
+把 `import { ... RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';` 改为：
 
 ```ts
 import {
@@ -1019,7 +1019,7 @@ import {
   ComponentInfo,
   RawPointedDOMElement,
   RawPointedSelection,
-} from '@mcp-pointer/shared/types';
+} from '@dom-pointer-mcp/shared/types';
 ```
 
 - [ ] **Step 4: 不要 typecheck 整个 monorepo**
@@ -1046,7 +1046,7 @@ git commit -m "refactor(server): SharedState carries selection batch instead of 
 替换文件内容为：
 
 ```ts
-import { RawPointedSelection, ComponentInfo } from '@mcp-pointer/shared/types';
+import { RawPointedSelection, ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import ElementProcessor from '../../services/element-processor';
 
 function singleElementRaw(overrides: Partial<{
@@ -1129,7 +1129,7 @@ import {
   RawPointedDOMElement,
   RawPointedSelection,
   ElementPosition,
-} from '@mcp-pointer/shared/types';
+} from '@dom-pointer-mcp/shared/types';
 import { ProcessedPointedDOMElement, ProcessedPointedSelection } from '../types';
 import { extractFromHTML, generateSelector } from '../utils/dom-extractor';
 import logger from '../logger';
@@ -1229,7 +1229,7 @@ import { SharedState, ProcessedPointedSelection } from '../types';
 import logger from '../logger';
 
 export default class SharedStateService {
-  static SHARED_STATE_PATH = '/tmp/mcp-pointer-shared-state.json';
+  static SHARED_STATE_PATH = '/tmp/dom-pointer-mcp-shared-state.json';
 
   public async saveState(state: SharedState): Promise<void> {
     try {
@@ -1268,7 +1268,7 @@ export default class SharedStateService {
 替换为：
 
 ```ts
-import { PointerMessageType, type RawPointedSelection } from '@mcp-pointer/shared/types';
+import { PointerMessageType, type RawPointedSelection } from '@dom-pointer-mcp/shared/types';
 import logger from './logger';
 import ElementProcessor from './services/element-processor';
 import SharedStateService from './services/shared-state-service';

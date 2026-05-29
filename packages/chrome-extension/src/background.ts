@@ -1,4 +1,4 @@
-import { ConnectionStatus } from '@mcp-pointer/shared/types';
+import { ConnectionStatus } from '@dom-pointer-mcp/shared/types';
 import logger from './utils/logger';
 import { ElementSenderService } from './services/element-sender-service';
 import { ExtensionConfig } from './utils/config';
@@ -14,7 +14,7 @@ async function initialize() {
   // Create the service (no connection on startup)
   elementSender = new ElementSenderService();
 
-  logger.info('🚀 MCP Pointer background script loaded', {
+  logger.info('🚀 DOM Pointer MCP background script loaded', {
     enabled: currentConfig.enabled,
     port: currentConfig.websocket.port,
   });
@@ -71,22 +71,6 @@ chrome.runtime.onMessage
 
     return true; // Keep message channel open for async response
   });
-
-// Handle extension install/update
-chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'update' && details.previousVersion === '0.4.2') {
-    const { previousVersion } = details;
-    const currentVersion = chrome.runtime.getManifest().version;
-
-    logger.info(`🔄 Extension updated from ${previousVersion} to ${currentVersion}`);
-
-    // Open update notification page
-    chrome.tabs.create({
-      url: 'https://mcp-pointer.etsd.tech/development-update.html',
-      active: true,
-    });
-  }
-});
 
 // Start initialization
 initialize();

@@ -1,7 +1,9 @@
 import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult } from '../types';
-import { writeFileEnsuringDir, readJsonOrDefault, fileExists, deleteFileIfExists, removeJsonKey } from '../adapter-helpers';
+import {
+  writeFileEnsuringDir, readJsonOrDefault, fileExists, deleteFileIfExists, removeJsonKey,
+} from '../adapter-helpers';
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
@@ -32,7 +34,7 @@ ${SKILL_BODY}`;
 function pointerEntry(port: number) {
   return {
     command: 'npx',
-    args: ['-y', '@mcp-pointer/server@latest', 'start'],
+    args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
     env: { MCP_POINTER_PORT: String(port) },
   };
 }

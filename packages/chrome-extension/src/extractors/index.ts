@@ -1,4 +1,4 @@
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 import type { ComponentExtractor } from './types';
 import { vueExtractor } from './vue';
@@ -11,13 +11,15 @@ const extractors: ComponentExtractor[] = [
 ];
 
 export function extractComponentInfo(el: HTMLElement): ComponentInfo | undefined {
-  for (const extractor of extractors) {
+  return extractors.reduce<ComponentInfo | undefined>((found, extractor) => {
+    if (found) return found;
+
     try {
       const info = extractor.extract(el);
-      if (info?.name) return info;
+      return info?.name ? info : undefined;
     } catch (err) {
       logger.error('🚨 extractor failed:', err);
+      return undefined;
     }
-  }
-  return undefined;
+  }, undefined);
 }

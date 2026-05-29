@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import type { ComponentExtractor } from './types';
 
 /**

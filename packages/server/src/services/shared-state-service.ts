@@ -3,7 +3,7 @@ import { SharedState, ProcessedPointedSelection } from '../types';
 import logger from '../logger';
 
 export default class SharedStateService {
-  static SHARED_STATE_PATH = '/tmp/mcp-pointer-shared-state.json';
+  static SHARED_STATE_PATH = '/tmp/dom-pointer-mcp-shared-state.json';
 
   public async saveState(state: SharedState): Promise<void> {
     try {

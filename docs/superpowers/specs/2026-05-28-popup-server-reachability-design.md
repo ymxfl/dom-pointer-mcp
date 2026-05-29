@@ -2,7 +2,7 @@
 
 ## 背景
 
-`mcp-pointer` 的 chrome-extension popup 当前只展示三个控件：启用开关、端口、保存/重置按钮。用户**没有任何方式知道 server 是不是在跑**——只能通过"Option+Click 一个元素，看 agent 那边有没有反应"间接判断。
+`dom-pointer-mcp` 的 chrome-extension popup 当前只展示三个控件：启用开关、端口、保存/重置按钮。用户**没有任何方式知道 server 是不是在跑**——只能通过"Option+Click 一个元素，看 agent 那边有没有反应"间接判断。
 
 WebSocket 连接是按需建立的（`ElementSenderService` 在 `Option+Click` 时才连，空闲 10 秒自动断），所以"是否当前有 active WebSocket"对用户没有信息量——99% 时间都是 disconnected。
 

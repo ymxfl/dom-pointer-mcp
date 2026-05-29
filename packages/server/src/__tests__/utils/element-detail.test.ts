@@ -1,4 +1,4 @@
-import { CSSDetailLevel, TextDetailLevel } from '@mcp-pointer/shared/types';
+import { CSSDetailLevel, TextDetailLevel } from '@dom-pointer-mcp/shared/types';
 import {
   normalizeDetailParameters,
   normalizeCssLevel,

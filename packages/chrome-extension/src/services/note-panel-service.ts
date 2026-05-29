@@ -3,9 +3,9 @@ import {
 } from '@floating-ui/dom';
 import SelectionStoreService from './selection-store-service';
 
-const PANEL_CLASS = 'mcp-pointer__note-panel';
-const CHIP_CLASS = 'mcp-pointer__note-chip';
-const FLASH_CLASS = 'mcp-pointer__overlay--flashing';
+const PANEL_CLASS = 'dom-pointer-mcp__note-panel';
+const CHIP_CLASS = 'dom-pointer-mcp__note-chip';
+const FLASH_CLASS = 'dom-pointer-mcp__overlay--flashing';
 
 export type OnSend = (elements: HTMLElement[], note: string) => Promise<void>;
 export type OnCopy = (elements: HTMLElement[], note: string) => Promise<string>;
@@ -60,33 +60,33 @@ export default class NotePanelService {
     this.root = document.createElement('div');
     this.root.className = PANEL_CLASS;
     this.root.innerHTML = `
-      <button type="button" class="mcp-pointer__note-close" aria-label="Close" title="Clear all selections">×</button>
-      <div class="mcp-pointer__note-chips"></div>
-      <textarea class="mcp-pointer__note-textarea"
+      <button type="button" class="dom-pointer-mcp__note-close" aria-label="Close" title="Clear all selections">×</button>
+      <div class="dom-pointer-mcp__note-chips"></div>
+      <textarea class="dom-pointer-mcp__note-textarea"
         placeholder="Describe what you want to change..."></textarea>
-      <div class="mcp-pointer__note-error" hidden></div>
-      <div class="mcp-pointer__note-footer">
-        <span class="mcp-pointer__note-hint">⌘/Ctrl+Enter to send</span>
-        <button type="button" class="mcp-pointer__note-copy" title="Copy selection as JSON for manual paste into any agent">Copy</button>
-        <button type="button" class="mcp-pointer__note-send">Send</button>
+      <div class="dom-pointer-mcp__note-error" hidden></div>
+      <div class="dom-pointer-mcp__note-footer">
+        <span class="dom-pointer-mcp__note-hint">⌘/Ctrl+Enter to send</span>
+        <button type="button" class="dom-pointer-mcp__note-copy" title="Copy selection as JSON for manual paste into any agent">Copy</button>
+        <button type="button" class="dom-pointer-mcp__note-send">Send</button>
       </div>
     `;
     document.body.appendChild(this.root);
 
-    this.chipContainer = this.root.querySelector('.mcp-pointer__note-chips');
+    this.chipContainer = this.root.querySelector('.dom-pointer-mcp__note-chips');
     this.textarea = this.root.querySelector('textarea');
-    this.sendBtn = this.root.querySelector('.mcp-pointer__note-send');
-    this.copyBtn = this.root.querySelector('.mcp-pointer__note-copy');
-    this.closeBtn = this.root.querySelector('.mcp-pointer__note-close');
-    this.errorText = this.root.querySelector('.mcp-pointer__note-error');
+    this.sendBtn = this.root.querySelector('.dom-pointer-mcp__note-send');
+    this.copyBtn = this.root.querySelector('.dom-pointer-mcp__note-copy');
+    this.closeBtn = this.root.querySelector('.dom-pointer-mcp__note-close');
+    this.errorText = this.root.querySelector('.dom-pointer-mcp__note-error');
 
-    this.sendBtn!.addEventListener('click', () => { void this.handleSend(); });
-    this.copyBtn!.addEventListener('click', () => { void this.handleCopy(); });
+    this.sendBtn!.addEventListener('click', () => { this.handleSend(); });
+    this.copyBtn!.addEventListener('click', () => { this.handleCopy(); });
     this.closeBtn!.addEventListener('click', () => { this.store.clear(); });
     this.textarea!.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        void this.handleSend();
+        this.handleSend();
       }
     });
 
@@ -100,7 +100,7 @@ export default class NotePanelService {
     });
 
     this.cleanupAutoUpdate = autoUpdate(anchorEl, this.root, async () => {
-      const root = this.root;
+      const { root } = this;
       if (!root) return;
       const { x, y } = await computePosition(anchorEl, root, {
         placement: 'bottom-start',

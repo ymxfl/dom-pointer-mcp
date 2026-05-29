@@ -1,26 +1,26 @@
-/* MCP Pointer Element Selection Styles */
+/* DOM Pointer MCP Element Selection Styles */
 :root {
-  --mcp-pointer-border-color: #7abaffc0;
+  --dom-pointer-mcp-border-color: #7abaffc0;
 }
 
 /* Crosshair cursor when trigger key is pressed */
-.mcp-pointer--is-pointing {
+.dom-pointer-mcp--is-pointing {
   cursor: crosshair !important;
 }
 
-.mcp-pointer--is-pointing * {
+.dom-pointer-mcp--is-pointing * {
   cursor: crosshair !important;
 }
 
 /* Allow pointer events on disabled form controls while pointing,
    so user can still inspect/select them. UA defaults set
    pointer-events: none on disabled controls. */
-.mcp-pointer--is-pointing :disabled {
+.dom-pointer-mcp--is-pointing :disabled {
   pointer-events: auto !important;
 }
 
 /* Block: Main overlay container */
-.mcp-pointer__overlay {
+.dom-pointer-mcp__overlay {
   width: max-content;
   position: absolute;
   top: 0;
@@ -30,22 +30,22 @@
 }
 
 /* Hover overlay when activation key is pressed */
-.mcp-pointer__overlay--hover {
+.dom-pointer-mcp__overlay--hover {
   pointer-events: none;
 
-  border: var(--mcp-pointer-border-color) dashed 2px;
+  border: var(--dom-pointer-mcp-border-color) dashed 2px;
   border-radius: 12px;
 }
 
 /* Selection overlay when element is selected */
-.mcp-pointer__overlay--selection {
+.dom-pointer-mcp__overlay--selection {
   pointer-events: none;
   border-radius: 12px;
-  border: var(--mcp-pointer-border-color) solid 2px;
+  border: var(--dom-pointer-mcp-border-color) solid 2px;
 }
 
 /* Complex shimmer effect (::before) */
-.mcp-pointer__overlay--selection::after {
+.dom-pointer-mcp__overlay--selection::after {
   content: '';
   position: absolute;
   pointer-events: none;
@@ -112,7 +112,7 @@
 }
 
 /* Siri-style inner glow effect as separate element */
-.mcp-pointer__overlay-glow {
+.dom-pointer-mcp__overlay-glow {
   position: absolute;
   pointer-events: none;
   inset: 0px;
@@ -139,7 +139,7 @@
 
 
 /* Element: Inner glass effect */
-.mcp-pointer__overlay-glass {
+.dom-pointer-mcp__overlay-glass {
   position: absolute;
   inset: 0px; /* 2px inside the border (was -4px vs -6px border) */
   border-radius: 10px;
@@ -155,7 +155,7 @@
   pointer-events: none;
 }
 
-.mcp-pointer__overlay-glass::after {
+.dom-pointer-mcp__overlay-glass::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -323,7 +323,7 @@
 
 
 /* Note panel: floating composer for batched selections */
-.mcp-pointer__note-panel {
+.dom-pointer-mcp__note-panel {
   width: 360px;
   background: white;
   border: 1px solid #ccc;
@@ -337,7 +337,7 @@
   box-sizing: border-box;
 }
 
-.mcp-pointer__note-close {
+.dom-pointer-mcp__note-close {
   position: absolute;
   top: 4px;
   right: 6px;
@@ -353,19 +353,19 @@
   border-radius: 4px;
 }
 
-.mcp-pointer__note-close:hover {
+.dom-pointer-mcp__note-close:hover {
   background: #f3f3f3;
   color: #c62828;
 }
 
-.mcp-pointer__note-chips {
+.dom-pointer-mcp__note-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 8px;
 }
 
-.mcp-pointer__note-chip {
+.dom-pointer-mcp__note-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -377,7 +377,7 @@
   color: #1565c0;
 }
 
-.mcp-pointer__note-chip button {
+.dom-pointer-mcp__note-chip button {
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -387,7 +387,7 @@
   line-height: 1;
 }
 
-.mcp-pointer__note-textarea {
+.dom-pointer-mcp__note-textarea {
   width: 100%;
   min-height: 60px;
   resize: vertical;
@@ -401,25 +401,25 @@
   background: white;
 }
 
-.mcp-pointer__note-error {
+.dom-pointer-mcp__note-error {
   color: #c62828;
   font-size: 12px;
   margin-top: 6px;
 }
 
-.mcp-pointer__note-footer {
+.dom-pointer-mcp__note-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
 }
 
-.mcp-pointer__note-hint {
+.dom-pointer-mcp__note-hint {
   color: #888;
   font-size: 11px;
 }
 
-.mcp-pointer__note-send {
+.dom-pointer-mcp__note-send {
   padding: 4px 12px;
   background: #1976d2;
   color: white;
@@ -429,16 +429,16 @@
   font-size: 12px;
 }
 
-.mcp-pointer__note-send:hover:not(:disabled) {
+.dom-pointer-mcp__note-send:hover:not(:disabled) {
   background: #1565c0;
 }
 
-.mcp-pointer__note-send:disabled {
+.dom-pointer-mcp__note-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.mcp-pointer__note-copy {
+.dom-pointer-mcp__note-copy {
   padding: 4px 12px;
   margin-right: 6px;
   background: white;
@@ -449,21 +449,21 @@
   font-size: 12px;
 }
 
-.mcp-pointer__note-copy:hover:not(:disabled) {
+.dom-pointer-mcp__note-copy:hover:not(:disabled) {
   background: #e3f2fd;
 }
 
-.mcp-pointer__note-copy:disabled {
+.dom-pointer-mcp__note-copy:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Chip-hover flash animation on the corresponding selection overlay */
-@keyframes mcp-pointer__overlay-flash {
-  0%, 100% { box-shadow: 0 0 0 2px var(--mcp-pointer-border-color); }
-  50% { box-shadow: 0 0 0 6px var(--mcp-pointer-border-color); }
+@keyframes dom-pointer-mcp__overlay-flash {
+  0%, 100% { box-shadow: 0 0 0 2px var(--dom-pointer-mcp-border-color); }
+  50% { box-shadow: 0 0 0 6px var(--dom-pointer-mcp-border-color); }
 }
 
-.mcp-pointer__overlay--flashing {
-  animation: mcp-pointer__overlay-flash 0.4s ease-in-out;
+.dom-pointer-mcp__overlay--flashing {
+  animation: dom-pointer-mcp__overlay-flash 0.4s ease-in-out;
 }

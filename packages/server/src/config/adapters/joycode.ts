@@ -23,7 +23,7 @@ const POINTER_PREFIX = 'pointer';
 function pointerEntry(port: number) {
   return {
     command: 'npx',
-    args: ['-y', '@mcp-pointer/server@latest', 'start'],
+    args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
     env: { MCP_POINTER_PORT: String(port) },
   };
 }

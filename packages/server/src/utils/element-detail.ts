@@ -4,12 +4,12 @@ import {
   DEFAULT_CSS_LEVEL,
   DEFAULT_TEXT_DETAIL,
   TextDetailLevel,
-} from '@mcp-pointer/shared/types';
+} from '@dom-pointer-mcp/shared/types';
 import {
   CSS_LEVEL_FIELD_MAP,
   isValidCSSLevel,
   isValidTextDetail,
-} from '@mcp-pointer/shared/detail';
+} from '@dom-pointer-mcp/shared/detail';
 import { ProcessedPointedDOMElement, SerializedDOMElement } from '../types';
 
 export interface DetailParameters {

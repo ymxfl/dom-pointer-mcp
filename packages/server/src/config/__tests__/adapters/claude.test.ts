@@ -1,6 +1,10 @@
 import path from 'path';
 import os from 'os';
 
+import fs from 'fs/promises';
+import { execSync } from 'child_process';
+import { claudeAdapter } from '../../adapters/claude';
+
 jest.mock('fs/promises', () => ({
   mkdir: jest.fn().mockResolvedValue(undefined),
   writeFile: jest.fn().mockResolvedValue(undefined),
@@ -12,10 +16,6 @@ jest.mock('fs/promises', () => ({
 jest.mock('child_process', () => ({
   execSync: jest.fn(),
 }));
-
-import fs from 'fs/promises';
-import { execSync } from 'child_process';
-import { claudeAdapter } from '../../adapters/claude';
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
 const mockedReadFile = fs.readFile as jest.Mock;

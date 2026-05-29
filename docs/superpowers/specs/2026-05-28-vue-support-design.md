@@ -2,7 +2,7 @@
 
 ## 背景
 
-`mcp-pointer` 当前支持 React 组件探测：Chrome 插件读取 DOM 元素上挂载的 `__reactFiber$*` 属性，把整个 Fiber 对象塞进 `RawPointedDOMElement.reactFiber` 通过 WebSocket 发到 server，server 端 `element-processor` 从 Fiber 里提取组件名和源码位置。
+`dom-pointer-mcp` 当前支持 React 组件探测：Chrome 插件读取 DOM 元素上挂载的 `__reactFiber$*` 属性，把整个 Fiber 对象塞进 `RawPointedDOMElement.reactFiber` 通过 WebSocket 发到 server，server 端 `element-processor` 从 Fiber 里提取组件名和源码位置。
 
 `README.md` 把 Vue 列在 Roadmap 中（"🔮 Planned - Vue component detection"）。本 spec 设计 Vue 2 / Vue 3 的支持方案。
 
@@ -86,7 +86,7 @@ extractors/
 
 ```ts
 // extractors/types.ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
 export interface ComponentExtractor {
   framework: 'react' | 'vue';

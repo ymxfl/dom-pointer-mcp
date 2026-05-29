@@ -9,7 +9,7 @@ function ensureTTY(): void {
   if (!process.stdin.isTTY) {
     throw new Error(
       'Interactive mode requires a TTY. Pass a tool name and --scope explicitly '
-      + '(e.g. `mcp-pointer config claude --scope user`).',
+      + '(e.g. `dom-pointer-mcp config claude --scope user`).',
     );
   }
 }
@@ -19,8 +19,8 @@ export async function selectAction(): Promise<Action> {
   return select<Action>({
     message: 'What do you want to do?',
     choices: [
-      { name: 'Install — set up MCP Pointer for one or more agents', value: 'install' },
-      { name: 'Uninstall — remove MCP Pointer from one or more agents', value: 'uninstall' },
+      { name: 'Install — set up DOM Pointer MCP for one or more agents', value: 'install' },
+      { name: 'Uninstall — remove DOM Pointer MCP from one or more agents', value: 'uninstall' },
     ],
   });
 }

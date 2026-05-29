@@ -176,7 +176,7 @@ git commit -m "feat: add server reachability probe service"
 <body>
   <div class="container">
     <header class="header">
-      <h1>MCP Pointer Settings</h1>
+      <h1>DOM Pointer MCP Settings</h1>
     </header>
 
     <div class="server-status checking" id="serverStatus">
@@ -446,12 +446,12 @@ Expected: 无错误
 
 - [ ] **Step 2: 重载插件**
 
-`chrome://extensions` → MCP Pointer → 点刷新图标
+`chrome://extensions` → DOM Pointer MCP → 点刷新图标
 
 - [ ] **Step 3: server 跑着时打开 popup**
 
 确认 server 在跑（`cd packages/server && pnpm dev`）。
-点击 chrome 工具栏的 MCP Pointer 图标。
+点击 chrome 工具栏的 DOM Pointer MCP 图标。
 Expected: popup 上半显示 🟢 `Reachable on port 7007`（绿底）
 
 - [ ] **Step 4: 停止 server**

@@ -1,20 +1,6 @@
 import readline from 'readline';
 import type { Scope } from './types';
 
-export async function resolveScope(scopeArg?: string): Promise<Scope> {
-  if (scopeArg) {
-    if (scopeArg === 'user' || scopeArg === 'project') return scopeArg;
-    throw new Error(`Invalid --scope: ${scopeArg}. Use 'user' or 'project'.`);
-  }
-  if (!process.stdin.isTTY) {
-    throw new Error(
-      'No --scope provided and no TTY for interactive prompt.\n'
-      + 'Please pass --scope user or --scope project.',
-    );
-  }
-  return promptScope();
-}
-
 function promptScope(): Promise<Scope> {
   const rl = readline.createInterface({
     input: process.stdin, output: process.stdout,
@@ -31,4 +17,18 @@ function promptScope(): Promise<Scope> {
       },
     );
   });
+}
+
+export async function resolveScope(scopeArg?: string): Promise<Scope> {
+  if (scopeArg) {
+    if (scopeArg === 'user' || scopeArg === 'project') return scopeArg;
+    throw new Error(`Invalid --scope: ${scopeArg}. Use 'user' or 'project'.`);
+  }
+  if (!process.stdin.isTTY) {
+    throw new Error(
+      'No --scope provided and no TTY for interactive prompt.\n'
+      + 'Please pass --scope user or --scope project.',
+    );
+  }
+  return promptScope();
 }

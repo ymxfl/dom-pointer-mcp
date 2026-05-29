@@ -1,3 +1,4 @@
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import {
   EXTRACT_REQUEST_EVENT,
   EXTRACT_RESPONSE_EVENT,
@@ -5,7 +6,6 @@ import {
   ExtractRequestDetail,
   ExtractResponseDetail,
 } from '../../shared/bridge-events';
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
 import { requestComponentInfo } from '../../isolated-world/request-component-info';
 
 function captureRequest(): Promise<string> {
@@ -66,7 +66,9 @@ describe('requestComponentInfo', () => {
     const promiseA = requestComponentInfo(elA, 1000);
     const promiseB = requestComponentInfo(elB, 1000);
 
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect(requestIds).toHaveLength(2);
     const [idA, idB] = requestIds;
 

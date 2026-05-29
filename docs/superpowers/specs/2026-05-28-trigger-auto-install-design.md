@@ -2,13 +2,13 @@
 
 ## 背景
 
-`mcp-pointer config <tool>` 当前只配置 MCP server 连接（让 agent 知道有 `mcp__pointer__get-pointed-element` 工具）。用户每次都得手动告诉 agent "去调 get-pointed-element 工具看看我选了什么"——这是个重复的口令，且 agent 经常会先反问而不是立即调用。
+`dom-pointer-mcp config <tool>` 当前只配置 MCP server 连接（让 agent 知道有 `mcp__pointer__get-pointed-element` 工具）。用户每次都得手动告诉 agent "去调 get-pointed-element 工具看看我选了什么"——这是个重复的口令，且 agent 经常会先反问而不是立即调用。
 
-需求：扩展 `mcp-pointer config <tool>` 命令，让它在配置 MCP server 的同时**自动安装一份"触发文件"**（skill / command / rule，视工具而定），告诉 agent 当用户说短指令（如"做一下"、"pointed"）时**立即**调用 `mcp__pointer__get-pointed-element` 而不要反问。
+需求：扩展 `dom-pointer-mcp config <tool>` 命令，让它在配置 MCP server 的同时**自动安装一份"触发文件"**（skill / command / rule，视工具而定），告诉 agent 当用户说短指令（如"做一下"、"pointed"）时**立即**调用 `mcp__pointer__get-pointed-element` 而不要反问。
 
 ## 目标
 
-- 用一条 `mcp-pointer config <tool> [--scope user|project]` 命令完成 MCP server 注册 + trigger 文件落盘
+- 用一条 `dom-pointer-mcp config <tool> [--scope user|project]` 命令完成 MCP server 注册 + trigger 文件落盘
 - 支持 6 个 agent：claude / cursor / windsurf / codex / opencode / joycode
 - 让用户在每个工具里都能用短指令触发 `get-pointed-element`，不需手动唤起
 
@@ -34,7 +34,7 @@
 ## 架构
 
 ```
-mcp-pointer config <tool> [--scope user|project]
+dom-pointer-mcp config <tool> [--scope user|project]
                   │
                   ▼
         resolveScope (param > prompt > error)
@@ -227,7 +227,7 @@ export const claudeAdapter: ToolAdapter = {
         catch { /* ignore */ }
         execSync(
           `claude mcp add ${MCP_SERVER_NAME} -s user --env MCP_POINTER_PORT=${port} `
-          + `-- npx -y @mcp-pointer/server@latest start`,
+          + `-- npx -y @dom-pointer-mcp/server@latest start`,
           { stdio: 'pipe' },
         );
         return { status: 'success', scope, path: 'claude mcp add -s user',
@@ -323,7 +323,7 @@ export default async function configCommand(
   catch (e) { logger.error((e as Error).message); process.exit(1); }
 
   const port = parseInt(process.env.MCP_POINTER_PORT || '7007', 10);
-  logger.info(`🔧 Configuring MCP Pointer for ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
 
   const mcpResult = await adapter.registerMcp(scope, port);
   const triggerResult = await adapter.installTrigger(scope);
@@ -389,17 +389,17 @@ mock：`fs/promises` 全 mock，断言 `writeFile` path+content；`execSync` moc
 
 ### 手测清单（12 条）
 
-1. `mcp-pointer config claude --scope user` → `claude mcp list` 含 pointer + `~/.claude/skills/pointed/SKILL.md`
+1. `dom-pointer-mcp config claude --scope user` → `claude mcp list` 含 pointer + `~/.claude/skills/pointed/SKILL.md`
 2. `... --scope project`（新 dir）→ `.mcp.json` + `.claude/skills/pointed/SKILL.md`
 3. `... cursor --scope user / project`
 4. `... windsurf --scope project` → MCP degrade warn + project trigger
 5. `... codex --scope project` → MCP `.codex/config.toml` + trigger degrade 到 user
 6. `... opencode --scope user` → merge `~/.config/opencode/opencode.json`
 7. `... joycode --scope user` → MCP `~/.joycode/joycode-mcp.json` + trigger degrade 到 project
-8. `mcp-pointer config claude`（无 --scope）→ 弹交互
+8. `dom-pointer-mcp config claude`（无 --scope）→ 弹交互
 9. `... --scope foo` → 报错
 10. 重复 1 → 幂等
-11. `cat /dev/null | mcp-pointer config claude` 非 TTY → 报错
+11. `cat /dev/null | dom-pointer-mcp config claude` 非 TTY → 报错
 12. 实际启动 Claude → 短指令"做一下" → 验证自动调 `mcp__pointer__get-pointed-element`
 
 ## 不在本 spec 范围

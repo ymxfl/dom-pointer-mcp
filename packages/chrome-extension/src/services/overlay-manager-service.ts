@@ -5,9 +5,9 @@ interface OverlayWrapper {
   target: HTMLElement;
 }
 
-const OVERLAY_BASE_CLASS = 'mcp-pointer__overlay';
-const HOVER_CLASS = 'mcp-pointer__overlay--hover';
-const SELECTION_CLASS = 'mcp-pointer__overlay--selection';
+const OVERLAY_BASE_CLASS = 'dom-pointer-mcp__overlay';
+const HOVER_CLASS = 'dom-pointer-mcp__overlay--hover';
+const SELECTION_CLASS = 'dom-pointer-mcp__overlay--selection';
 
 export default class OverlayManagerService {
   private hoverOverlay: OverlayWrapper | null = null;
@@ -69,12 +69,12 @@ export default class OverlayManagerService {
 
     if (hasGlow) {
       const glow = document.createElement('div');
-      glow.className = 'mcp-pointer__overlay-glow';
+      glow.className = 'dom-pointer-mcp__overlay-glow';
       overlay.appendChild(glow);
     }
 
     const glass = document.createElement('div');
-    glass.className = 'mcp-pointer__overlay-glass';
+    glass.className = 'dom-pointer-mcp__overlay-glass';
     overlay.appendChild(glass);
 
     document.body.appendChild(overlay);

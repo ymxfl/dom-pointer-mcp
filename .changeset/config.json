@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@mcp-pointer/server", "@mcp-pointer/chrome-extension"]
+    ["@dom-pointer-mcp/server", "@dom-pointer-mcp/chrome-extension"]
   ],
   "access": "public",
   "baseBranch": "main",

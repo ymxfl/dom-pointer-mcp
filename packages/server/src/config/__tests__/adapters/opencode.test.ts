@@ -1,6 +1,9 @@
 import path from 'path';
 import os from 'os';
 
+import fs from 'fs/promises';
+import { opencodeAdapter } from '../../adapters/opencode';
+
 jest.mock('fs/promises', () => ({
   mkdir: jest.fn().mockResolvedValue(undefined),
   writeFile: jest.fn().mockResolvedValue(undefined),
@@ -8,9 +11,6 @@ jest.mock('fs/promises', () => ({
   unlink: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockResolvedValue(undefined),
 }));
-
-import fs from 'fs/promises';
-import { opencodeAdapter } from '../../adapters/opencode';
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
 const mockedReadFile = fs.readFile as jest.Mock;

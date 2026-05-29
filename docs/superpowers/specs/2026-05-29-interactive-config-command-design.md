@@ -2,16 +2,16 @@
 
 ## Background
 
-Today `mcp-pointer config <tool> [--scope user|project]` requires the user to know the tool ID, run the command once per agent, and remember the `--scope` flag. There is no built-in way to undo an install — users have to hand-edit `~/.mcp.json`, delete files under `~/.claude/`, run `claude mcp remove`, etc., per agent.
+Today `dom-pointer-mcp config <tool> [--scope user|project]` requires the user to know the tool ID, run the command once per agent, and remember the `--scope` flag. There is no built-in way to undo an install — users have to hand-edit `~/.mcp.json`, delete files under `~/.claude/`, run `claude mcp remove`, etc., per agent.
 
 This spec adds an interactive flow when `config` is invoked with no positional tool, and a symmetric uninstall path. The non-interactive form keeps working unchanged for scripts and CI.
 
 ## CLI shape
 
 ```
-mcp-pointer config                                       # interactive (new default)
-mcp-pointer config <tool> [--scope user|project]         # legacy install (unchanged)
-mcp-pointer config --uninstall <tool> [--scope user|project]  # non-interactive uninstall
+dom-pointer-mcp config                                       # interactive (new default)
+dom-pointer-mcp config <tool> [--scope user|project]         # legacy install (unchanged)
+dom-pointer-mcp config --uninstall <tool> [--scope user|project]  # non-interactive uninstall
 ```
 
 - Interactive mode is entered only when no positional `<tool>` is given **and** stdin is a TTY. If `!isTTY` and no `<tool>`, print usage and exit 1 (same as today's `showAvailableTools`).
@@ -48,7 +48,7 @@ Uninstall is **user-scope only** in the interactive flow. Rationale: project-sco
 4. End-of-run hint:
    ```
    💡 To remove project-scope installs, cd into the project and run:
-      mcp-pointer config --uninstall <tool> --scope project
+      dom-pointer-mcp config --uninstall <tool> --scope project
    ```
 
 Non-interactive uninstall (`--uninstall <tool> --scope ...`) honours whatever scope is passed.
@@ -107,7 +107,7 @@ Add `@inquirer/prompts` to `packages/server/dependencies`. It is MIT, actively m
   - file exists with only our entry → file written back as an empty document (`{}` for JSON, empty table for TOML)
   - parse error → `failed`, file untouched
 - **Orchestrator integration test (new).** Drive `executeForAgents` with two stub adapters (one all-success, one with a `degraded` and a `failed`) and assert: per-agent rendering order, the aggregate exit-code logic, and that `installCommand` is skipped when `withSlash=false`.
-- **Interactive prompts.** Not unit-tested — covered by manual smoke (`pnpm --filter @mcp-pointer/server dev config`).
+- **Interactive prompts.** Not unit-tested — covered by manual smoke (`pnpm --filter @dom-pointer-mcp/server dev config`).
 - Existing install-path adapter tests stay green unchanged.
 
 ## Out of scope

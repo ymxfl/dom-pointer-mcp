@@ -1,7 +1,7 @@
 import defaultConfig, { ExtensionConfig } from '../utils/config';
 import logger from '../utils/logger';
 
-const STORAGE_KEY = 'mcp_pointer_config';
+const STORAGE_KEY = 'dom_pointer_mcp_config';
 
 export default class ConfigStorageService {
   static async load(): Promise<ExtensionConfig> {

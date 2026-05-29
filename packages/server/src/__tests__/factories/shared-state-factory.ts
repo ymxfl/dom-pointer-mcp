@@ -1,4 +1,4 @@
-import { RawPointedDOMElement, PointerMessageType } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement, PointerMessageType } from '@dom-pointer-mcp/shared/types';
 import {
   SharedState, SharedStateData, ProcessedPointedDOMElement,
 } from '../../types';

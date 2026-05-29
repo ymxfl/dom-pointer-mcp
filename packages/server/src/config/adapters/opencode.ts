@@ -47,7 +47,7 @@ export const opencodeAdapter: ToolAdapter = {
           ...existingMcp,
           [MCP_SERVER_NAME]: {
             type: 'local',
-            command: ['npx', '-y', '@mcp-pointer/server@latest', 'start'],
+            command: ['npx', '-y', '@dom-pointer-mcp/server@latest', 'start'],
             environment: { MCP_POINTER_PORT: String(port) },
             enabled: true,
           },
@@ -55,7 +55,9 @@ export const opencodeAdapter: ToolAdapter = {
       };
       await writeFileEnsuringDir(filePath, JSON.stringify(merged, null, 2));
       return {
-        status: 'success', scope, path: filePath,
+        status: 'success',
+        scope,
+        path: filePath,
         message: 'MCP server merged into opencode.json',
       };
     } catch (e) {
@@ -69,7 +71,9 @@ export const opencodeAdapter: ToolAdapter = {
       : path.join(process.cwd(), '.opencode', 'commands', `${TRIGGER_NAME}.md`);
     try {
       await writeFileEnsuringDir(filePath, buildCommandFile());
-      return { status: 'success', scope, path: filePath, message: 'Slash command installed' };
+      return {
+        status: 'success', scope, path: filePath, message: 'Slash command installed',
+      };
     } catch (e) {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
     }
@@ -79,16 +83,22 @@ export const opencodeAdapter: ToolAdapter = {
   async unregisterMcp(scope): Promise<OperationResult> {
     const filePath = scope === 'user' ? userConfigPath() : projectConfigPath();
     if (!(await fileExists(filePath))) {
-      return { status: 'skipped', scope, path: filePath, message: 'opencode.json not found' };
+      return {
+        status: 'skipped', scope, path: filePath, message: 'opencode.json not found',
+      };
     }
     try {
       const existing = await readJsonOrDefault<Record<string, any>>(filePath, {});
       const removed = removeJsonKey(existing, ['mcp', MCP_SERVER_NAME]);
       if (!removed) {
-        return { status: 'skipped', scope, path: filePath, message: 'pointer entry not present' };
+        return {
+          status: 'skipped', scope, path: filePath, message: 'pointer entry not present',
+        };
       }
       await writeFileEnsuringDir(filePath, JSON.stringify(existing, null, 2));
-      return { status: 'success', scope, path: filePath, message: 'pointer entry removed' };
+      return {
+        status: 'success', scope, path: filePath, message: 'pointer entry removed',
+      };
     } catch (e) {
       return { status: 'failed', scope, message: `Edit failed: ${(e as Error).message}` };
     }
@@ -101,8 +111,12 @@ export const opencodeAdapter: ToolAdapter = {
     try {
       const r = await deleteFileIfExists(filePath);
       return r === 'deleted'
-        ? { status: 'success', scope, path: filePath, message: 'Slash command removed' }
-        : { status: 'skipped', scope, path: filePath, message: 'Slash command file not found' };
+        ? {
+          status: 'success', scope, path: filePath, message: 'Slash command removed',
+        }
+        : {
+          status: 'skipped', scope, path: filePath, message: 'Slash command file not found',
+        };
     } catch (e) {
       return { status: 'failed', scope, message: `Delete failed: ${(e as Error).message}` };
     }

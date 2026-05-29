@@ -1,16 +1,16 @@
-<img width="1440" height="480" alt="MCP Pointer banner" src="https://github.com/user-attachments/assets/a36d2666-e848-4a80-97b3-466897b244f7" />
+<img width="1440" height="480" alt="DOM Pointer MCP banner" src="https://github.com/user-attachments/assets/a36d2666-e848-4a80-97b3-466897b244f7" />
 
-[![CI](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/ci.yml)
-[![Release](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/etsd-tech/mcp-pointer/actions/workflows/release.yml)
-[![npm version](https://img.shields.io/npm/v/@mcp-pointer/server?label=Server)](https://www.npmjs.com/package/@mcp-pointer/server)
-[![Chrome Extension](https://img.shields.io/github/package-json/v/etsd-tech/mcp-pointer?filename=packages%2Fchrome-extension%2Fpackage.json&label=Chrome-Extension)](https://github.com/etsd-tech/mcp-pointer/releases)
-[![License: MIT](https://img.shields.io/github/license/etsd-tech/mcp-pointer?label=License)](https://github.com/etsd-tech/mcp-pointer/blob/main/LICENSE)
+[![CI](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/ci.yml)
+[![Release](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/@dom-pointer-mcp/server?label=Server)](https://www.npmjs.com/package/@dom-pointer-mcp/server)
+[![Chrome Extension](https://img.shields.io/github/package-json/v/ymxfl/dom-pointer-mcp?filename=packages%2Fchrome-extension%2Fpackage.json&label=Chrome-Extension)](https://github.com/ymxfl/dom-pointer-mcp/releases)
+[![License: MIT](https://img.shields.io/github/license/ymxfl/dom-pointer-mcp?label=License)](https://github.com/ymxfl/dom-pointer-mcp/blob/main/LICENSE)
 
-# 👆 MCP Pointer
+# 👆 DOM Pointer MCP
 
 **Point to browser DOM elements for agentic coding tools via MCP!**
 
-MCP Pointer is a *local* tool combining an MCP Server with a Chrome Extension:
+DOM Pointer MCP is a *local* tool combining an MCP Server with a Chrome Extension:
 
 1. **🖥️ MCP Server** (Node.js package) - Bridges between the browser and AI tools via the Model Context Protocol
 2. **🌐 Chrome Extension** - Captures DOM element selections in the browser using `Option+Click`
@@ -29,7 +29,7 @@ The extension lets you visually select DOM elements in the browser, and the MCP 
 
 https://github.com/user-attachments/assets/98c4adf6-1f05-4c9b-be41-0416ab784e2c
 
-See MCP Pointer in action: `Option+Click` any element in your browser, then ask your agentic coding tool about it (in this example, Claude Code). The AI gets complete textual context about the selected DOM element including CSS properties, url, selector, and more.
+See DOM Pointer MCP in action: `Option+Click` any element in your browser, then ask your agentic coding tool about it (in this example, Claude Code). The AI gets complete textual context about the selected DOM element including CSS properties, url, selector, and more.
 
 ## 🚀 Getting Started
 
@@ -37,7 +37,7 @@ See MCP Pointer in action: `Option+Click` any element in your browser, then ask 
 
 **🎉 Now available on Chrome Web Store!**
 
-[![Install from Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Install-blue?style=for-the-badge&logo=google-chrome)](https://chromewebstore.google.com/detail/mcp-pointer/jfhgaembhafbffidedhpkmnaajdfeiok)
+[![Install from Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Install-blue?style=for-the-badge&logo=google-chrome)](https://chromewebstore.google.com/detail/dom-pointer-mcp/jfhgaembhafbffidedhpkmnaajdfeiok)
 
 Simply click the link above to install from the Chrome Web Store.
 
@@ -46,12 +46,12 @@ Simply click the link above to install from the Chrome Web Store.
 
 **Option A: Download from Releases**
 
-1. Go to [GitHub Releases](https://github.com/etsd-tech/mcp-pointer/releases)
-2. Download `mcp-pointer-chrome-extension.zip` from the latest release
+1. Go to [GitHub Releases](https://github.com/ymxfl/dom-pointer-mcp/releases)
+2. Download `dom-pointer-mcp-chrome-extension.zip` from the latest release
 3. Extract the zip file to a folder on your computer
 4. Open Chrome → Settings → Extensions → Developer mode (toggle ON)
 5. Click "Load unpacked" and select the extracted folder
-6. The MCP Pointer extension should appear in your extensions list
+6. The DOM Pointer MCP extension should appear in your extensions list
 7. **Reload web pages** to activate the extension
 
 **Option B: Build from Source**
@@ -69,7 +69,7 @@ Simply click the link above to install from the Chrome Web Store.
 One command setup for your AI tool:
 
 ```bash
-npx -y @mcp-pointer/server config claude  # or cursor, windsurf, and others - see below
+npx -y @dom-pointer-mcp/server config claude  # or cursor, windsurf, and others - see below
 ```
 
 <details>
@@ -77,20 +77,20 @@ npx -y @mcp-pointer/server config claude  # or cursor, windsurf, and others - se
 
 ```bash
 # For other AI tools
-npx -y @mcp-pointer/server config cursor     # Opens Cursor deeplink for automatic installation
-npx -y @mcp-pointer/server config windsurf   # Automatically updates Windsurf config file
-npx -y @mcp-pointer/server config manual     # Shows manual configuration for other tools
+npx -y @dom-pointer-mcp/server config cursor     # Opens Cursor deeplink for automatic installation
+npx -y @dom-pointer-mcp/server config windsurf   # Automatically updates Windsurf config file
+npx -y @dom-pointer-mcp/server config manual     # Shows manual configuration for other tools
 ```
 
-> **Optional:** You can install globally with `npm install -g @mcp-pointer/server` to use `mcp-pointer` instead of `npx -y @mcp-pointer/server`
+> **Optional:** You can install globally with `npm install -g @dom-pointer-mcp/server` to use `dom-pointer-mcp` instead of `npx -y @dom-pointer-mcp/server`
 
 </details>
 
 After configuration, **restart your coding tool** to load the MCP connection.
 
-> **🔄 Already using MCP Pointer?** Run the config command again to update to auto-updating configuration:
+> **🔄 Already using DOM Pointer MCP?** Run the config command again to update to auto-updating configuration:
 > ```bash
-> npx -y @mcp-pointer/server config <your-tool>  # Reconfigures to always use latest version
+> npx -y @dom-pointer-mcp/server config <your-tool>  # Reconfigures to always use latest version
 > ```
 
 ### 3. Start Using
@@ -99,7 +99,7 @@ After configuration, **restart your coding tool** to load the MCP connection.
 2. **`Option+Click`** any element to select it
 3. **Ask your AI** to analyze the targeted element!
 
-Your AI tool will automatically start the MCP server when needed using the `npx -y @mcp-pointer/server@latest start` command.
+Your AI tool will automatically start the MCP server when needed using the `npx -y @dom-pointer-mcp/server@latest start` command.
 
 **Available MCP Tool:**
 - `get-pointed-element` - Get textual information about the currently pointed DOM element from the browser extension
@@ -136,15 +136,15 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 
 ### Extension Not Connecting
 
-1. Make sure MCP server is running: `npx -y @mcp-pointer/server@latest start`
+1. Make sure MCP server is running: `npx -y @dom-pointer-mcp/server@latest start`
 2. Check browser console for WebSocket errors
 3. Verify port 7007 is not blocked by firewall
 
 ### MCP Tools Not Available
 
 1. Restart your AI assistant after installing
-2. Check MCP configuration: `mcp-pointer config <your-tool>`  
-3. Verify server is running: `npx -y @mcp-pointer/server@latest start`
+2. Check MCP configuration: `dom-pointer-mcp config <your-tool>`  
+3. Verify server is running: `npx -y @dom-pointer-mcp/server@latest start`
 
 ### Elements Not Highlighting
 
@@ -170,7 +170,7 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 
 ### 4. **Multi Select**
    - Having the ability to select multiple DOM elements
-   - https://github.com/etsd-tech/mcp-pointer/pull/9
+   - https://github.com/ymxfl/dom-pointer-mcp/pull/9
 
 ## 📝 License
 

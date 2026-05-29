@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task.
 
-**Goal:** 把 `mcp-pointer config <tool>` 扩展为统一的 adapter 框架，同时安装 MCP 注册 + trigger 文件（skill/command/rule），支持 6 个 agent + scope 选择。
+**Goal:** 把 `dom-pointer-mcp config <tool>` 扩展为统一的 adapter 框架，同时安装 MCP 注册 + trigger 文件（skill/command/rule），支持 6 个 agent + scope 选择。
 
 **Architecture:** 每个 tool 一个 adapter（实现 `registerMcp` + `installTrigger`），CLI 加 `--scope user|project` 参数 + TTY-fallback 交互。Adapter 内部自行处理 scope 降级。
 
@@ -421,7 +421,7 @@ function buildProjectMcpJson(port: number): string {
     mcpServers: {
       [MCP_SERVER_NAME]: {
         command: 'npx',
-        args: ['-y', '@mcp-pointer/server@latest', 'start'],
+        args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
         env: { MCP_POINTER_PORT: String(port) },
       },
     },
@@ -440,7 +440,7 @@ export const claudeAdapter: ToolAdapter = {
         } catch { /* ignore: not installed */ }
         execSync(
           `claude mcp add ${MCP_SERVER_NAME} -s user --env MCP_POINTER_PORT=${port} `
-          + '-- npx -y @mcp-pointer/server@latest start',
+          + '-- npx -y @dom-pointer-mcp/server@latest start',
           { stdio: 'pipe' },
         );
         return {
@@ -575,7 +575,7 @@ function buildMcpJson(port: number): string {
     mcpServers: {
       [MCP_SERVER_NAME]: {
         command: 'npx',
-        args: ['-y', '@mcp-pointer/server@latest', 'start'],
+        args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
         env: { MCP_POINTER_PORT: String(port) },
       },
     },
@@ -696,8 +696,8 @@ import { writeFileEnsuringDir, readTextOrEmpty, readJsonOrDefault } from '../ada
 import { TRIGGER_NAME, TRIGGER_DESCRIPTION, TRIGGER_BODY } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'pointer';
-const RULE_BEGIN = '<!-- BEGIN mcp-pointer trigger -->';
-const RULE_END = '<!-- END mcp-pointer trigger -->';
+const RULE_BEGIN = '<!-- BEGIN dom-pointer-mcp trigger -->';
+const RULE_END = '<!-- END dom-pointer-mcp trigger -->';
 
 function buildRuleSection(): string {
   return `${RULE_BEGIN}
@@ -725,7 +725,7 @@ function buildMcpConfig(port: number, existingMcpServers: Record<string, unknown
       ...existingMcpServers,
       [MCP_SERVER_NAME]: {
         command: 'npx',
-        args: ['-y', '@mcp-pointer/server@latest', 'start'],
+        args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
         env: { MCP_POINTER_PORT: String(port) },
       },
     },
@@ -882,7 +882,7 @@ const MCP_SERVER_NAME = 'pointer';
 function buildTomlSection(port: number): string {
   return `[mcp_servers.${MCP_SERVER_NAME}]
 command = "npx"
-args = ["-y", "@mcp-pointer/server@latest", "start"]
+args = ["-y", "@dom-pointer-mcp/server@latest", "start"]
 
 [mcp_servers.${MCP_SERVER_NAME}.env]
 MCP_POINTER_PORT = "${port}"
@@ -1095,7 +1095,7 @@ export const opencodeAdapter: ToolAdapter = {
           ...existingMcp,
           [MCP_SERVER_NAME]: {
             type: 'local',
-            command: ['npx', '-y', '@mcp-pointer/server@latest', 'start'],
+            command: ['npx', '-y', '@dom-pointer-mcp/server@latest', 'start'],
             environment: { MCP_POINTER_PORT: String(port) },
             enabled: true,
           },
@@ -1225,7 +1225,7 @@ function buildMcpJson(port: number) {
     mcpServers: {
       [MCP_SERVER_NAME]: {
         command: 'npx',
-        args: ['-y', '@mcp-pointer/server@latest', 'start'],
+        args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
         env: { MCP_POINTER_PORT: String(port) },
       },
     },
@@ -1382,7 +1382,7 @@ export default async function configCommand(
     process.exit(1);
   }
   const port = parseInt(getPort(), 10);
-  logger.info(`🔧 Configuring MCP Pointer for ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
 
   const mcpResult = await adapter.registerMcp(scope, port);
   printResult('MCP server', mcpResult);
@@ -1397,9 +1397,9 @@ export default async function configCommand(
 
 ```ts
 function showAvailableTools() {
-  logger.info('📋 MCP Pointer Configuration');
+  logger.info('📋 DOM Pointer MCP Configuration');
   logger.info('');
-  logger.info('Usage: mcp-pointer config <tool> [--scope user|project]');
+  logger.info('Usage: dom-pointer-mcp config <tool> [--scope user|project]');
   logger.info('');
   logger.info('Supported tools:');
   logger.info('  claude    - Claude Code (skill + MCP)');
@@ -1431,7 +1431,7 @@ function showAvailableTools() {
 ```ts
 .command(`${CLICommand.CONFIG} [tool]`)
 .option('--scope <scope>', 'Install scope: user or project (interactive if omitted)')
-.description('Configure MCP Pointer for AI tools')
+.description('Configure DOM Pointer MCP for AI tools')
 .action(configCommand);
 ```
 
@@ -1471,13 +1471,13 @@ EOF
 预备：
 ```bash
 cd packages/server && pnpm build
-# 或者把当前会话用的 mcp-pointer 指到本地 dist/cli.cjs
+# 或者把当前会话用的 dom-pointer-mcp 指到本地 dist/cli.cjs
 ```
 
 - [ ] **Step 1: claude user scope**
 
 ```bash
-node /Users/ymxfl/GithubStudy/mcp-pointer/packages/server/dist/cli.cjs config claude --scope user
+node /Users/ymxfl/GithubStudy/dom-pointer-mcp/packages/server/dist/cli.cjs config claude --scope user
 ```
 Expected:
 - ✅ MCP server registered (claude mcp add -s user)
@@ -1488,8 +1488,8 @@ Expected:
 - [ ] **Step 2: claude project scope（在新目录）**
 
 ```bash
-mkdir -p /tmp/mcp-pointer-test-claude && cd /tmp/mcp-pointer-test-claude
-node /Users/ymxfl/GithubStudy/mcp-pointer/packages/server/dist/cli.cjs config claude --scope project
+mkdir -p /tmp/dom-pointer-mcp-test-claude && cd /tmp/dom-pointer-mcp-test-claude
+node /Users/ymxfl/GithubStudy/dom-pointer-mcp/packages/server/dist/cli.cjs config claude --scope project
 ```
 Expected:
 - 新目录下出现 `.mcp.json` + `.claude/skills/pointed/SKILL.md`
@@ -1510,7 +1510,7 @@ Expected:
 - [ ] **Step 5: codex project（验证 trigger degrade）**
 
 ```bash
-mkdir -p /tmp/mcp-pointer-test-codex && cd /tmp/mcp-pointer-test-codex
+mkdir -p /tmp/dom-pointer-mcp-test-codex && cd /tmp/dom-pointer-mcp-test-codex
 node .../cli.cjs config codex --scope project
 ```
 Expected:
@@ -1537,7 +1537,7 @@ Expected:
 - [ ] **Step 7: joycode user（验证 trigger degrade + prompt.json merge）**
 
 ```bash
-mkdir -p /tmp/mcp-pointer-test-joycode && cd /tmp/mcp-pointer-test-joycode
+mkdir -p /tmp/dom-pointer-mcp-test-joycode && cd /tmp/dom-pointer-mcp-test-joycode
 echo '[{"name":"customA","label":"Custom","prompt":"x"}]' > .joycode/prompt.json 2>/dev/null || (mkdir -p .joycode && echo '[{"name":"customA","label":"Custom","prompt":"x"}]' > .joycode/prompt.json)
 node .../cli.cjs config joycode --scope user
 ```

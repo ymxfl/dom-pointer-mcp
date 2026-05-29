@@ -1,4 +1,4 @@
-import { RawPointedSelection, ComponentInfo } from '@mcp-pointer/shared/types';
+import { RawPointedSelection, ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import ElementProcessor from '../../services/element-processor';
 
 function singleElementRaw(overrides: Partial<{

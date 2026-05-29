@@ -1,16 +1,16 @@
 {
-  "name": "@mcp-pointer/server",
+  "name": "@dom-pointer-mcp/server",
   "version": "1.0.0",
   "description": "MCP Server for DOM element pointing - WebSocket bridge for element targeting",
   "repository": {
     "type": "git",
-    "url": "https://github.com/etsd-tech/mcp-pointer.git",
+    "url": "https://github.com/ymxfl/dom-pointer-mcp.git",
     "directory": "packages/server"
   },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "mcp-pointer": "dist/cli.cjs"
+    "dom-pointer-mcp": "dist/cli.cjs"
   },
   "scripts": {
     "build": "pnpm clean && esbuild src/cli.ts --outfile=dist/cli.cjs --format=cjs --bundle  --platform=node --target=node20 --sourcemap",
@@ -30,7 +30,7 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@mcp-pointer/shared": "workspace:*",
+    "@dom-pointer-mcp/shared": "workspace:*",
     "@types/jest": "^30.0.0",
     "@types/ws": "^8.5.10",
     "esbuild": "catalog:",
@@ -49,6 +49,6 @@
     "websocket",
     "element-targeting"
   ],
-  "author": "MCP Pointer Team",
+  "author": "ymxfl",
   "license": "MIT"
 }

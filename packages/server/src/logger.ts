@@ -1,4 +1,4 @@
-import { Logger } from '@mcp-pointer/shared/logger';
+import { Logger } from '@dom-pointer-mcp/shared/logger';
 
 const logger = new Logger();
 

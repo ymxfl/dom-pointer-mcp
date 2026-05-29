@@ -23,9 +23,9 @@ describe('trigger content sanity', () => {
   });
 
   it('SKILL_DESCRIPTION lists natural-language triggers and tool name', () => {
-    for (const phrase of ['Option+Click', 'mcp__pointer__get-pointed-element', 'userNote']) {
+    ['Option+Click', 'mcp__pointer__get-pointed-element', 'userNote'].forEach((phrase) => {
       expect(SKILL_DESCRIPTION).toContain(phrase);
-    }
+    });
   });
 
   it('SKILL_BODY mirrors the tool call requirement', () => {

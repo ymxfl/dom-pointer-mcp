@@ -1,9 +1,9 @@
 {
-  "name": "@mcp-pointer/chrome-extension",
+  "name": "@dom-pointer-mcp/chrome-extension",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/etsd-tech/mcp-pointer.git",
+    "url": "https://github.com/ymxfl/dom-pointer-mcp.git",
     "directory": "packages/chrome-extension"
   },
   "private": true,
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.4",
-    "@mcp-pointer/shared": "workspace:*",
+    "@dom-pointer-mcp/shared": "workspace:*",
     "reconnecting-websocket": "^4.4.0"
   }
 }

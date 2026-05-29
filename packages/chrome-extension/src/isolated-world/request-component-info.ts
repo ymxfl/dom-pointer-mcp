@@ -1,4 +1,4 @@
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import {
   EXTRACT_REQUEST_EVENT,
   EXTRACT_RESPONSE_EVENT,
@@ -19,7 +19,7 @@ export async function requestComponentInfo(
       let timer: ReturnType<typeof setTimeout>;
 
       const listener = (e: Event) => {
-        const detail = (e as CustomEvent<ExtractResponseDetail>).detail;
+        const { detail } = (e as CustomEvent<ExtractResponseDetail>);
         if (detail?.requestId !== requestId) return;
         window.removeEventListener(EXTRACT_RESPONSE_EVENT, listener);
         clearTimeout(timer);

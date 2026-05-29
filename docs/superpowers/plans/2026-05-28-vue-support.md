@@ -73,7 +73,7 @@ export default {
     }],
   },
   moduleNameMapper: {
-    '^@mcp-pointer/shared/(.*)$': '<rootDir>/../shared/src/$1',
+    '^@dom-pointer-mcp/shared/(.*)$': '<rootDir>/../shared/src/$1',
   },
 };
 ```
@@ -154,7 +154,7 @@ git commit -m "test: add jest infra to chrome-extension package"
 
 ```ts
 // packages/chrome-extension/src/extractors/types.ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
 export interface ComponentExtractor {
   framework: 'react' | 'vue';
@@ -246,7 +246,7 @@ Expected: 5 tests failed, "Cannot find module '../react'"
 ```ts
 // packages/chrome-extension/src/extractors/react.ts
 /* eslint-disable no-underscore-dangle */
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
 export function extractReact(element: HTMLElement): ComponentInfo | undefined {
   const fiberKey = Object.keys(element).find((k) => k.startsWith('__reactFiber$')
@@ -384,7 +384,7 @@ Expected: 8 tests failed, "Cannot find module '../vue'"
  * Never touch proxy / ctx / setupState / refs — those are Reactive Proxies and
  * accessing them triggers getters / dependency collection / side effects.
  */
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 
 export function extractVue(element: HTMLElement): ComponentInfo | undefined {
   const vue3 = (element as any).__vueParentComponent;
@@ -489,7 +489,7 @@ Expected: 3 tests failed, "Cannot find module '../index'"
 
 ```ts
 // packages/chrome-extension/src/extractors/index.ts
-import type { ComponentInfo } from '@mcp-pointer/shared/types';
+import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 import { extractVue } from './vue';
 import { extractReact } from './react';
@@ -596,7 +596,7 @@ git commit -m "refactor: replace RawPointedDOMElement.reactFiber with componentI
 
 ```ts
 // packages/chrome-extension/src/utils/element.ts
-import { RawPointedDOMElement } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
 import { extractComponentInfo } from '../extractors';
 
 /**
@@ -673,7 +673,7 @@ git commit -m "refactor: extract component info in browser, drop raw Fiber trans
 
 ```ts
 // packages/server/src/__tests__/services/element-processor.test.ts
-import { RawPointedDOMElement, ComponentInfo } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement, ComponentInfo } from '@dom-pointer-mcp/shared/types';
 import ElementProcessor from '../../services/element-processor';
 
 function makeRaw(overrides: Partial<RawPointedDOMElement> = {}): RawPointedDOMElement {
@@ -733,7 +733,7 @@ Expected: 4 tests failed（部分会因为 `raw.reactFiber` 已删 + `getCompone
 
 ```ts
 // packages/server/src/services/element-processor.ts
-import { RawPointedDOMElement, ElementPosition } from '@mcp-pointer/shared/types';
+import { RawPointedDOMElement, ElementPosition } from '@dom-pointer-mcp/shared/types';
 import { ProcessedPointedDOMElement } from '../types';
 import { extractFromHTML, generateSelector } from '../utils/dom-extractor';
 import logger from '../logger';

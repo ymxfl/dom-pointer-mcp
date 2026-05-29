@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { LogLevel } from '@mcp-pointer/shared/logger';
+import { LogLevel } from '@dom-pointer-mcp/shared/logger';
 import start from './start';
 import configCommand from './config';
 import CLICommand from './commands';
@@ -41,8 +41,8 @@ program.on('option:silent', () => {
 });
 
 program
-  .name('mcp-pointer')
-  .description('👆 MCP Pointer Server')
+  .name('dom-pointer-mcp')
+  .description('👆 DOM Pointer MCP Server')
   .version(process.env.npm_package_version ?? '0.1.0');
 
 program
@@ -54,8 +54,8 @@ program
 program
   .command(`${CLICommand.CONFIG} [tool]`)
   .option('--scope <scope>', 'Install scope: user or project (interactive if omitted)')
-  .option('--uninstall', 'Remove MCP Pointer instead of installing')
-  .description('Configure MCP Pointer for AI tools (interactive when no tool is given)')
+  .option('--uninstall', 'Remove DOM Pointer MCP instead of installing')
+  .description('Configure DOM Pointer MCP for AI tools (interactive when no tool is given)')
   .action(configCommand);
 
 program.parse();

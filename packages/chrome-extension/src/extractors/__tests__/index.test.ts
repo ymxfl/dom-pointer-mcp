@@ -14,8 +14,14 @@ describe('extractComponentInfo orchestrator', () => {
 
   it('returns Vue info when element has __vueParentComponent (Vue tried before React)', () => {
     const el = document.createElement('div');
-    (el as any).__vueParentComponent = { type: { name: 'V' } };
-    (el as any).__reactFiber$x = { type: { displayName: 'R' } };
+    Object.defineProperty(el, '__vueParentComponent', {
+      value: { type: { name: 'V' } },
+      configurable: true,
+    });
+    Object.defineProperty(el, '__reactFiber$x', {
+      value: { type: { displayName: 'R' } },
+      configurable: true,
+    });
     expect(extractComponentInfo(el)).toEqual({ name: 'V', framework: 'vue' });
   });
 
@@ -29,7 +35,10 @@ describe('extractComponentInfo orchestrator', () => {
     Object.defineProperty(el, '__vueParentComponent', {
       get() { throw new Error('boom'); },
     });
-    (el as any).__reactFiber$x = { type: { displayName: 'Fallback' } };
+    Object.defineProperty(el, '__reactFiber$x', {
+      value: { type: { displayName: 'Fallback' } },
+      configurable: true,
+    });
 
     let result: ReturnType<typeof extractComponentInfo>;
     expect(() => { result = extractComponentInfo(el); }).not.toThrow();

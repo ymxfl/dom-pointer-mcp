@@ -18,7 +18,7 @@ const MCP_SERVER_NAME = 'pointer';
 function buildTomlSection(port: number): string {
   return `[mcp_servers.${MCP_SERVER_NAME}]
 command = "npx"
-args = ["-y", "@mcp-pointer/server@latest", "start"]
+args = ["-y", "@dom-pointer-mcp/server@latest", "start"]
 
 [mcp_servers.${MCP_SERVER_NAME}.env]
 MCP_POINTER_PORT = "${port}"

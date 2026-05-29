@@ -3,7 +3,7 @@ import {
   CSSProperties,
   ComponentInfo,
   RawPointedSelection,
-} from '@mcp-pointer/shared/types';
+} from '@dom-pointer-mcp/shared/types';
 
 // Server-processed data (extracted & enhanced)
 export interface ProcessedPointedDOMElement {
