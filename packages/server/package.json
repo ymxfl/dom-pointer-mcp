@@ -8,7 +8,6 @@
     "directory": "packages/server"
   },
   "type": "module",
-  "main": "dist/index.js",
   "bin": {
     "dom-pointer-mcp": "dist/cli.cjs"
   },
