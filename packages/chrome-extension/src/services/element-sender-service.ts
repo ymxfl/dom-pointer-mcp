@@ -42,7 +42,7 @@ export class ElementSenderService {
   ): Promise<void> {
     this.clearIdleTimer();
 
-    for (let attempt = 0; attempt < this.SEND_RETRY_MAX_ATTEMPTS; attempt++) {
+    for (let attempt = 0; attempt < this.SEND_RETRY_MAX_ATTEMPTS; attempt += 1) {
       if (attempt > 0) {
         this.disconnect();
         statusCallback?.(ConnectionStatus.CONNECTING);
@@ -94,7 +94,7 @@ export class ElementSenderService {
 
   private verifyDelivery(): Promise<boolean> {
     return new Promise((resolve) => {
-      const ws = this.ws;
+      const { ws } = this;
       if (!ws) {
         resolve(false);
         return;
@@ -105,7 +105,9 @@ export class ElementSenderService {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         ws.removeEventListener('close', onClose);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         ws.removeEventListener('error', onError);
         resolve(ok);
       };

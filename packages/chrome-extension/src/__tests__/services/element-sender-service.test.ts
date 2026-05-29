@@ -54,7 +54,9 @@ function makeElement(): RawPointedDOMElement {
     attributes: {},
     innerText: '',
     componentInfo: null,
-    position: { x: 0, y: 0, width: 0, height: 0 },
+    position: {
+      x: 0, y: 0, width: 0, height: 0,
+    },
   } as unknown as RawPointedDOMElement;
 }
 
@@ -133,7 +135,7 @@ describe('ElementSenderService', () => {
     const status = jest.fn();
     const promise = svc.sendElement(makeElement(), 7007, status);
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
       // Allow the constructor for this attempt.
       await flushMicrotasks();
       const sock = createdSockets[i];

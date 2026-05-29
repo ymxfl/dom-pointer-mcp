@@ -185,6 +185,7 @@ describe('NotePanelService', () => {
         height: rect.height ?? ((rect.bottom ?? 0) - (rect.top ?? 0)),
         toJSON() { return this; },
       };
+      // eslint-disable-next-line no-param-reassign
       el.getBoundingClientRect = () => full;
     }
 
@@ -196,9 +197,14 @@ describe('NotePanelService', () => {
         const left = parseFloat(panel.style.left) || 0;
         const top = parseFloat(panel.style.top) || 0;
         return {
-          x: left, y: top, left, top,
-          right: left + PANEL_W, bottom: top + PANEL_H,
-          width: PANEL_W, height: PANEL_H,
+          x: left,
+          y: top,
+          left,
+          top,
+          right: left + PANEL_W,
+          bottom: top + PANEL_H,
+          width: PANEL_W,
+          height: PANEL_H,
           toJSON() { return this; },
         } as DOMRect;
       };
@@ -212,11 +218,13 @@ describe('NotePanelService', () => {
 
     async function waitForPositioning(): Promise<void> {
       // floating-ui's autoUpdate may run multiple async passes; flush a few frames.
-      for (let i = 0; i < 5; i++) {
+      const raf = () => new Promise<void>((r) => { requestAnimationFrame(() => r()); });
+      const tick = () => new Promise<void>((r) => { setTimeout(r, 0); });
+      for (let i = 0; i < 5; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await new Promise<void>((r) => requestAnimationFrame(() => r()));
+        await raf();
         // eslint-disable-next-line no-await-in-loop
-        await new Promise<void>((r) => setTimeout(r, 0));
+        await tick();
       }
     }
 
@@ -288,8 +296,8 @@ describe('NotePanelService', () => {
     it('removes its ESC listener when the panel is destroyed', () => {
       const el = document.createElement('div');
       document.body.appendChild(el);
-      store.toggle(el);   // mount
-      store.toggle(el);   // unmount
+      store.toggle(el); // mount
+      store.toggle(el); // unmount
 
       const spy = jest.spyOn(store, 'clear');
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
