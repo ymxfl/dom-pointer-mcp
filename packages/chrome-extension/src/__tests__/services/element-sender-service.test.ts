@@ -1,4 +1,5 @@
 import { ConnectionStatus, RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 import { ElementSenderService } from '../../services/element-sender-service';
 
 type RWSInstance = {
@@ -7,6 +8,7 @@ type RWSInstance = {
   close: jest.Mock;
   listeners: Record<string, ((ev?: any) => void)[]>;
   addEventListener: (type: string, fn: (ev?: any) => void) => void;
+  removeEventListener: (type: string, fn: (ev?: any) => void) => void;
   emit: (type: string, ev?: any) => void;
 };
 
@@ -20,6 +22,12 @@ jest.mock('reconnecting-websocket', () => jest.fn().mockImplementation(() => {
     listeners: {},
     addEventListener(type, fn) {
       (this.listeners[type] ||= []).push(fn);
+    },
+    removeEventListener(type, fn) {
+      const arr = this.listeners[type];
+      if (!arr) return;
+      const idx = arr.indexOf(fn);
+      if (idx !== -1) arr.splice(idx, 1);
     },
     emit(type, ev) {
       (this.listeners[type] || []).forEach((fn) => fn(ev));
@@ -53,6 +61,7 @@ function makeElement(): RawPointedDOMElement {
 describe('ElementSenderService', () => {
   beforeEach(() => {
     createdSockets.length = 0;
+    (ReconnectingWebSocket as unknown as jest.Mock).mockClear();
     jest.useFakeTimers();
   });
 

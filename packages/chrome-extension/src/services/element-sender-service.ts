@@ -61,6 +61,7 @@ export class ElementSenderService {
       ConnectionStatus.ERROR,
       `Failed to send after ${this.SEND_RETRY_MAX_ATTEMPTS} attempts`,
     );
+    this.disconnect();
   }
 
   private async attemptSend(
@@ -93,21 +94,26 @@ export class ElementSenderService {
 
   private verifyDelivery(): Promise<boolean> {
     return new Promise((resolve) => {
-      if (!this.ws) {
+      const ws = this.ws;
+      if (!ws) {
         resolve(false);
         return;
       }
       let settled = false;
+      let timer: ReturnType<typeof setTimeout>;
       const settle = (ok: boolean) => {
         if (settled) return;
         settled = true;
+        clearTimeout(timer);
+        ws.removeEventListener('close', onClose);
+        ws.removeEventListener('error', onError);
         resolve(ok);
       };
       const onClose = () => settle(false);
       const onError = () => settle(false);
-      this.ws.addEventListener('close', onClose);
-      this.ws.addEventListener('error', onError);
-      setTimeout(() => settle(true), this.SEND_VERIFY_WINDOW);
+      ws.addEventListener('close', onClose);
+      ws.addEventListener('error', onError);
+      timer = setTimeout(() => settle(true), this.SEND_VERIFY_WINDOW);
     });
   }
 
