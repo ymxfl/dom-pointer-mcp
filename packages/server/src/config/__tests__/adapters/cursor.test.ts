@@ -64,7 +64,7 @@ describe('cursorAdapter', () => {
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.cursor', 'mcp.json'));
       const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
-      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+      expect(written.mcpServers['dom-pointer'].env.MCP_POINTER_PORT).toBe('7007');
     });
 
     it('merges into existing mcp.json preserving other servers', async () => {
@@ -77,7 +77,7 @@ describe('cursorAdapter', () => {
       expect(result.status).toBe('success');
       const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
       expect(written.mcpServers.other.command).toBe('node');
-      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+      expect(written.mcpServers['dom-pointer'].env.MCP_POINTER_PORT).toBe('7007');
     });
   });
 });
@@ -148,11 +148,11 @@ describe('cursorAdapter uninstall', () => {
   });
 
   describe('unregisterMcp', () => {
-    it('user scope removes mcpServers.pointer from ~/.cursor/mcp.json, preserves others', async () => {
+    it('user scope removes mcpServers.dom-pointer from ~/.cursor/mcp.json, preserves others', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node' },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
         unrelated: 'keep me',
       }));
@@ -163,7 +163,7 @@ describe('cursorAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers.other.command).toBe('node');
       expect(written.unrelated).toBe('keep me');
     });
@@ -185,7 +185,7 @@ describe('cursorAdapter uninstall', () => {
 
     it('user scope writes back mcpServers:{} when pointer was the only key', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
-        mcpServers: { pointer: { command: 'old' } },
+        mcpServers: { 'dom-pointer': { command: 'old' } },
       }));
       const result = await cursorAdapter.unregisterMcp!('user');
       expect(result.status).toBe('success');
@@ -199,7 +199,7 @@ describe('cursorAdapter uninstall', () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node' },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
       }));
       const result = await cursorAdapter.unregisterMcp!('project');
@@ -209,7 +209,7 @@ describe('cursorAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers.other.command).toBe('node');
     });
   });

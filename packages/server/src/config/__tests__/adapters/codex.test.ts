@@ -47,12 +47,12 @@ describe('codexAdapter', () => {
   });
 
   describe('registerMcp', () => {
-    it('user writes ~/.codex/config.toml with [mcp_servers.pointer]', async () => {
+    it('user writes ~/.codex/config.toml with [mcp_servers.dom-pointer]', async () => {
       const result = await codexAdapter.registerMcp('user', 7007);
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(os.homedir(), '.codex', 'config.toml'));
       const content = mockedWriteFile.mock.calls[0][1] as string;
-      expect(content).toMatch(/\[mcp_servers\.pointer\]/);
+      expect(content).toMatch(/\[mcp_servers\.dom-pointer\]/);
       expect(content).toContain('command = "npx"');
       expect(content).toContain('MCP_POINTER_PORT = "7007"');
     });
@@ -67,7 +67,7 @@ describe('codexAdapter', () => {
       expect(content).toContain('[other]');
       expect(content).toContain('foo = "bar"');
       expect(content).toContain('[mcp_servers.previously]');
-      expect(content).toContain('[mcp_servers.pointer]');
+      expect(content).toContain('[mcp_servers.dom-pointer]');
     });
   });
 });
@@ -123,11 +123,11 @@ describe('codexAdapter uninstall', () => {
       '[mcp_servers.other]',
       'command = "other"',
       '',
-      '[mcp_servers.pointer]',
+      '[mcp_servers.dom-pointer]',
       'command = "npx"',
       'args = ["-y", "@dom-pointer-mcp/server@latest", "start"]',
       '',
-      '[mcp_servers.pointer.env]',
+      '[mcp_servers.dom-pointer.env]',
       'MCP_POINTER_PORT = "7007"',
       '',
       '[unrelated]',
@@ -135,7 +135,7 @@ describe('codexAdapter uninstall', () => {
       '',
     ].join('\n');
 
-    it('user scope strips [mcp_servers.pointer] and sub-tables only', async () => {
+    it('user scope strips [mcp_servers.dom-pointer] and sub-tables only', async () => {
       mockedReadFile.mockResolvedValueOnce(fixture);
       const result = await codexAdapter.unregisterMcp('user');
       expect(result.status).toBe('success');
@@ -147,12 +147,12 @@ describe('codexAdapter uninstall', () => {
       expect(written).toContain('[mcp_servers.other]');
       expect(written).toContain('[unrelated]');
       expect(written).toContain('key = "value"');
-      expect(written).not.toContain('[mcp_servers.pointer]');
-      expect(written).not.toContain('[mcp_servers.pointer.env]');
+      expect(written).not.toContain('[mcp_servers.dom-pointer]');
+      expect(written).not.toContain('[mcp_servers.dom-pointer.env]');
       expect(written).not.toContain('MCP_POINTER_PORT');
     });
 
-    it('user scope returns skipped when [mcp_servers.pointer] not present', async () => {
+    it('user scope returns skipped when [mcp_servers.dom-pointer] not present', async () => {
       mockedReadFile.mockResolvedValueOnce('[other]\nfoo = "bar"\n');
       const result = await codexAdapter.unregisterMcp('user');
       expect(result.status).toBe('skipped');
@@ -176,7 +176,7 @@ describe('codexAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
       expect(writeCall).toBeDefined();
       const written = writeCall![1] as string;
-      expect(written).not.toContain('[mcp_servers.pointer]');
+      expect(written).not.toContain('[mcp_servers.dom-pointer]');
       expect(written).not.toContain('MCP_POINTER_PORT');
       expect(written).toContain('[mcp_servers.other]');
     });

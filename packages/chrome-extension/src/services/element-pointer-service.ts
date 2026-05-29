@@ -187,7 +187,7 @@ export default class ElementPointerService {
   /**
    * Build a JSON string for the Copy button. This serializes the same
    * RawPointedSelection that goes to the server. Compared to what the
-   * agent receives via mcp__pointer__get-pointed-element, this is a
+   * agent receives via mcp__dom-pointer__get-pointed-element, this is a
    * SUPERSET (contains outerHTML and full computedStyles instead of the
    * server's filtered cssProperties), so an agent can still consume it.
    * It does not include the server-generated `selector` field.

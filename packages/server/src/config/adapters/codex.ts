@@ -13,7 +13,7 @@ import {
   COMMAND_BODY,
 } from '../trigger-content';
 
-const MCP_SERVER_NAME = 'pointer';
+const MCP_SERVER_NAME = 'dom-pointer';
 
 function buildTomlSection(port: number): string {
   return `[mcp_servers.${MCP_SERVER_NAME}]
@@ -27,7 +27,7 @@ MCP_POINTER_PORT = "${port}"
 
 function mergeToml(existing: string, port: number): string {
   const section = buildTomlSection(port);
-  const headerRe = /^\[mcp_servers\.pointer(?:\.[\w-]+)?\]/m;
+  const headerRe = /^\[mcp_servers\.dom-pointer(?:\.[\w-]+)?\]/m;
   if (!headerRe.test(existing)) {
     const trimmed = existing.trimEnd();
     const prefix = trimmed.length > 0 ? `${trimmed}\n\n` : '';
@@ -39,11 +39,11 @@ function mergeToml(existing: string, port: number): string {
   let inserted = false;
   while (i < lines.length) {
     const line = lines[i];
-    if (/^\[mcp_servers\.pointer(?:\.[\w-]+)?\]/.test(line.trim())) {
+    if (/^\[mcp_servers\.dom-pointer(?:\.[\w-]+)?\]/.test(line.trim())) {
       i += 1;
       while (i < lines.length) {
         const t = lines[i].trim();
-        if (/^\[/.test(t) && !/^\[mcp_servers\.pointer(?:\.[\w-]+)?\]/.test(t)) break;
+        if (/^\[/.test(t) && !/^\[mcp_servers\.dom-pointer(?:\.[\w-]+)?\]/.test(t)) break;
         i += 1;
       }
       if (!inserted) {
@@ -59,7 +59,7 @@ function mergeToml(existing: string, port: number): string {
 }
 
 function stripPointerToml(existing: string): { changed: boolean; next: string } {
-  const headerRe = /^\s*\[mcp_servers\.pointer(?:\.[\w-]+)?\]\s*$/;
+  const headerRe = /^\s*\[mcp_servers\.dom-pointer(?:\.[\w-]+)?\]\s*$/;
   const otherHeaderRe = /^\s*\[/;
   const lines = existing.split('\n');
   const out: string[] = [];
@@ -149,7 +149,7 @@ export const codexAdapter: ToolAdapter = {
       const { changed, next } = stripPointerToml(existing);
       if (!changed) {
         return {
-          status: 'skipped', scope, path: filePath, message: '[mcp_servers.pointer] not present',
+          status: 'skipped', scope, path: filePath, message: '[mcp_servers.dom-pointer] not present',
         };
       }
       await writeFileEnsuringDir(filePath, next);
@@ -157,7 +157,7 @@ export const codexAdapter: ToolAdapter = {
         status: 'success',
         scope,
         path: filePath,
-        message: '[mcp_servers.pointer] removed from config.toml',
+        message: '[mcp_servers.dom-pointer] removed from config.toml',
       };
     } catch (e) {
       return { status: 'failed', scope, message: `Edit failed: ${(e as Error).message}` };

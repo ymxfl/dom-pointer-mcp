@@ -169,11 +169,11 @@ describe('windsurfAdapter uninstall', () => {
   });
 
   describe('unregisterMcp', () => {
-    it('user scope removes mcpServers.pointer, preserves siblings and top-level keys', async () => {
+    it('user scope removes mcpServers.dom-pointer, preserves siblings and top-level keys', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node' },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
         unrelated: 'keep me',
       }));
@@ -185,7 +185,7 @@ describe('windsurfAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers.other.command).toBe('node');
       expect(written.unrelated).toBe('keep me');
     });
@@ -208,7 +208,7 @@ describe('windsurfAdapter uninstall', () => {
 
     it('user scope writes back mcpServers:{} when pointer was only key', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
-        mcpServers: { pointer: { command: 'old' } },
+        mcpServers: { 'dom-pointer': { command: 'old' } },
       }));
       const result = await windsurfAdapter.unregisterMcp!('user');
       expect(result.status).toBe('success');
@@ -223,7 +223,7 @@ describe('windsurfAdapter uninstall', () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node' },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
       }));
       const result = await windsurfAdapter.unregisterMcp!('project');
@@ -234,7 +234,7 @@ describe('windsurfAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers.other.command).toBe('node');
     });
   });

@@ -79,15 +79,15 @@ describe('claudeAdapter', () => {
       );
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer.command).toBe('npx');
-      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+      expect(written.mcpServers['dom-pointer'].command).toBe('npx');
+      expect(written.mcpServers['dom-pointer'].env.MCP_POINTER_PORT).toBe('7007');
     });
 
     it('project scope merges into existing .mcp.json preserving other servers', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node', args: ['other.js'] },
-          pointer: { command: 'old', args: ['old'] },
+          'dom-pointer': { command: 'old', args: ['old'] },
         },
         unrelated: 'keep me',
       }));
@@ -98,8 +98,8 @@ describe('claudeAdapter', () => {
       );
       const written = JSON.parse(writeCall![1]);
       expect(written.mcpServers.other.command).toBe('node');
-      expect(written.mcpServers.pointer.command).toBe('npx');
-      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+      expect(written.mcpServers['dom-pointer'].command).toBe('npx');
+      expect(written.mcpServers['dom-pointer'].env.MCP_POINTER_PORT).toBe('7007');
       expect(written.unrelated).toBe('keep me');
     });
 
@@ -172,7 +172,7 @@ describe('claudeAdapter uninstall', () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node' },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
         unrelated: 'keep me',
       }));
@@ -181,7 +181,7 @@ describe('claudeAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0].endsWith('.mcp.json'));
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers.other.command).toBe('node');
       expect(written.unrelated).toBe('keep me');
     });
@@ -206,7 +206,7 @@ describe('claudeAdapter uninstall', () => {
 
     it('project scope leaves {} when last key is removed (does not unlink)', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
-        mcpServers: { pointer: { command: 'old' } },
+        mcpServers: { 'dom-pointer': { command: 'old' } },
       }));
       const result = await claudeAdapter.unregisterMcp('project');
       expect(result.status).toBe('success');
