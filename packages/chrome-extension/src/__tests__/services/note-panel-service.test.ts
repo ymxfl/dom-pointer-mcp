@@ -228,9 +228,6 @@ describe('NotePanelService', () => {
       });
       store.toggle(el);
       stubPanelRect();
-      // Force a re-position by toggling a no-op style change is overkill; instead
-      // simulate a scroll event that autoUpdate listens to, prompting recompute.
-      window.dispatchEvent(new Event('resize'));
       await waitForPositioning();
 
       const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
@@ -251,7 +248,6 @@ describe('NotePanelService', () => {
       });
       store.toggle(el);
       stubPanelRect();
-      window.dispatchEvent(new Event('resize'));
       await waitForPositioning();
 
       const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
