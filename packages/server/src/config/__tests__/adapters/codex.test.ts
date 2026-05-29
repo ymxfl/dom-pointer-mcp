@@ -5,6 +5,8 @@ jest.mock('fs/promises', () => ({
   mkdir: jest.fn().mockResolvedValue(undefined),
   writeFile: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' })),
+  unlink: jest.fn().mockResolvedValue(undefined),
+  access: jest.fn().mockResolvedValue(undefined),
 }));
 
 import fs from 'fs/promises';
@@ -14,9 +16,14 @@ const mockedWriteFile = fs.writeFile as jest.Mock;
 const mockedReadFile = fs.readFile as jest.Mock;
 
 beforeEach(() => {
-  mockedWriteFile.mockClear();
-  mockedReadFile.mockClear();
+  mockedWriteFile.mockReset();
+  mockedWriteFile.mockResolvedValue(undefined);
+  mockedReadFile.mockReset();
   mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+  (fs.unlink as jest.Mock).mockReset();
+  (fs.unlink as jest.Mock).mockResolvedValue(undefined);
+  (fs.access as jest.Mock).mockReset();
+  (fs.access as jest.Mock).mockResolvedValue(undefined);
 });
 
 describe('codexAdapter', () => {
@@ -61,6 +68,125 @@ describe('codexAdapter', () => {
       expect(content).toContain('foo = "bar"');
       expect(content).toContain('[mcp_servers.previously]');
       expect(content).toContain('[mcp_servers.pointer]');
+    });
+  });
+});
+
+describe('codexAdapter uninstall', () => {
+  describe('uninstallCommand', () => {
+    it('user scope deletes ~/.codex/prompts/pointed.md', async () => {
+      const unlinkMock = fs.unlink as jest.Mock;
+      unlinkMock.mockReset();
+      unlinkMock.mockResolvedValue(undefined);
+      const result = await codexAdapter.uninstallCommand('user');
+      expect(result.status).toBe('success');
+      expect(result.scope).toBe('user');
+      const expected = path.join(os.homedir(), '.codex', 'prompts', 'pointed.md');
+      expect(result.path).toBe(expected);
+      expect(unlinkMock).toHaveBeenCalledWith(expected);
+    });
+
+    it('user scope returns skipped when file missing', async () => {
+      const unlinkMock = fs.unlink as jest.Mock;
+      unlinkMock.mockReset();
+      unlinkMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await codexAdapter.uninstallCommand('user');
+      expect(result.status).toBe('skipped');
+    });
+
+    it('project scope still operates on user file, status degraded', async () => {
+      const unlinkMock = fs.unlink as jest.Mock;
+      unlinkMock.mockReset();
+      unlinkMock.mockResolvedValue(undefined);
+      const result = await codexAdapter.uninstallCommand('project');
+      expect(result.status).toBe('degraded');
+      expect(result.scope).toBe('user');
+      const expected = path.join(os.homedir(), '.codex', 'prompts', 'pointed.md');
+      expect(result.path).toBe(expected);
+      expect(unlinkMock).toHaveBeenCalledWith(expected);
+    });
+
+    it('project scope returns skipped when file missing', async () => {
+      const unlinkMock = fs.unlink as jest.Mock;
+      unlinkMock.mockReset();
+      unlinkMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await codexAdapter.uninstallCommand('project');
+      expect(result.status).toBe('skipped');
+    });
+  });
+
+  describe('unregisterMcp', () => {
+    const fixture = [
+      '# top-level',
+      'key = "value"',
+      '',
+      '[mcp_servers.other]',
+      'command = "other"',
+      '',
+      '[mcp_servers.pointer]',
+      'command = "npx"',
+      'args = ["-y", "@mcp-pointer/server@latest", "start"]',
+      '',
+      '[mcp_servers.pointer.env]',
+      'MCP_POINTER_PORT = "7007"',
+      '',
+      '[unrelated]',
+      'foo = "bar"',
+      '',
+    ].join('\n');
+
+    it('user scope strips [mcp_servers.pointer] and sub-tables only', async () => {
+      mockedReadFile.mockResolvedValueOnce(fixture);
+      const result = await codexAdapter.unregisterMcp('user');
+      expect(result.status).toBe('success');
+      const expected = path.join(os.homedir(), '.codex', 'config.toml');
+      expect(result.path).toBe(expected);
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
+      expect(writeCall).toBeDefined();
+      const written = writeCall![1] as string;
+      expect(written).toContain('[mcp_servers.other]');
+      expect(written).toContain('[unrelated]');
+      expect(written).toContain('key = "value"');
+      expect(written).not.toContain('[mcp_servers.pointer]');
+      expect(written).not.toContain('[mcp_servers.pointer.env]');
+      expect(written).not.toContain('MCP_POINTER_PORT');
+    });
+
+    it('user scope returns skipped when [mcp_servers.pointer] not present', async () => {
+      mockedReadFile.mockResolvedValueOnce('[other]\nfoo = "bar"\n');
+      const result = await codexAdapter.unregisterMcp('user');
+      expect(result.status).toBe('skipped');
+      expect(mockedWriteFile).not.toHaveBeenCalled();
+    });
+
+    it('user scope returns skipped when file missing', async () => {
+      (fs.access as jest.Mock).mockReset();
+      (fs.access as jest.Mock).mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await codexAdapter.unregisterMcp('user');
+      expect(result.status).toBe('skipped');
+      expect(mockedWriteFile).not.toHaveBeenCalled();
+    });
+
+    it('project scope removes from <cwd>/.codex/config.toml', async () => {
+      mockedReadFile.mockResolvedValueOnce(fixture);
+      const result = await codexAdapter.unregisterMcp('project');
+      expect(result.status).toBe('success');
+      const expected = path.join(process.cwd(), '.codex', 'config.toml');
+      expect(result.path).toBe(expected);
+      const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expected);
+      expect(writeCall).toBeDefined();
+      const written = writeCall![1] as string;
+      expect(written).not.toContain('[mcp_servers.pointer]');
+      expect(written).not.toContain('MCP_POINTER_PORT');
+      expect(written).toContain('[mcp_servers.other]');
+    });
+
+    it('project scope returns skipped when file missing', async () => {
+      (fs.access as jest.Mock).mockReset();
+      (fs.access as jest.Mock).mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await codexAdapter.unregisterMcp('project');
+      expect(result.status).toBe('skipped');
+      expect(mockedWriteFile).not.toHaveBeenCalled();
     });
   });
 });

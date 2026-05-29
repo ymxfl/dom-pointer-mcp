@@ -1,7 +1,12 @@
 import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult, Scope } from '../types';
-import { writeFileEnsuringDir, readTextOrEmpty } from '../adapter-helpers';
+import {
+  writeFileEnsuringDir,
+  readTextOrEmpty,
+  fileExists,
+  deleteFileIfExists,
+} from '../adapter-helpers';
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
@@ -51,6 +56,28 @@ function mergeToml(existing: string, port: number): string {
     }
   }
   return result.join('\n');
+}
+
+function stripPointerToml(existing: string): { changed: boolean; next: string } {
+  const headerRe = /^\s*\[mcp_servers\.pointer(?:\.[\w-]+)?\]\s*$/;
+  const otherHeaderRe = /^\s*\[/;
+  const lines = existing.split('\n');
+  const out: string[] = [];
+  let changed = false;
+  let i = 0;
+  while (i < lines.length) {
+    if (headerRe.test(lines[i])) {
+      changed = true;
+      i += 1;
+      while (i < lines.length && !otherHeaderRe.test(lines[i])) i += 1;
+    } else {
+      out.push(lines[i]);
+      i += 1;
+    }
+  }
+  // collapse runs of >=3 blank lines that the removal can create
+  const collapsed = out.join('\n').replace(/\n{3,}/g, '\n\n');
+  return { changed, next: collapsed };
 }
 
 function buildPromptFile(): string {
@@ -108,4 +135,64 @@ export const codexAdapter: ToolAdapter = {
     }
   },
   // No installSkill: Codex has no separate skill mechanism distinct from prompts.
+
+  async unregisterMcp(scope): Promise<OperationResult> {
+    const base = scope === 'user' ? os.homedir() : process.cwd();
+    const filePath = path.join(base, '.codex', 'config.toml');
+    if (!(await fileExists(filePath))) {
+      return {
+        status: 'skipped', scope, path: filePath, message: 'config.toml not found',
+      };
+    }
+    try {
+      const existing = await readTextOrEmpty(filePath);
+      const { changed, next } = stripPointerToml(existing);
+      if (!changed) {
+        return {
+          status: 'skipped', scope, path: filePath, message: '[mcp_servers.pointer] not present',
+        };
+      }
+      await writeFileEnsuringDir(filePath, next);
+      return {
+        status: 'success',
+        scope,
+        path: filePath,
+        message: '[mcp_servers.pointer] removed from config.toml',
+      };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Edit failed: ${(e as Error).message}` };
+    }
+  },
+
+  async uninstallCommand(scope): Promise<OperationResult> {
+    const filePath = path.join(os.homedir(), '.codex', 'prompts', `${TRIGGER_NAME}.md`);
+    const isDegraded = scope === 'project';
+    const effectiveScope: Scope = 'user';
+    try {
+      const r = await deleteFileIfExists(filePath);
+      if (r === 'missing') {
+        return {
+          status: 'skipped',
+          scope: effectiveScope,
+          path: filePath,
+          message: 'Prompt file not found',
+        };
+      }
+      return {
+        status: isDegraded ? 'degraded' : 'success',
+        scope: effectiveScope,
+        path: filePath,
+        message: isDegraded
+          ? 'Codex prompts live at user scope; slash command (prompt) removed there.'
+          : 'Slash command (prompt) removed',
+      };
+    } catch (e) {
+      return {
+        status: 'failed',
+        scope: effectiveScope,
+        message: `Delete failed: ${(e as Error).message}`,
+      };
+    }
+  },
+  // No uninstallSkill: codex has no separate skill mechanism.
 };
