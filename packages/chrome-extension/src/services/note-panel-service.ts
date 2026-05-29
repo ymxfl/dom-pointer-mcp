@@ -121,7 +121,9 @@ export default class NotePanelService {
       if (!root) return;
       const { x, y } = await computePosition(virtualAnchor, root, {
         placement: 'bottom-start',
-        middleware: [flip(), shift({ padding: 8, limiter: limitShift() })],
+        middleware: [flip(), shift({
+          padding: 8, mainAxis: true, crossAxis: true, limiter: limitShift(),
+        })],
       });
       if (!this.root) return;
       Object.assign(root.style, { left: `${x}px`, top: `${y}px` });

@@ -165,6 +165,8 @@ describe('NotePanelService', () => {
   describe('positioning with virtual anchor', () => {
     const VIEW_W = 1000;
     const VIEW_H = 800;
+    const PANEL_W = 280;
+    const PANEL_H = 200;
 
     beforeEach(() => {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: VIEW_W });
@@ -186,28 +188,79 @@ describe('NotePanelService', () => {
       el.getBoundingClientRect = () => full;
     }
 
-    async function panelPosition(): Promise<{ left: number; top: number }> {
-      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+    function stubPanelRect(): HTMLElement {
       const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
-      return { left: parseFloat(panel.style.left), top: parseFloat(panel.style.top) };
+      // Track the latest left/top floating-ui assigned via style so the stubbed
+      // rect reflects the panel's current position. jsdom otherwise returns 0x0.
+      panel.getBoundingClientRect = () => {
+        const left = parseFloat(panel.style.left) || 0;
+        const top = parseFloat(panel.style.top) || 0;
+        return {
+          x: left, y: top, left, top,
+          right: left + PANEL_W, bottom: top + PANEL_H,
+          width: PANEL_W, height: PANEL_H,
+          toJSON() { return this; },
+        } as DOMRect;
+      };
+      // floating-ui-dom reads offsetWidth/offsetHeight for floating element
+      // dimensions (see getCssDimensions). jsdom returns 0 for both, so we
+      // must override these as well or shift sees a 0x0 panel and never moves it.
+      Object.defineProperty(panel, 'offsetWidth', { configurable: true, value: PANEL_W });
+      Object.defineProperty(panel, 'offsetHeight', { configurable: true, value: PANEL_H });
+      return panel;
     }
 
-    it('keeps panel inside viewport when anchor fills the viewport', async () => {
+    async function waitForPositioning(): Promise<void> {
+      // floating-ui's autoUpdate may run multiple async passes; flush a few frames.
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise<void>((r) => requestAnimationFrame(() => r()));
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise<void>((r) => setTimeout(r, 0));
+      }
+    }
+
+    it('keeps a realistically-sized panel inside the viewport when anchor fills it', async () => {
       const el = document.createElement('div');
       document.body.appendChild(el);
       stubRect(el, {
         left: 0, top: 0, right: VIEW_W, bottom: VIEW_H, width: VIEW_W, height: VIEW_H,
       });
       store.toggle(el);
+      stubPanelRect();
+      // Force a re-position by toggling a no-op style change is overkill; instead
+      // simulate a scroll event that autoUpdate listens to, prompting recompute.
+      window.dispatchEvent(new Event('resize'));
+      await waitForPositioning();
 
-      const { left, top } = await panelPosition();
       const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
-      const w = panel.offsetWidth || 280;
-      const h = panel.offsetHeight || 200;
+      const left = parseFloat(panel.style.left);
+      const top = parseFloat(panel.style.top);
       expect(left).toBeGreaterThanOrEqual(0);
       expect(top).toBeGreaterThanOrEqual(0);
-      expect(left + w).toBeLessThanOrEqual(VIEW_W + 1);
-      expect(top + h).toBeLessThanOrEqual(VIEW_H + 1);
+      expect(left + PANEL_W).toBeLessThanOrEqual(VIEW_W);
+      expect(top + PANEL_H).toBeLessThanOrEqual(VIEW_H);
+    });
+
+    it('keeps a realistically-sized panel inside the viewport when anchor extends past it', async () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      // Long body scrolled half-way: extends beyond viewport in both directions.
+      stubRect(el, {
+        left: 0, top: -500, right: VIEW_W, bottom: 2500, width: VIEW_W, height: 3000,
+      });
+      store.toggle(el);
+      stubPanelRect();
+      window.dispatchEvent(new Event('resize'));
+      await waitForPositioning();
+
+      const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+      const left = parseFloat(panel.style.left);
+      const top = parseFloat(panel.style.top);
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(left + PANEL_W).toBeLessThanOrEqual(VIEW_W);
+      expect(top + PANEL_H).toBeLessThanOrEqual(VIEW_H);
     });
   });
 });
