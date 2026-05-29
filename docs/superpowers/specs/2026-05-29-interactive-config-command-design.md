@@ -74,8 +74,8 @@ export interface ToolAdapter {
 Rules for every `uninstall*` / `unregister*` method:
 
 - **Idempotent.** If the target file or JSON key does not exist, return `{ status: 'skipped', message: 'nothing to remove' }`. Never error on "already gone".
-- **Surgical.** When removing the `pointer` MCP server from a multi-key JSON file (`.mcp.json`, `~/.cursor/mcp.json`, etc.), delete only the `pointer` key. Leave other keys untouched.
-- **Never delete user files.** If removing our key leaves an empty `{}`, write `{}` back rather than `unlink` the file. Some tools may treat absence as "never configured" and rewrite defaults.
+- **Surgical.** When removing the `pointer` MCP server from a multi-key structured config (JSON files like `.mcp.json`, `~/.cursor/mcp.json`, or the codex TOML config), delete only the `pointer` entry. Leave other keys untouched.
+- **Never delete user files.** If removing our entry leaves an empty document (`{}` for JSON, an empty `[mcp_servers]` table for TOML), write the empty document back rather than `unlink` the file. Some tools may treat absence as "never configured" and rewrite defaults.
 - **Claude MCP user scope.** Reuse `claude mcp remove pointer -s user` via `execSync`. Swallow "not installed" errors and return `skipped`.
 - **Skill / slash files.** `rm` the single file we wrote (`~/.claude/skills/<TRIGGER_NAME>/SKILL.md`, `~/.claude/commands/<TRIGGER_NAME>.md`, etc.). Do not remove the parent directory even if it becomes empty — same "never delete user dirs" principle.
 
@@ -101,11 +101,11 @@ Add `@inquirer/prompts` to `packages/server/dependencies`. It is MIT, actively m
 ## Testing
 
 - **Adapter unit tests (new).** For each adapter, add `unregisterMcp` / `uninstallCommand` / `uninstallSkill` cases covering:
-  - file does not exist → `skipped`
-  - file exists, our key is absent → `skipped`, file unchanged
-  - file exists with our key + other keys → key removed, other keys preserved
-  - file exists with only our key → file written as `{}`
-  - JSON parse error → `failed`, file untouched
+  - target file does not exist → `skipped`
+  - file exists, our entry is absent → `skipped`, file unchanged
+  - file exists with our entry + other entries → entry removed, others preserved
+  - file exists with only our entry → file written back as an empty document (`{}` for JSON, empty table for TOML)
+  - parse error → `failed`, file untouched
 - **Orchestrator integration test (new).** Drive `executeForAgents` with two stub adapters (one all-success, one with a `degraded` and a `failed`) and assert: per-agent rendering order, the aggregate exit-code logic, and that `installCommand` is skipped when `withSlash=false`.
 - **Interactive prompts.** Not unit-tested — covered by manual smoke (`pnpm --filter @mcp-pointer/server dev config`).
 - Existing install-path adapter tests stay green unchanged.
