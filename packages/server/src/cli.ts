@@ -54,7 +54,8 @@ program
 program
   .command(`${CLICommand.CONFIG} [tool]`)
   .option('--scope <scope>', 'Install scope: user or project (interactive if omitted)')
-  .description('Configure MCP Pointer for AI tools (claude, cursor, windsurf, codex, opencode, joycode)')
+  .option('--uninstall', 'Remove MCP Pointer instead of installing')
+  .description('Configure MCP Pointer for AI tools (interactive when no tool is given)')
   .action(configCommand);
 
 program.parse();
