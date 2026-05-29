@@ -1,7 +1,7 @@
 import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult } from '../types';
-import { writeFileEnsuringDir } from '../adapter-helpers';
+import { writeFileEnsuringDir, readJsonOrDefault } from '../adapter-helpers';
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
@@ -29,16 +29,12 @@ alwaysApply: false
 ${SKILL_BODY}`;
 }
 
-function buildMcpJson(port: number): string {
-  return JSON.stringify({
-    mcpServers: {
-      [MCP_SERVER_NAME]: {
-        command: 'npx',
-        args: ['-y', '@mcp-pointer/server@latest', 'start'],
-        env: { MCP_POINTER_PORT: String(port) },
-      },
-    },
-  }, null, 2);
+function pointerEntry(port: number) {
+  return {
+    command: 'npx',
+    args: ['-y', '@mcp-pointer/server@latest', 'start'],
+    env: { MCP_POINTER_PORT: String(port) },
+  };
 }
 
 export const cursorAdapter: ToolAdapter = {
@@ -49,9 +45,19 @@ export const cursorAdapter: ToolAdapter = {
     const base = scope === 'user' ? os.homedir() : process.cwd();
     const filePath = path.join(base, '.cursor', 'mcp.json');
     try {
-      await writeFileEnsuringDir(filePath, buildMcpJson(port));
+      const existing = await readJsonOrDefault<Record<string, any>>(filePath, {});
+      const existingServers = (existing.mcpServers && typeof existing.mcpServers === 'object')
+        ? existing.mcpServers : {};
+      const merged = {
+        ...existing,
+        mcpServers: {
+          ...existingServers,
+          [MCP_SERVER_NAME]: pointerEntry(port),
+        },
+      };
+      await writeFileEnsuringDir(filePath, JSON.stringify(merged, null, 2));
       return {
-        status: 'success', scope, path: filePath, message: 'MCP server registered',
+        status: 'success', scope, path: filePath, message: 'MCP server merged into .cursor/mcp.json',
       };
     } catch (e) {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };

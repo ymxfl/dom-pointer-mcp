@@ -16,10 +16,13 @@ import { execSync } from 'child_process';
 import { claudeAdapter } from '../../adapters/claude';
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
+const mockedReadFile = fs.readFile as jest.Mock;
 const mockedExecSync = execSync as jest.Mock;
 
 beforeEach(() => {
   mockedWriteFile.mockClear();
+  mockedReadFile.mockClear();
+  mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
   mockedExecSync.mockClear();
   mockedExecSync.mockReturnValue('');
 });
@@ -71,6 +74,26 @@ describe('claudeAdapter', () => {
       const written = JSON.parse(writeCall![1]);
       expect(written.mcpServers.pointer.command).toBe('npx');
       expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+    });
+
+    it('project scope merges into existing .mcp.json preserving other servers', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify({
+        mcpServers: {
+          other: { command: 'node', args: ['other.js'] },
+          pointer: { command: 'old', args: ['old'] },
+        },
+        unrelated: 'keep me',
+      }));
+      const result = await claudeAdapter.registerMcp('project', 7007);
+      expect(result.status).toBe('success');
+      const writeCall = mockedWriteFile.mock.calls.find(
+        (call) => call[0].endsWith('.mcp.json'),
+      );
+      const written = JSON.parse(writeCall![1]);
+      expect(written.mcpServers.other.command).toBe('node');
+      expect(written.mcpServers.pointer.command).toBe('npx');
+      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+      expect(written.unrelated).toBe('keep me');
     });
 
     it('user scope runs claude mcp add CLI', async () => {

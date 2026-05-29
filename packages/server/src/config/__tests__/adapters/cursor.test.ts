@@ -11,8 +11,13 @@ import fs from 'fs/promises';
 import { cursorAdapter } from '../../adapters/cursor';
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
+const mockedReadFile = fs.readFile as jest.Mock;
 
-beforeEach(() => { mockedWriteFile.mockClear(); });
+beforeEach(() => {
+  mockedWriteFile.mockClear();
+  mockedReadFile.mockClear();
+  mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+});
 
 describe('cursorAdapter', () => {
   describe('installCommand', () => {
@@ -52,6 +57,19 @@ describe('cursorAdapter', () => {
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.cursor', 'mcp.json'));
       const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
+      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+    });
+
+    it('merges into existing mcp.json preserving other servers', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify({
+        mcpServers: {
+          other: { command: 'node', args: ['other.js'] },
+        },
+      }));
+      const result = await cursorAdapter.registerMcp('project', 7007);
+      expect(result.status).toBe('success');
+      const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
+      expect(written.mcpServers.other.command).toBe('node');
       expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
     });
   });

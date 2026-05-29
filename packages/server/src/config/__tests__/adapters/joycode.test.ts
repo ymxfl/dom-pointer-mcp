@@ -32,6 +32,19 @@ describe('joycodeAdapter', () => {
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.joycode', 'mcp.json'));
     });
+
+    it('user merges into existing joycode-mcp.json preserving other servers', async () => {
+      mockedReadFile.mockResolvedValueOnce(JSON.stringify({
+        mcpServers: {
+          'joycode-resources': { command: 'npx', args: ['@joycode-ide/resources-mcp'] },
+        },
+      }));
+      const result = await joycodeAdapter.registerMcp('user', 7007);
+      expect(result.status).toBe('success');
+      const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
+      expect(written.mcpServers['joycode-resources'].command).toBe('npx');
+      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+    });
   });
 
   describe('installCommand', () => {
