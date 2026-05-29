@@ -1135,7 +1135,7 @@ git commit -m "feat(config): add opencode adapter with mcp json merge"
 
 ---
 
-## Task 9: Joycode adapter（TDD，含 prompt.json 聚合 + trigger degrade）
+## Task 9: JoyCode adapter（TDD，含 prompt.json 聚合 + trigger degrade）
 
 **Files:**
 - Create: `packages/server/src/config/__tests__/adapters/joycode.test.ts`

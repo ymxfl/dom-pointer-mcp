@@ -269,7 +269,7 @@ async installTrigger(scope) {
 }
 ```
 
-### Joycode merge 示例
+### JoyCode merge 示例
 
 ```ts
 async installTrigger(scope) {
@@ -347,7 +347,7 @@ export default async function configCommand(
 | claude CLI 不存在 | result.failed，message 提示装 Claude Code CLI |
 | 文件不可写 | result.failed，含原始 error |
 | Codex TOML 复杂无法 merge | failed + 输出 "add manually" 段落 |
-| Joycode prompt.json 损坏 | warn + 当作空数组重建 |
+| JoyCode prompt.json 损坏 | warn + 当作空数组重建 |
 | Opencode opencode.json 含其他 mcp server | 保留其他，只更新 pointer |
 | 重复运行 | 幂等：覆盖之前的安装 |
 
@@ -357,7 +357,7 @@ export default async function configCommand(
 - Claude user MCP: `claude mcp remove` 先清，再 add
 - 项目级 JSON: read → merge → write
 - Codex TOML: replace 已有段落
-- Joycode: filter 旧 pointer entry → 加新
+- JoyCode: filter 旧 pointer entry → 加新
 
 ## 测试策略
 
@@ -417,4 +417,4 @@ mock：`fs/promises` 全 mock，断言 `writeFile` path+content；`execSync` moc
 | windsurf project MCP 真支持但 spec 写错 | 用户体验降级 | 实现期再验证，可能调整为真支持 |
 | opencode user trigger 路径未验证 | 写到无用位置 | 实现期手测，必要时降级到 project |
 | Trigger 文案对各 agent 触发效果不一致 | 短指令不触发 | 留作运营改进（修 trigger-content 即可，不改 adapter）|
-| Joycode prompt.json 损坏被静默重建 | 用户旧 entry 丢失 | 至少 log warn；future：加 backup 文件 |
+| JoyCode prompt.json 损坏被静默重建 | 用户旧 entry 丢失 | 至少 log warn；future：加 backup 文件 |
