@@ -1,7 +1,14 @@
 import path from 'path';
 import os from 'os';
 import type { ToolAdapter, OperationResult, Scope } from '../types';
-import { writeFileEnsuringDir, readTextOrEmpty, readJsonOrDefault } from '../adapter-helpers';
+import {
+  writeFileEnsuringDir,
+  readTextOrEmpty,
+  readJsonOrDefault,
+  fileExists,
+  deleteFileIfExists,
+  removeJsonKey,
+} from '../adapter-helpers';
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
@@ -32,6 +39,18 @@ function mergeGlobalRules(existing: string): string {
     return `${existing.substring(0, begin)}${buildRuleSection()}\n`;
   }
   return `${existing.substring(0, begin)}${buildRuleSection()}${existing.substring(end + RULE_END.length)}`;
+}
+
+function stripRuleBlock(existing: string): { changed: boolean; next: string } {
+  const begin = existing.indexOf(RULE_BEGIN);
+  const end = existing.indexOf(RULE_END);
+  if (begin === -1 || end === -1 || end < begin) {
+    return { changed: false, next: existing };
+  }
+  const before = existing.substring(0, begin);
+  const after = existing.substring(end + RULE_END.length);
+  const next = `${before}${after}`.replace(/\n{3,}/g, '\n\n').replace(/^\s*\n/, '');
+  return { changed: true, next };
 }
 
 function buildMcpConfig(port: number, existingMcpServers: Record<string, unknown> = {}) {
@@ -119,6 +138,85 @@ ${SKILL_BODY}`;
       return { status: 'success', scope, path: filePath, message: 'Skill rule installed' };
     } catch (e) {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
+    }
+  },
+
+  async unregisterMcp(scope): Promise<OperationResult> {
+    const isDegraded = scope === 'project';
+    const effectiveScope: Scope = 'user';
+    const filePath = path.join(os.homedir(), '.codeium', 'windsurf', 'mcp_config.json');
+    if (!(await fileExists(filePath))) {
+      return {
+        status: 'skipped',
+        scope: effectiveScope,
+        path: filePath,
+        message: isDegraded
+          ? 'Windsurf MCP lives at user scope; nothing to remove there.'
+          : 'mcp_config.json not found',
+      };
+    }
+    try {
+      const existing = await readJsonOrDefault<Record<string, any>>(filePath, {});
+      const removed = removeJsonKey(existing, ['mcpServers', MCP_SERVER_NAME]);
+      if (!removed) {
+        return {
+          status: 'skipped',
+          scope: effectiveScope,
+          path: filePath,
+          message: 'pointer entry not present',
+        };
+      }
+      await writeFileEnsuringDir(filePath, JSON.stringify(existing, null, 2));
+      return {
+        status: isDegraded ? 'degraded' : 'success',
+        scope: effectiveScope,
+        path: filePath,
+        message: isDegraded
+          ? 'Windsurf MCP lives at user scope; removed there.'
+          : 'pointer entry removed',
+      };
+    } catch (e) {
+      return { status: 'failed', scope: effectiveScope, message: `Edit failed: ${(e as Error).message}` };
+    }
+  },
+
+  async uninstallCommand(scope): Promise<OperationResult> {
+    const base = scope === 'user'
+      ? path.join(os.homedir(), '.codeium', 'windsurf')
+      : path.join(process.cwd(), '.windsurf');
+    const filePath = path.join(base, 'workflows', `${TRIGGER_NAME}.md`);
+    try {
+      const r = await deleteFileIfExists(filePath);
+      return r === 'deleted'
+        ? { status: 'success', scope, path: filePath, message: 'Workflow removed' }
+        : { status: 'skipped', scope, path: filePath, message: 'Workflow file not found' };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Delete failed: ${(e as Error).message}` };
+    }
+  },
+
+  async uninstallSkill(scope): Promise<OperationResult> {
+    try {
+      if (scope === 'user') {
+        const filePath = path.join(os.homedir(), '.codeium', 'windsurf', 'global_rules.md');
+        if (!(await fileExists(filePath))) {
+          return { status: 'skipped', scope, path: filePath, message: 'global_rules.md not found' };
+        }
+        const existing = await readTextOrEmpty(filePath);
+        const { changed, next } = stripRuleBlock(existing);
+        if (!changed) {
+          return { status: 'skipped', scope, path: filePath, message: 'No mcp-pointer block found' };
+        }
+        await writeFileEnsuringDir(filePath, next);
+        return { status: 'success', scope, path: filePath, message: 'Rule block removed from global_rules.md' };
+      }
+      const filePath = path.join(process.cwd(), '.windsurf', 'rules', `${TRIGGER_NAME}.md`);
+      const r = await deleteFileIfExists(filePath);
+      return r === 'deleted'
+        ? { status: 'success', scope, path: filePath, message: 'Skill rule removed' }
+        : { status: 'skipped', scope, path: filePath, message: 'Skill file not found' };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Delete failed: ${(e as Error).message}` };
     }
   },
 };
