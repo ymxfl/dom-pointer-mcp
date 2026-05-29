@@ -52,7 +52,7 @@ describe('joycodeAdapter', () => {
       expect(result.status).toBe('success');
       const written = JSON.parse(mockedWriteFile.mock.calls[0][1]);
       expect(written.mcpServers['joycode-resources'].command).toBe('npx');
-      expect(written.mcpServers.pointer.env.MCP_POINTER_PORT).toBe('7007');
+      expect(written.mcpServers['dom-pointer'].env.MCP_POINTER_PORT).toBe('7007');
     });
   });
 
@@ -131,11 +131,11 @@ describe('joycodeAdapter uninstall', () => {
   });
 
   describe('unregisterMcp', () => {
-    it('user removes mcpServers.pointer from ~/.joycode/joycode-mcp.json, preserves siblings', async () => {
+    it('user removes mcpServers.dom-pointer from ~/.joycode/joycode-mcp.json, preserves siblings', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           'joycode-resources': { command: 'npx', args: ['@joycode-ide/resources-mcp'] },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
         unrelated: 'keep me',
       }));
@@ -146,16 +146,16 @@ describe('joycodeAdapter uninstall', () => {
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
       expect(writeCall).toBeDefined();
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers['joycode-resources'].command).toBe('npx');
       expect(written.unrelated).toBe('keep me');
     });
 
-    it('project removes mcpServers.pointer from <cwd>/.joycode/mcp.json', async () => {
+    it('project removes mcpServers.dom-pointer from <cwd>/.joycode/mcp.json', async () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify({
         mcpServers: {
           other: { command: 'node' },
-          pointer: { command: 'old' },
+          'dom-pointer': { command: 'old' },
         },
       }));
       const result = await joycodeAdapter.unregisterMcp('project');
@@ -164,7 +164,7 @@ describe('joycodeAdapter uninstall', () => {
       expect(result.path).toBe(expectedPath);
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
       const written = JSON.parse(writeCall![1]);
-      expect(written.mcpServers.pointer).toBeUndefined();
+      expect(written.mcpServers['dom-pointer']).toBeUndefined();
       expect(written.mcpServers.other.command).toBe('node');
     });
 

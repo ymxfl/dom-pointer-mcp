@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "release:prepare": "bash scripts/release.sh"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
