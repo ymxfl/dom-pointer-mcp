@@ -42,6 +42,8 @@ export default class NotePanelService {
 
   private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
+  private handleKeyDown: ((e: KeyboardEvent) => void) | null = null;
+
   constructor(
     private store: SelectionStoreService,
     private onSend: OnSend,
@@ -128,6 +130,14 @@ export default class NotePanelService {
       if (!this.root) return;
       Object.assign(root.style, { left: `${x}px`, top: `${y}px` });
     });
+
+    this.handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        this.store.clear();
+      }
+    };
+    document.addEventListener('keydown', this.handleKeyDown, true);
 
     this.textarea!.focus();
   }
@@ -219,6 +229,10 @@ export default class NotePanelService {
   private destroyPanel(): void {
     this.cleanupAutoUpdate?.();
     this.cleanupAutoUpdate = null;
+    if (this.handleKeyDown) {
+      document.removeEventListener('keydown', this.handleKeyDown, true);
+      this.handleKeyDown = null;
+    }
     if (this.feedbackTimer) {
       clearTimeout(this.feedbackTimer);
       this.feedbackTimer = null;

@@ -259,4 +259,42 @@ describe('NotePanelService', () => {
       expect(top + PANEL_H).toBeLessThanOrEqual(VIEW_H);
     });
   });
+
+  describe('ESC closes the selection', () => {
+    it('pressing ESC while panel is mounted clears the store and destroys the panel', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      store.toggle(el);
+      expect(document.querySelector(PANEL_SELECTOR)).not.toBeNull();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+      expect(store.getAll()).toEqual([]);
+      expect(document.querySelector(PANEL_SELECTOR)).toBeNull();
+    });
+
+    it('pressing ESC clears the store even when textarea is focused', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      store.toggle(el);
+
+      const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+      textarea.focus();
+      textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(store.getAll()).toEqual([]);
+    });
+
+    it('removes its ESC listener when the panel is destroyed', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      store.toggle(el);   // mount
+      store.toggle(el);   // unmount
+
+      const spy = jest.spyOn(store, 'clear');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+  });
 });
