@@ -161,4 +161,53 @@ describe('NotePanelService', () => {
     expect(store.getAll()).toEqual([]);
     expect(document.querySelector(PANEL_SELECTOR)).toBeNull();
   });
+
+  describe('positioning with virtual anchor', () => {
+    const VIEW_W = 1000;
+    const VIEW_H = 800;
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: VIEW_W });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: VIEW_H });
+    });
+
+    function stubRect(el: HTMLElement, rect: Partial<DOMRect>) {
+      const full: DOMRect = {
+        x: rect.x ?? rect.left ?? 0,
+        y: rect.y ?? rect.top ?? 0,
+        left: rect.left ?? 0,
+        top: rect.top ?? 0,
+        right: rect.right ?? 0,
+        bottom: rect.bottom ?? 0,
+        width: rect.width ?? ((rect.right ?? 0) - (rect.left ?? 0)),
+        height: rect.height ?? ((rect.bottom ?? 0) - (rect.top ?? 0)),
+        toJSON() { return this; },
+      };
+      el.getBoundingClientRect = () => full;
+    }
+
+    async function panelPosition(): Promise<{ left: number; top: number }> {
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+      return { left: parseFloat(panel.style.left), top: parseFloat(panel.style.top) };
+    }
+
+    it('keeps panel inside viewport when anchor fills the viewport', async () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      stubRect(el, {
+        left: 0, top: 0, right: VIEW_W, bottom: VIEW_H, width: VIEW_W, height: VIEW_H,
+      });
+      store.toggle(el);
+
+      const { left, top } = await panelPosition();
+      const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+      const w = panel.offsetWidth || 280;
+      const h = panel.offsetHeight || 200;
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(left + w).toBeLessThanOrEqual(VIEW_W + 1);
+      expect(top + h).toBeLessThanOrEqual(VIEW_H + 1);
+    });
+  });
 });

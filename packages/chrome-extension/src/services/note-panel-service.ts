@@ -1,7 +1,20 @@
 import {
-  autoUpdate, computePosition, flip, shift,
+  autoUpdate, computePosition, flip, limitShift, shift,
 } from '@floating-ui/dom';
 import SelectionStoreService from './selection-store-service';
+
+function viewportClippedRect(el: HTMLElement): DOMRect {
+  const r = el.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const left = Math.max(0, Math.min(r.left, vw));
+  const top = Math.max(0, Math.min(r.top, vh));
+  const right = Math.max(0, Math.min(r.right, vw));
+  const bottom = Math.max(0, Math.min(r.bottom, vh));
+  const width = Math.max(0, right - left);
+  const height = Math.max(0, bottom - top);
+  return new DOMRect(left, top, width, height);
+}
 
 const PANEL_CLASS = 'dom-pointer-mcp__note-panel';
 const CHIP_CLASS = 'dom-pointer-mcp__note-chip';
@@ -99,12 +112,16 @@ export default class NotePanelService {
       position: 'absolute', top: '0', left: '0', zIndex: '2147483647',
     });
 
+    const virtualAnchor = {
+      getBoundingClientRect: () => viewportClippedRect(anchorEl),
+      contextElement: anchorEl,
+    };
     this.cleanupAutoUpdate = autoUpdate(anchorEl, this.root, async () => {
       const { root } = this;
       if (!root) return;
-      const { x, y } = await computePosition(anchorEl, root, {
+      const { x, y } = await computePosition(virtualAnchor, root, {
         placement: 'bottom-start',
-        middleware: [flip(), shift({ padding: 8 })],
+        middleware: [flip(), shift({ padding: 8, limiter: limitShift() })],
       });
       if (!this.root) return;
       Object.assign(root.style, { left: `${x}px`, top: `${y}px` });
