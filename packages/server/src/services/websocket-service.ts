@@ -33,20 +33,34 @@ export default class WebSocketService {
   }
 
   private async campaignForLeadership(): Promise<void> {
+    let announcedFollower = false;
     while (!this.isLeader) {
       try {
         this.wss = new WebSocketServer({ port: this.port });
         this.setupHandlers();
         await this.waitForListening();
         this.isLeader = true;
-        logger.info('🎯 This instance is now the LEADER (WebSocket server active)');
+        if (announcedFollower) {
+          logger.info(`🎯 Took over WebSocket server on :${this.port} (previous leader exited)`);
+        } else {
+          logger.info(`🎯 WebSocket server listening on :${this.port} (leader)`);
+        }
       } catch (err) {
         // Clean up failed attempt
         this.stop();
 
         const error = err as NodeJS.ErrnoException;
         if (error.code === 'EADDRINUSE') {
-          logger.info('👥 Running as FOLLOWER (port busy, retrying in 5s...)');
+          if (!announcedFollower) {
+            logger.info(
+              `ℹ️  Port ${this.port} is already used by another mcp-pointer instance — `
+              + 'this is fine. MCP requests will be answered from the shared state file. '
+              + 'Will take over WebSocket if the current leader exits.',
+            );
+            announcedFollower = true;
+          } else {
+            logger.debug('Still follower; leader still holds the port');
+          }
           await sleep(WEBSOCKET_RETRY_INTERVAL);
         } else {
           logger.error('Failed to start WebSocket server:', err);
