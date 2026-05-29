@@ -28,3 +28,37 @@ export async function readTextOrEmpty(filePath: string): Promise<string> {
     return '';
   }
 }
+
+export async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteFileIfExists(filePath: string): Promise<'deleted' | 'missing'> {
+  try {
+    await fs.unlink(filePath);
+    return 'deleted';
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return 'missing';
+    throw e;
+  }
+}
+
+export function removeJsonKey(obj: Record<string, any>, keyPath: string[]): boolean {
+  if (keyPath.length === 0) return false;
+  let cursor: any = obj;
+  for (let i = 0; i < keyPath.length - 1; i += 1) {
+    const k = keyPath[i];
+    const next = cursor[k];
+    if (!next || typeof next !== 'object') return false;
+    cursor = next;
+  }
+  const last = keyPath[keyPath.length - 1];
+  if (!(last in cursor)) return false;
+  delete cursor[last];
+  return true;
+}
