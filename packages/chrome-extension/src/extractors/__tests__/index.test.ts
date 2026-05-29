@@ -34,10 +34,12 @@ describe('extractComponentInfo orchestrator', () => {
     const el = document.createElement('div');
     Object.defineProperty(el, '__vueParentComponent', {
       get() { throw new Error('boom'); },
+      enumerable: true,
     });
     Object.defineProperty(el, '__reactFiber$x', {
       value: { type: { displayName: 'Fallback' } },
       configurable: true,
+      enumerable: true,
     });
 
     let result: ReturnType<typeof extractComponentInfo>;
