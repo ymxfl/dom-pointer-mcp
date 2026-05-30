@@ -148,6 +148,22 @@ If you chose to install the slash command during config:
 
 Supports appending parameters to control context detail: `/pointed 0 0` (numbers map to textDetail and cssLevel)
 
+#### Option B': `/pointed get` — Preview Without Acting
+
+If you just want to inspect the selection without the AI making changes:
+
+```
+/pointed get          # defaults: textDetail=2, cssLevel=0
+/pointed get 2 2      # textDetail=2, cssLevel=2
+/pointed get 1 3      # textDetail=1, cssLevel=3
+```
+
+The AI returns a structured summary (URL, element count, tag / selector / component name per element), then:
+- If a note was written in the browser → asks "Execute the note?"
+- If no note → asks "What would you like to do with these elements?"
+
+Great for previewing what you selected before committing to an action.
+
 #### Option C: Direct MCP Tool Call
 
 Advanced users can also ask the AI to call `get-pointed-element` directly:
