@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.0.3
+
+### Patch Changes
+
+- d176e27: Fix page scroll jump when selecting off-screen elements, guard sendElement against Service Worker init race
+
 ## 1.0.1
 
 ### Changes
