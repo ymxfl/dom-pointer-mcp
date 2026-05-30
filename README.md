@@ -139,14 +139,30 @@ npm update -g @dom-pointer-mcp/server
 
 > Skill 的优势是不需要记任何命令——自然语言即可触发。
 
-#### 方式二：`/pointed` slash命令
+#### 方式二：`/pointed` 斜杠命令
 
-如果配置时选择了安装slash命令：
+如果配置时选择了安装斜杠命令：
 1. 在浏览器中 `Option+Click` 选择元素，写好 note 按 Send
 2. 在 AI 工具中输入 `/pointed`
 3. AI 自动获取选区并执行
 
 支持追加参数控制上下文详略：`/pointed 0 0`（数字分别对应 textDetail 和 cssLevel）
+
+#### 方式二 (b)：`/pointed get` —— 只看不改
+
+如果你只想预览选区信息、不需要 AI 立即动手改代码：
+
+```
+/pointed get          # 默认 textDetail=2, cssLevel=0
+/pointed get 2 2      # textDetail=2, cssLevel=2
+/pointed get 1 3      # textDetail=1, cssLevel=3
+```
+
+AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag / selector / 组件名等），然后：
+- 如果浏览器里写了 note → 提示"是否执行？"
+- 如果没写 note → 提示"你想对这些元素做什么？"
+
+适合你想先看看选到了什么，再决定下一步操作的场景。
 
 #### 方式三：直接调用 MCP 工具
 
