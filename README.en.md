@@ -148,7 +148,7 @@ If you chose to install the slash command during config:
 
 Supports appending parameters to control context detail: `/pointed 0 0` (numbers map to textDetail and cssLevel)
 
-#### Option B′: `/pointed get` — Preview Without Acting
+#### Option B': `/pointed get` — Preview Without Acting
 
 If you just want to inspect the selection without the AI making changes:
 
