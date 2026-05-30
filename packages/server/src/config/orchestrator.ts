@@ -1,15 +1,17 @@
 import logger from '../logger';
 import { listAdapters } from './adapters/index';
 import {
-  selectAgents, selectScope, confirmSlash, confirmUninstall,
+  selectAgents, selectScope, confirmSlash, confirmUninstall, selectLaunchMode,
 } from './prompts';
-import type { OperationResult, Scope, ToolAdapter } from './types';
+import { t } from './i18n';
+import type { OperationResult, Scope, LaunchMode, ToolAdapter } from './types';
 
 export interface RunOptions {
   mode: 'install' | 'uninstall';
   scope: Scope;
   port?: number; // install only
   withSlash?: boolean; // install only
+  launchMode?: LaunchMode; // install only
 }
 
 export interface RunSummary {
@@ -38,7 +40,7 @@ export async function executeForAgents(
     await previous;
 
     if (opts.mode === 'install') {
-      const mcp = await adapter.registerMcp(opts.scope, opts.port ?? 7007);
+      const mcp = await adapter.registerMcp(opts.scope, opts.port ?? 7007, opts.launchMode);
       printResult(adapter, 'MCP server', mcp);
       results.push(mcp);
 
@@ -75,18 +77,19 @@ export async function executeForAgents(
 }
 
 export async function runInteractiveInstall(port: number): Promise<RunSummary> {
-  const adapters = await selectAgents(listAdapters(), 'Select agents (space to toggle, enter to confirm):');
+  const adapters = await selectAgents(listAdapters(), t('selectAgents') as string);
   const scope = await selectScope();
+  const launchMode = await selectLaunchMode();
   const withSlash = await confirmSlash();
   logger.info('');
   logger.info(`🔧 Installing for ${adapters.map((a) => a.displayName).join(', ')} (${scope} scope)...`);
   return executeForAgents(adapters, {
-    mode: 'install', scope, port, withSlash,
+    mode: 'install', scope, port, withSlash, launchMode,
   });
 }
 
 export async function runInteractiveUninstall(): Promise<RunSummary> {
-  const adapters = await selectAgents(listAdapters(), 'Select agents to uninstall (user scope):');
+  const adapters = await selectAgents(listAdapters(), t('selectAgentsUninstall') as string);
   const ok = await confirmUninstall(adapters.map((a) => a.displayName));
   if (!ok) {
     logger.info('Cancelled.');

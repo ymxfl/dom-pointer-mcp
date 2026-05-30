@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import type { ToolAdapter, OperationResult, Scope } from '../types';
+import type { ToolAdapter, OperationResult, Scope, LaunchMode } from '../types';
 import {
   writeFileEnsuringDir,
   readJsonOrDefault,
@@ -20,7 +20,14 @@ const MCP_SERVER_NAME = 'dom-pointer';
 const PROMPT_NAME = 'pointerPointed';
 const POINTER_PREFIX = 'pointer';
 
-function pointerEntry(port: number) {
+function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {
+  if (launchMode === 'global') {
+    return {
+      command: 'dom-pointer-mcp',
+      args: ['start'],
+      env: { MCP_POINTER_PORT: String(port) },
+    };
+  }
   return {
     command: 'npx',
     args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
@@ -51,7 +58,7 @@ export const joycodeAdapter: ToolAdapter = {
   toolId: 'joycode',
   displayName: 'JoyCode',
 
-  async registerMcp(scope, port): Promise<OperationResult> {
+  async registerMcp(scope, port, launchMode: LaunchMode = 'npx'): Promise<OperationResult> {
     const filePath = scope === 'user'
       ? path.join(os.homedir(), '.joycode', 'joycode-mcp.json')
       : path.join(process.cwd(), '.joycode', 'mcp.json');
@@ -63,7 +70,7 @@ export const joycodeAdapter: ToolAdapter = {
         ...existing,
         mcpServers: {
           ...existingServers,
-          [MCP_SERVER_NAME]: pointerEntry(port),
+          [MCP_SERVER_NAME]: pointerEntry(port, launchMode),
         },
       };
       await writeFileEnsuringDir(filePath, JSON.stringify(merged, null, 2));

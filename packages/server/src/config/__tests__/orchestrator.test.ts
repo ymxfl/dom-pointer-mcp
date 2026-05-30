@@ -30,7 +30,7 @@ describe('executeForAgents — install', () => {
     const summary = await executeForAgents([a], {
       mode: 'install', scope: 'user', port: 7007, withSlash: true,
     });
-    expect(a.registerMcp).toHaveBeenCalledWith('user', 7007);
+    expect(a.registerMcp).toHaveBeenCalledWith('user', 7007, undefined);
     expect(a.installSkill).toHaveBeenCalledWith('user');
     expect(a.installCommand).toHaveBeenCalledWith('user');
     expect(summary.exitCode).toBe(0);

@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import type { ToolAdapter, OperationResult, Scope } from '../types';
+import type { ToolAdapter, OperationResult, Scope, LaunchMode } from '../types';
 import {
   writeFileEnsuringDir,
   readTextOrEmpty,
@@ -15,18 +15,22 @@ import {
 
 const MCP_SERVER_NAME = 'dom-pointer';
 
-function buildTomlSection(port: number): string {
+function buildTomlSection(port: number, launchMode: LaunchMode = 'npx'): string {
+  const cmd = launchMode === 'global' ? 'dom-pointer-mcp' : 'npx';
+  const args = launchMode === 'global'
+    ? '["start"]'
+    : '["-y", "@dom-pointer-mcp/server@latest", "start"]';
   return `[mcp_servers.${MCP_SERVER_NAME}]
-command = "npx"
-args = ["-y", "@dom-pointer-mcp/server@latest", "start"]
+command = "${cmd}"
+args = ${args}
 
 [mcp_servers.${MCP_SERVER_NAME}.env]
 MCP_POINTER_PORT = "${port}"
 `;
 }
 
-function mergeToml(existing: string, port: number): string {
-  const section = buildTomlSection(port);
+function mergeToml(existing: string, port: number, launchMode: LaunchMode = 'npx'): string {
+  const section = buildTomlSection(port, launchMode);
   const headerRe = /^\[mcp_servers\.dom-pointer(?:\.[\w-]+)?\]/m;
   if (!headerRe.test(existing)) {
     const trimmed = existing.trimEnd();
@@ -93,12 +97,12 @@ export const codexAdapter: ToolAdapter = {
   toolId: 'codex',
   displayName: 'Codex CLI',
 
-  async registerMcp(scope, port): Promise<OperationResult> {
+  async registerMcp(scope, port, launchMode: LaunchMode = 'npx'): Promise<OperationResult> {
     const base = scope === 'user' ? os.homedir() : process.cwd();
     const filePath = path.join(base, '.codex', 'config.toml');
     try {
       const existing = await readTextOrEmpty(filePath);
-      const merged = mergeToml(existing, port);
+      const merged = mergeToml(existing, port, launchMode);
       await writeFileEnsuringDir(filePath, merged);
       return {
         status: 'success',
