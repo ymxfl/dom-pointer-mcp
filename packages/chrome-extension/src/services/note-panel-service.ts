@@ -139,7 +139,7 @@ export default class NotePanelService {
     };
     document.addEventListener('keydown', this.handleKeyDown, true);
 
-    this.textarea!.focus();
+    this.textarea!.focus({ preventScroll: true });
   }
 
   private renderChips(elements: HTMLElement[]): void {
@@ -187,7 +187,7 @@ export default class NotePanelService {
       }
     } finally {
       if (this.sendBtn) this.sendBtn.disabled = false;
-      this.textarea?.focus();
+      this.textarea?.focus({ preventScroll: true });
     }
   }
 
