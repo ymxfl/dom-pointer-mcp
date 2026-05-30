@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import type { ToolAdapter, OperationResult } from '../types';
+import type { ToolAdapter, OperationResult, LaunchMode } from '../types';
 import {
   writeFileEnsuringDir,
   readJsonOrDefault,
@@ -36,18 +36,21 @@ export const opencodeAdapter: ToolAdapter = {
   toolId: 'opencode',
   displayName: 'OpenCode',
 
-  async registerMcp(scope, port): Promise<OperationResult> {
+  async registerMcp(scope, port, launchMode: LaunchMode = 'npx'): Promise<OperationResult> {
     const filePath = scope === 'user' ? userConfigPath() : projectConfigPath();
     try {
       const existing = await readJsonOrDefault<Record<string, any>>(filePath, {});
       const existingMcp = (existing.mcp && typeof existing.mcp === 'object') ? existing.mcp : {};
+      const cmd = launchMode === 'global'
+        ? ['dom-pointer-mcp', 'start']
+        : ['npx', '-y', '@dom-pointer-mcp/server@latest', 'start'];
       const merged = {
         ...existing,
         mcp: {
           ...existingMcp,
           [MCP_SERVER_NAME]: {
             type: 'local',
-            command: ['npx', '-y', '@dom-pointer-mcp/server@latest', 'start'],
+            command: cmd,
             environment: { MCP_POINTER_PORT: String(port) },
             enabled: true,
           },

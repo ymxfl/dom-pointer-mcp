@@ -86,6 +86,32 @@ npx -y @dom-pointer-mcp/server config manual     # Shows manual configuration fo
 
 </details>
 
+<details>
+<summary>Global install mode (recommended for private registries / offline environments)</summary>
+
+If your network cannot reliably reach the npm registry (e.g. corporate mirror sync lag), install globally first and use `--global` mode:
+
+```bash
+# 1. Install globally (one-time)
+npm install -g @dom-pointer-mcp/server
+
+# 2. Configure with global mode
+dom-pointer-mcp config --global
+# or non-interactive
+dom-pointer-mcp config claude --scope user --global
+```
+
+This way, the AI tool launches the MCP server via the locally installed `dom-pointer-mcp` binary — no registry fetch on every start.
+
+To upgrade:
+```bash
+npm update -g @dom-pointer-mcp/server
+```
+
+</details>
+
+> **💡 Language:** The config UI defaults to Chinese. Add `--lang en` for English, e.g. `npx -y @dom-pointer-mcp/server config --lang en`.
+
 After configuration, **restart your coding tool** to load the MCP connection.
 
 > **🔄 Already using DOM Pointer MCP?** Run the config command again to update to auto-updating configuration:

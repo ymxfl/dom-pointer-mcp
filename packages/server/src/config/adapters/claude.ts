@@ -1,7 +1,7 @@
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
-import type { ToolAdapter, OperationResult } from '../types';
+import type { ToolAdapter, OperationResult, LaunchMode } from '../types';
 import {
   writeFileEnsuringDir,
   readJsonOrDefault,
@@ -36,7 +36,14 @@ description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ${SKILL_BODY}`;
 }
 
-function pointerEntry(port: number) {
+function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {
+  if (launchMode === 'global') {
+    return {
+      command: 'dom-pointer-mcp',
+      args: ['start'],
+      env: { MCP_POINTER_PORT: String(port) },
+    };
+  }
   return {
     command: 'npx',
     args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
@@ -48,15 +55,18 @@ export const claudeAdapter: ToolAdapter = {
   toolId: 'claude',
   displayName: 'Claude Code',
 
-  async registerMcp(scope, port): Promise<OperationResult> {
+  async registerMcp(scope, port, launchMode: LaunchMode = 'npx'): Promise<OperationResult> {
     if (scope === 'user') {
       try {
         try {
           execSync(`claude mcp remove ${MCP_SERVER_NAME} -s user`, { stdio: 'pipe' });
         } catch { /* ignore: not installed */ }
+        const cmdArgs = launchMode === 'global'
+          ? 'dom-pointer-mcp start'
+          : 'npx -y @dom-pointer-mcp/server@latest start';
         execSync(
           `claude mcp add ${MCP_SERVER_NAME} -s user --env MCP_POINTER_PORT=${port} `
-          + '-- npx -y @dom-pointer-mcp/server@latest start',
+          + `-- ${cmdArgs}`,
           { stdio: 'pipe' },
         );
         return {
@@ -82,7 +92,7 @@ export const claudeAdapter: ToolAdapter = {
         ...existing,
         mcpServers: {
           ...existingServers,
-          [MCP_SERVER_NAME]: pointerEntry(port),
+          [MCP_SERVER_NAME]: pointerEntry(port, launchMode),
         },
       };
       await writeFileEnsuringDir(filePath, JSON.stringify(merged, null, 2));

@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import type { ToolAdapter, OperationResult, Scope } from '../types';
+import type { ToolAdapter, OperationResult, Scope, LaunchMode } from '../types';
 import {
   writeFileEnsuringDir,
   readTextOrEmpty,
@@ -53,15 +53,22 @@ function stripRuleBlock(existing: string): { changed: boolean; next: string } {
   return { changed: true, next };
 }
 
-function buildMcpConfig(port: number, existingMcpServers: Record<string, unknown> = {}) {
+function buildMcpConfig(port: number, existingMcpServers: Record<string, unknown> = {}, launchMode: LaunchMode = 'npx') {
+  const entry = launchMode === 'global'
+    ? {
+      command: 'dom-pointer-mcp',
+      args: ['start'],
+      env: { MCP_POINTER_PORT: String(port) },
+    }
+    : {
+      command: 'npx',
+      args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
+      env: { MCP_POINTER_PORT: String(port) },
+    };
   return {
     mcpServers: {
       ...existingMcpServers,
-      [MCP_SERVER_NAME]: {
-        command: 'npx',
-        args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
-        env: { MCP_POINTER_PORT: String(port) },
-      },
+      [MCP_SERVER_NAME]: entry,
     },
   };
 }
@@ -78,7 +85,7 @@ export const windsurfAdapter: ToolAdapter = {
   toolId: 'windsurf',
   displayName: 'Windsurf',
 
-  async registerMcp(scope, port): Promise<OperationResult> {
+  async registerMcp(scope, port, launchMode: LaunchMode = 'npx'): Promise<OperationResult> {
     const isDegraded = scope === 'project';
     const effectiveScope: Scope = 'user';
     const filePath = path.join(os.homedir(), '.codeium', 'windsurf', 'mcp_config.json');
@@ -86,7 +93,7 @@ export const windsurfAdapter: ToolAdapter = {
       const existing = await readJsonOrDefault<{
         mcpServers?: Record<string, unknown>;
       }>(filePath, {});
-      const merged = buildMcpConfig(port, existing.mcpServers ?? {});
+      const merged = buildMcpConfig(port, existing.mcpServers ?? {}, launchMode);
       await writeFileEnsuringDir(filePath, JSON.stringify(merged, null, 2));
       return {
         status: isDegraded ? 'degraded' : 'success',
