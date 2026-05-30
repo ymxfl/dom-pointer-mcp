@@ -8,7 +8,8 @@ import {
   executeForAgents,
 } from './config/orchestrator';
 import { selectAction } from './config/prompts';
-import type { Scope } from './config/types';
+import { setLang } from './config/i18n';
+import type { Scope, LaunchMode } from './config/types';
 
 // ============================================================
 // Public runtime exports (used by start.ts and friends)
@@ -42,6 +43,8 @@ export enum SupportedTool {
 export interface ConfigOpts {
   scope?: string;
   uninstall?: boolean;
+  global?: boolean;
+  lang?: string;
 }
 
 function getPort(): string {
@@ -52,7 +55,12 @@ export default async function configCommand(
   tool?: string,
   opts: ConfigOpts = {},
 ): Promise<void> {
+  if (opts.lang === 'en' || opts.lang === 'zh') {
+    setLang(opts.lang);
+  }
+
   const port = parseInt(getPort(), 10);
+  const launchMode: LaunchMode = opts.global ? 'global' : 'npx';
 
   // Interactive flows (no positional tool)
   if (!tool) {
@@ -96,7 +104,7 @@ export default async function configCommand(
   }
   logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
   const summary = await executeForAgents([adapter], {
-    mode: 'install', scope, port, withSlash: true,
+    mode: 'install', scope, port, withSlash: true, launchMode,
   });
   if (summary.exitCode !== 0) process.exit(summary.exitCode);
 }

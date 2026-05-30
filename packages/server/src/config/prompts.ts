@@ -2,25 +2,24 @@ import {
   checkbox, confirm, select,
 } from '@inquirer/prompts';
 import type { Scope, ToolAdapter, ToolId } from './types';
+import { t } from './i18n';
 
 export type Action = 'install' | 'uninstall';
+export type LaunchMode = 'npx' | 'global';
 
 function ensureTTY(): void {
   if (!process.stdin.isTTY) {
-    throw new Error(
-      'Interactive mode requires a TTY. Pass a tool name and --scope explicitly '
-      + '(e.g. `dom-pointer-mcp config claude --scope user`).',
-    );
+    throw new Error(t('noTTY') as string);
   }
 }
 
 export async function selectAction(): Promise<Action> {
   ensureTTY();
   return select<Action>({
-    message: 'What do you want to do?',
+    message: t('selectAction') as string,
     choices: [
-      { name: 'Install — set up DOM Pointer MCP for one or more agents', value: 'install' },
-      { name: 'Uninstall — remove DOM Pointer MCP from one or more agents', value: 'uninstall' },
+      { name: t('actionInstall') as string, value: 'install' },
+      { name: t('actionUninstall') as string, value: 'uninstall' },
     ],
   });
 }
@@ -33,7 +32,7 @@ export async function selectAgents(
   const selectedIds = await checkbox<ToolId>({
     message,
     choices: adapters.map((a) => ({ name: a.displayName, value: a.toolId })),
-    validate: (items) => (items.length === 0 ? 'Select at least one agent (space to toggle).' : true),
+    validate: (items) => (items.length === 0 ? t('agentValidation') as string : true),
   });
   const byId = new Map(adapters.map((a) => [a.toolId, a]));
   return selectedIds.map((id) => byId.get(id)!).filter(Boolean);
@@ -42,10 +41,21 @@ export async function selectAgents(
 export async function selectScope(): Promise<Scope> {
   ensureTTY();
   return select<Scope>({
-    message: 'Install scope:',
+    message: t('selectScope') as string,
     choices: [
-      { name: 'user — global, all projects', value: 'user' },
-      { name: 'project — current directory only', value: 'project' },
+      { name: t('scopeUser') as string, value: 'user' },
+      { name: t('scopeProject') as string, value: 'project' },
+    ],
+  });
+}
+
+export async function selectLaunchMode(): Promise<LaunchMode> {
+  ensureTTY();
+  return select<LaunchMode>({
+    message: t('selectLaunchMode') as string,
+    choices: [
+      { name: t('launchModeNpx') as string, value: 'npx' },
+      { name: t('launchModeGlobal') as string, value: 'global' },
     ],
   });
 }
@@ -53,18 +63,16 @@ export async function selectScope(): Promise<Scope> {
 export async function confirmSlash(): Promise<boolean> {
   ensureTTY();
   return confirm({
-    message: 'Also install the slash command for the selected agents?',
+    message: t('confirmSlash') as string,
     default: true,
   });
 }
 
 export async function confirmUninstall(agentNames: string[]): Promise<boolean> {
   ensureTTY();
+  const msgFn = t('confirmUninstall') as (agents: string) => string;
   return confirm({
-    message:
-      `This will remove user-scope MCP entries, skills, and slash commands for: ${agentNames.join(', ')}.\n`
-      + '  Project-scope installs must be removed manually.\n'
-      + '  Continue?',
+    message: msgFn(agentNames.join(', ')),
     default: false,
   });
 }

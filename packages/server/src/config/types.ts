@@ -1,5 +1,7 @@
 export type Scope = 'user' | 'project';
 
+export type LaunchMode = 'npx' | 'global';
+
 export type ToolId =
   | 'claude' | 'cursor' | 'windsurf'
   | 'codex' | 'opencode' | 'joycode';
@@ -18,7 +20,7 @@ export interface ToolAdapter {
   displayName: string;
 
   // Install
-  registerMcp(scope: Scope, port: number): Promise<OperationResult>;
+  registerMcp(scope: Scope, port: number, launchMode?: LaunchMode): Promise<OperationResult>;
   installCommand(scope: Scope): Promise<OperationResult>;
   installSkill?(scope: Scope): Promise<OperationResult>;
 
