@@ -1,4 +1,4 @@
-<img width="1774" height="887" alt="DOM Pointer MCP banner" src="https://github.com/user-attachments/assets/ec941eb9-cb1d-4c78-9229-6654d3768f9f" />
+<img width="1774" height="887" alt="DOM-Pointer-MCP banner" src="https://github.com/user-attachments/assets/e948b838-7ee5-4a24-90d7-a2b733d82f75" />
 
 [![CI](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/ci.yml)
 [![Release](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/ymxfl/dom-pointer-mcp/actions/workflows/release.yml)
