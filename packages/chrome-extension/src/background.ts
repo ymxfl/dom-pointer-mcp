@@ -20,6 +20,8 @@ async function initialize() {
   });
 }
 
+const ready = initialize();
+
 // Listen for config changes
 ConfigStorageService.onChange((newConfig: ExtensionConfig) => {
   logger.info('⚙️ Config changed:', newConfig);
@@ -38,12 +40,10 @@ ConfigStorageService.onChange((newConfig: ExtensionConfig) => {
 chrome.runtime.onMessage
   .addListener((request: any, _sender: any, sendResponse: (response: any) => void) => {
     if (request.type === 'SELECTION_SENT' && request.data) {
-      // Send element with current port and status callback
-      elementSender.sendElement(
+      ready.then(() => elementSender.sendElement(
         request.data,
         currentConfig.websocket.port,
         (status, error) => {
-          // Status flow: CONNECTING -> CONNECTED -> SENDING -> SENT
           switch (status) {
             case ConnectionStatus.CONNECTING:
               logger.info('🔄 Connecting to WebSocket...');
@@ -64,13 +64,10 @@ chrome.runtime.onMessage
               break;
           }
         },
-      );
+      ));
 
       sendResponse({ success: true });
     }
 
     return true; // Keep message channel open for async response
   });
-
-// Start initialization
-initialize();
