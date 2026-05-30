@@ -19,6 +19,7 @@ packages/server/src/__tests__/tmp/
 dom-pointer-mcp-chrome-extension.zip
 
 .claude/*.local.md
+docs/superpowers/
 # Local IDE / agent state — should not be tracked
 .claude/settings.json
 .joycode/prompt.json
