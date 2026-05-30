@@ -52,12 +52,10 @@ const texts = {
     en: 'Also install the slash command for the selected agents?',
   },
   confirmUninstall: {
-    zh: (agents: string) =>
-      `将移除以下 Agent 的用户级 MCP 配置、技能和斜杠命令：${agents}。\n`
+    zh: (agents: string) => `将移除以下 Agent 的用户级 MCP 配置、技能和斜杠命令：${agents}。\n`
       + '  项目级安装需要手动移除。\n'
       + '  确认继续？',
-    en: (agents: string) =>
-      `This will remove user-scope MCP entries, skills, and slash commands for: ${agents}.\n`
+    en: (agents: string) => `This will remove user-scope MCP entries, skills, and slash commands for: ${agents}.\n`
       + '  Project-scope installs must be removed manually.\n'
       + '  Continue?',
   },
