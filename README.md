@@ -250,7 +250,9 @@ AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag 
 ### 3. **更多 AI 工具支持**
    - 跟进新出现的 MCP-compatible AI 工具
    - 探索非 MCP 协议的集成方式
+## 💰 感谢打赏
 
+<img width="223" height="304" alt="微信收款码" src="https://github.com/user-attachments/assets/42927b8f-7f05-4d32-a509-d2f2494a2e9d" /><img width="216" height="323" alt="支付宝收款码" src="https://github.com/user-attachments/assets/e5153e4d-3c19-4a76-b9f0-b8e9e6d65ef2" />
 ## 📝 许可证
 
 MIT License —— 详见 LICENSE 文件
