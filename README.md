@@ -35,7 +35,11 @@ DOM Pointer MCP 是一个本地工具，由 Chrome 扩展 + MCP Server 组成。
 
 ## 🎬 使用示例（视频）
 
-https://github.com/user-attachments/assets/98c4adf6-1f05-4c9b-be41-0416ab784e2c
+
+
+https://github.com/user-attachments/assets/26816d01-0e15-4a31-86ff-c41519b98e63
+
+
 
 `Option+Click` 任意元素，写下你的改动需求按 Send，AI 自动拿到选中元素的完整上下文（CSS、URL、selector、组件源文件等）并修改代码。
 
