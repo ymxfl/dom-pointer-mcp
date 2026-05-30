@@ -1,5 +1,12 @@
 # @dom-pointer-mcp/server
 
+## 1.1.0
+
+### Minor Changes
+
+- 06d3274: feat(config): add /pointed get subcommand for preview-only inspection of selections
+  docs: rewrite README to highlight Skill-based usage, clarify React ≤ 18 support
+
 ## 1.0.4
 
 ### Patch Changes
