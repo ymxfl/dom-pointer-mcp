@@ -4,7 +4,9 @@ import {
   selectAgents, selectScope, confirmSlash, confirmUninstall, selectLaunchMode,
 } from './prompts';
 import { t } from './i18n';
-import type { OperationResult, Scope, LaunchMode, ToolAdapter } from './types';
+import type {
+  OperationResult, Scope, LaunchMode, ToolAdapter,
+} from './types';
 
 export interface RunOptions {
   mode: 'install' | 'uninstall';

@@ -1,6 +1,8 @@
 import path from 'path';
 import os from 'os';
-import type { ToolAdapter, OperationResult, Scope, LaunchMode } from '../types';
+import type {
+  ToolAdapter, OperationResult, Scope, LaunchMode,
+} from '../types';
 import {
   writeFileEnsuringDir,
   readJsonOrDefault,

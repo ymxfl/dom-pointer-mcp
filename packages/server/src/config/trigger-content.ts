@@ -20,6 +20,30 @@ The numeric tail is configuration, NOT a refinement — strip it from the user's
 note before treating any remaining text as instructions. If no such trailing
 numbers are present, call the tool with no arguments.`;
 
+// --- Subcommand: /pointed get ---
+const SUBCOMMAND_GET = `## Subcommand: \`/pointed get\`
+
+Usage:
+- \`/pointed get\` — call with defaults (textDetail=2, cssLevel=0)
+- \`/pointed get 2 2\` — call with textDetail=2, cssLevel=2
+- \`/pointed get 1 3\` — call with textDetail=1, cssLevel=3
+
+Arguments are positional: first number is \`textDetail\`, second is \`cssLevel\`.
+
+Behavior:
+
+1. Parse optional textDetail and cssLevel from args after "get".
+2. Call \`mcp__dom-pointer__get-pointed-element\` with those parameters.
+3. Summarize the returned data to the user in natural language:
+   - Page URL
+   - Number of elements selected
+   - Per element: tag, selector, component name (if available)
+   - \`userNote\` content (if present)
+4. After presenting the summary:
+   - If \`userNote\` is non-empty → ask user: "用户备注为「{userNote}」，是否执行？"
+   - If \`userNote\` is empty → ask user: "你想对这些元素做什么？"
+5. Wait for user confirmation or instruction before taking any action.`;
+
 // --- Slash command (打 /pointed 触发) ---
 export const COMMAND_DESCRIPTION = "Fetch the user's currently pointed elements (set in browser via Option+Click) "
   + 'and act on their note. Any text after /pointed is treated as a refinement; '
@@ -49,6 +73,8 @@ Option+Click elements in the browser, write a note, and press Cmd/Ctrl+Enter
 or Send before retrying.
 
 ${DETAIL_PARAMS_CONVENTION}
+
+${SUBCOMMAND_GET}
 `;
 
 // --- Description-triggered skill (用户随口说话也命中) ---
@@ -82,4 +108,6 @@ Option+Click elements in the browser, write a note, and press Cmd/Ctrl+Enter
 or Send before retrying.
 
 ${DETAIL_PARAMS_CONVENTION}
+
+${SUBCOMMAND_GET}
 `;
