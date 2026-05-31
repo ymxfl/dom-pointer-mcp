@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/server
 
+## 1.1.1
+
+### Patch Changes
+
+- fd2bd2b: fix: remove auto-trigger from skill description, unify skill/command prompt content, fix /pointed get skipping user confirmation, fix inconsistent cssLevel defaults, slim down MCP tool descriptions to reduce token usage
+
 ## 1.1.0
 
 ### Minor Changes
