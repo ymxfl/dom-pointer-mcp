@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/server
 
+## 1.1.2
+
+### Patch Changes
+
+- 6bc0d3c: fix: rewrite prompt rules — userNote drives confirm/execute behavior, call tool with no args when params omitted
+
 ## 1.1.1
 
 ### Patch Changes
