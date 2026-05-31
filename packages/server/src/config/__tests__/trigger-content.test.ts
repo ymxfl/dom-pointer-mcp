@@ -11,27 +11,22 @@ describe('trigger content sanity', () => {
     expect(TRIGGER_NAME).toBe('pointed');
   });
 
-  it('COMMAND_BODY calls the MCP tool and explains userNote', () => {
-    expect(COMMAND_BODY).toContain('mcp__dom-pointer__get-pointed-element');
+  it('COMMAND_BODY contains tool name and key payload fields', () => {
+    expect(COMMAND_BODY).toContain('get-pointed-element');
     expect(COMMAND_BODY).toContain('userNote');
     expect(COMMAND_BODY).toContain('elements[]');
   });
 
-  it('COMMAND_DESCRIPTION mentions /pointed refinement contract', () => {
-    expect(COMMAND_DESCRIPTION).toContain('/pointed');
-    expect(COMMAND_DESCRIPTION.toLowerCase()).toContain('refinement');
+  it('COMMAND_DESCRIPTION mentions pointed elements', () => {
+    expect(COMMAND_DESCRIPTION).toContain('pointed elements');
   });
 
-  it('SKILL_DESCRIPTION lists natural-language triggers and tool name', () => {
-    ['Option+Click', 'mcp__dom-pointer__get-pointed-element', 'userNote'].forEach((phrase) => {
-      expect(SKILL_DESCRIPTION).toContain(phrase);
-    });
+  it('SKILL_DESCRIPTION matches COMMAND_DESCRIPTION (unified content)', () => {
+    expect(SKILL_DESCRIPTION).toBe(COMMAND_DESCRIPTION);
   });
 
-  it('SKILL_BODY mirrors the tool call requirement', () => {
-    expect(SKILL_BODY).toContain('mcp__dom-pointer__get-pointed-element');
-    expect(SKILL_BODY).toContain('userNote');
-    expect(SKILL_BODY).toContain('elements[]');
+  it('SKILL_BODY matches COMMAND_BODY (unified content)', () => {
+    expect(SKILL_BODY).toBe(COMMAND_BODY);
   });
 
   it('COMMAND_BODY documents the textDetail/cssLevel positional convention', () => {
@@ -40,9 +35,12 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY).toContain('0-3');
   });
 
-  it('SKILL_BODY documents the textDetail/cssLevel positional convention', () => {
-    expect(SKILL_BODY).toContain('textDetail');
-    expect(SKILL_BODY).toContain('cssLevel');
-    expect(SKILL_BODY).toContain('0-3');
+  it('COMMAND_BODY has GET subcommand with confirmation gate', () => {
+    expect(COMMAND_BODY).toContain('GET (read-only)');
+    expect(COMMAND_BODY).toContain('Do NOT modify any file until the user explicitly confirms');
+  });
+
+  it('COMMAND_BODY has EXECUTE subcommand', () => {
+    expect(COMMAND_BODY).toContain('EXECUTE (default)');
   });
 });

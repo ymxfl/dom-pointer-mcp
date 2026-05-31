@@ -54,19 +54,19 @@ export default class MCPService {
       tools: [
         {
           name: MCPToolName.GET_POINTED_ELEMENT,
-          description: 'Get the currently pointed DOM elements (one or more) along with the user\'s note describing what they want to change. Returns { userNote, url, timestamp, elements: [...] }. Control returned payload size with optional textDetail (0 none | 1 visible | 2 full) and cssLevel (0-3).',
+          description: 'Returns { userNote, url, timestamp, elements: [...] } for the currently pointed DOM selection.',
           inputSchema: {
             type: 'object',
             properties: {
               textDetail: {
                 type: 'integer',
                 enum: [...TEXT_DETAIL_OPTIONS],
-                description: 'Controls how much text is returned. 2 (default) includes hidden text fallback, 1 uses only rendered text, 0 omits text fields.',
+                description: '0 none | 1 visible | 2 full; default 2',
               },
               cssLevel: {
                 type: 'integer',
                 enum: [...CSS_DETAIL_OPTIONS],
-                description: 'Controls CSS payload detail. 0 omits CSS, 1 includes layout basics, 2 adds box model, 3 returns the full computed style.',
+                description: '0 none | 1 layout (default) | 2 box-model | 3 full',
               },
             },
             required: [],
