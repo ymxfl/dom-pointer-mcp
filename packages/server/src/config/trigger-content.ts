@@ -28,7 +28,7 @@ const BODY = `# /pointed
 
 Usage: \`/pointed get [textDetail] [cssLevel]\`
 
-1. Call \`get-pointed-element\` with parsed params (defaults: textDetail=2, cssLevel=1).
+1. Call \`get-pointed-element\` immediately. If textDetail/cssLevel numbers are provided, pass them; otherwise call with NO arguments (the server defaults to textDetail=2, cssLevel=1).
 2. Summarize: page URL, element count, per-element tag/selector/component.
 3. If \`userNote\` is non-empty → ask: "用户备注为「{userNote}」，是否执行？"
    If empty → ask: "你想对这些元素做什么？"
