@@ -3,10 +3,11 @@ export const TRIGGER_NAME = 'pointed';
 
 // --- Shared fragments ---
 
-const PARAM_HINT = `Trailing integers 0-3 set textDetail and cssLevel positionally:
+const PARAM_HINT = `Optional trailing integers 0-3 set textDetail and cssLevel positionally.
+If none are given, call the tool with NO arguments (server uses its own defaults).
 - \`/pointed 0 0\` → \`{ textDetail: 0, cssLevel: 0 }\`
 - \`/pointed 1 2\` → \`{ textDetail: 1, cssLevel: 2 }\`
-Strip them from the user's note before treating remaining text as instructions.`;
+Strip these numbers from the user's note before treating remaining text as instructions.`;
 
 const ELEMENT_READING = `Read the returned payload:
 - \`userNote\`: the user's primary instruction
@@ -17,30 +18,30 @@ const NO_SELECTION_HINT = 'If the tool returns "No selection pointed", tell the 
 
 const BODY = `# /pointed
 
-## Routing
+## Step 1 — Always call the tool first
 
-**If the first arg is "get"** → follow the GET section below.
-**Otherwise** → follow the EXECUTE section below.
+Regardless of mode, call \`get-pointed-element\` IMMEDIATELY with no questions.
+Parse optional trailing integers as textDetail/cssLevel; if absent, pass NO arguments.
 
----
+## Step 2 — Route by mode
 
-## GET (read-only)
-
-Usage: \`/pointed get [textDetail] [cssLevel]\`
-
-1. Call \`get-pointed-element\` with parsed params (defaults: textDetail=2, cssLevel=1).
-2. Summarize: page URL, element count, per-element tag/selector/component.
-3. If \`userNote\` is non-empty → ask: "用户备注为「{userNote}」，是否执行？"
-   If empty → ask: "你想对这些元素做什么？"
-4. **STOP. Do NOT modify any file until the user explicitly confirms.**
+**If the first arg is "get"** → GET mode.
+**Otherwise** → EXECUTE mode.
 
 ---
 
-## EXECUTE (default)
+### GET mode (read-only preview)
 
-1. Call \`get-pointed-element\` immediately — do not ask first.
-2. ${ELEMENT_READING}
-3. Make the requested changes in source code.
+1. Summarize: page URL, element count, per-element tag/selector/component.
+2. If \`userNote\` is non-empty → ask: "用户备注为「{userNote}」，是否执行？"
+   If \`userNote\` is empty → ask: "你想对这些元素做什么？"
+3. **STOP. Wait for user reply. Do NOT modify any file until user explicitly says yes.**
+
+### EXECUTE mode (default)
+
+1. ${ELEMENT_READING}
+2. If \`userNote\` is non-empty → execute the requested changes in source code immediately. Do NOT ask for confirmation.
+   If \`userNote\` is empty → ask: "你想对这些元素做什么？" and wait for the user's reply before doing anything.
 
 Text after \`/pointed\` (excluding "get") is a refinement of \`userNote\`.
 

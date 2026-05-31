@@ -35,12 +35,13 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY).toContain('0-3');
   });
 
-  it('COMMAND_BODY has GET subcommand with confirmation gate', () => {
-    expect(COMMAND_BODY).toContain('GET (read-only)');
-    expect(COMMAND_BODY).toContain('Do NOT modify any file until the user explicitly confirms');
+  it('COMMAND_BODY has GET mode with confirmation gate', () => {
+    expect(COMMAND_BODY).toContain('GET mode');
+    expect(COMMAND_BODY).toContain('Do NOT modify any file until user explicitly says yes');
   });
 
-  it('COMMAND_BODY has EXECUTE subcommand', () => {
-    expect(COMMAND_BODY).toContain('EXECUTE (default)');
+  it('COMMAND_BODY has EXECUTE mode that acts immediately when userNote present', () => {
+    expect(COMMAND_BODY).toContain('EXECUTE mode');
+    expect(COMMAND_BODY).toContain('Do NOT ask for confirmation');
   });
 });
