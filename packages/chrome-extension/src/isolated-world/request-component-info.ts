@@ -11,7 +11,8 @@ export async function requestComponentInfo(
   el: HTMLElement,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<ComponentInfo | undefined> {
-  const requestId = crypto.randomUUID();
+  const requestId = crypto.randomUUID?.()
+    ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   el.setAttribute(EXTRACT_ID_ATTR, requestId);
 
   try {
