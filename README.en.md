@@ -18,14 +18,14 @@ DOM Pointer MCP is a local tool combining a Chrome Extension and an MCP Server. 
 2. **Write a short description of what you want changed**
 3. **Press Send** — the AI gets the context and modifies your source code
 
-**No need to call MCP tools manually.** Through Skills and slash commands, AI tools automatically recognize trigger phrases like "做一下", "pointed", or "fix the selected elements" and fetch the element context. Users never need to understand the underlying MCP protocol.
+**No need to call MCP tools manually.** Just type `/pointed` (as a Skill or slash command) and the AI automatically fetches the element context and executes your note. Users never need to understand the underlying MCP protocol.
 
 ## ✨ Features
 
 - 🎯 **`Option+Click` Selection** — Simply hold `Option` (Alt on Windows) and click any element
 - 🧺 **Multi-select Batches** — Stack multiple elements into one batch and send them with a shared note
 - 📝 **Floating Note Panel** — Type a free-form instruction next to your selection, then Send or Copy
-- 🤖 **Skill Auto-trigger** — No need to type `/pointed`; just say "做一下", "fix the selected", etc. and the AI acts automatically
+- 🤖 **Skill / Slash Command** — Type `/pointed` to trigger; the AI fetches your selection and acts on it
 - 📋 **Complete Element Data** — Text content, CSS classes, HTML attributes, positioning, and styling
 - 💡 **Dynamic Context Control** — Request visible-only text, suppress text entirely, or dial CSS detail from none → full computed styles per call
 - ⚛️ **Component Detection** — React (≤ 18) / Vue 2 / Vue 3 component names and source files via runtime introspection (experimental)
@@ -128,45 +128,39 @@ After configuration, **restart your coding tool** to load the configuration.
 
 ### 3. Start Using
 
-After setup, there are **three ways to use** DOM Pointer MCP (the first two are recommended — no MCP knowledge needed):
+After setup, there are **two ways to use** DOM Pointer MCP (the first is recommended — no MCP knowledge needed):
 
-#### Option A: Skill Auto-trigger (Recommended)
+#### Option A: `/pointed` Command (Recommended)
 
-A `pointed` Skill is automatically registered during installation:
+Both the Skill and slash command are triggered with `/pointed` and behave identically:
+
 1. `Option+Click` elements in the browser, write your note and press Send
-2. In your AI tool, just say "**做一下**", "**pointed**", "**fix the selected elements**", etc.
-3. The AI automatically calls MCP, reads your selection, and modifies the code
+2. Type `/pointed` in your AI tool (or trigger the `pointed` skill)
+3. The AI automatically calls MCP and reads your selection:
+   - **Note present** → executes the requested changes immediately, no confirmation needed
+   - **No note** → asks "What would you like to do with these elements?"
 
-> The advantage of Skills is that you don't need to remember any commands — natural language is all it takes.
+Supports appending parameters to control context detail: `/pointed 0 0` (numbers map to textDetail and cssLevel; omit to use server defaults)
 
-#### Option B: `/pointed` Slash Command
-
-If you chose to install the slash command during config:
-1. `Option+Click` elements in the browser, write your note and press Send
-2. Type `/pointed` in your AI tool
-3. The AI fetches your selection and acts on it
-
-Supports appending parameters to control context detail: `/pointed 0 0` (numbers map to textDetail and cssLevel)
-
-#### Option B': `/pointed get` — Preview Without Acting
+##### `/pointed get` — Preview Without Acting
 
 If you just want to inspect the selection without the AI making changes:
 
 ```
-/pointed get          # defaults: textDetail=2, cssLevel=0
+/pointed get          # uses server defaults
 /pointed get 2 2      # textDetail=2, cssLevel=2
 /pointed get 1 3      # textDetail=1, cssLevel=3
 ```
 
 The AI returns a structured summary (URL, element count, tag / selector / component name per element), then:
-- If a note was written in the browser → asks "Execute the note?"
+- If a note was written in the browser → asks "Execute the note?", **waits for your confirmation before making changes**
 - If no note → asks "What would you like to do with these elements?"
 
 Great for previewing what you selected before committing to an action.
 
-#### Option C: Direct MCP Tool Call
+#### Option B: Direct MCP Tool Call
 
-Advanced users can also ask the AI to call `get-pointed-element` directly:
+Advanced users can also ask the AI to call `get-pointed-element` directly (omit parameters to use server defaults):
 - `textDetail`: `0` (no text) | `1` (visible text only) | `2` (visible + hidden, default)
 - `cssLevel`: `0` (no CSS) | `1` (layout, default) | `2` (+ box model) | `3` (full computed style)
 
@@ -177,7 +171,7 @@ Advanced users can also ask the AI to call `get-pointed-element` directly:
 3. A floating **note panel** appears next to the first selected element with a textarea and three buttons
 4. Type a description of what you want changed (e.g. "make these buttons primary blue", "add a divider between [1] and [2]")
 5. **Send** (⌘/Ctrl+Enter) ships the selection + your note to the MCP server; **Copy** puts the same payload on your clipboard; **×** dismisses the panel
-6. Trigger in your AI tool (say "做一下" or type `/pointed`) — the AI receives `{ userNote, url, timestamp, elements: [...] }` and acts
+6. Type `/pointed` in your AI tool — the AI receives `{ userNote, url, timestamp, elements: [...] }` and acts
 
 To cancel a selected element, Option+Click it again or click the × on its chip. The note panel stays visible until **all** selections are cancelled — your typed text is never lost from incidental clicks.
 
