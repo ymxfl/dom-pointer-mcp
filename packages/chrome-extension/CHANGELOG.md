@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.1.3
+
+### Patch Changes
+
+- 9065d2d: Add fallback for `crypto.randomUUID` in non-secure contexts (e.g. plain HTTP)
+
 ## 1.1.0
 
 ### Patch Changes
