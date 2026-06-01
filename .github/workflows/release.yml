@@ -74,20 +74,45 @@ jobs:
       - name: Clean up copied README
         run: rm -f packages/server/README.md
 
+      - name: Detect Chrome extension version bump
+        id: ext-version
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          EXT_VERSION=$(node -p "require('./packages/chrome-extension/package.json').version")
+          if git tag --list | grep -qx "@dom-pointer-mcp/chrome-extension@${EXT_VERSION}"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=${EXT_VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build Chrome extension for release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.published == 'true' || steps.ext-version.outputs.changed == 'true'
         run: pnpm -C packages/chrome-extension build
 
       - name: Package Chrome extension for release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.published == 'true' || steps.ext-version.outputs.changed == 'true'
         working-directory: packages/chrome-extension/dist
         run: zip -r ../../../dom-pointer-mcp-chrome-extension.zip .
 
+      - name: Determine release tag
+        id: release-tag
+        if: steps.changesets.outputs.published == 'true' || steps.ext-version.outputs.changed == 'true'
+        run: |
+          if [ "${{ steps.changesets.outputs.published }}" = "true" ]; then
+            echo "tag=${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}" >> "$GITHUB_OUTPUT"
+          else
+            TAG="@dom-pointer-mcp/chrome-extension@${{ steps.ext-version.outputs.version }}"
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Upload Chrome extension to release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.published == 'true' || steps.ext-version.outputs.changed == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: ${{ steps.release-tag.outputs.tag }}
           files: dom-pointer-mcp-chrome-extension.zip
           fail_on_unmatched_files: false
         env:
