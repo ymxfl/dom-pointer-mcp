@@ -1,4 +1,5 @@
 import { RawPointedSelection } from '@dom-pointer-mcp/shared/types';
+import { ModifierKey } from '../utils/config';
 import logger from '../utils/logger';
 import TriggerMouseService from './trigger-mouse-service';
 import TriggerKeyService from './trigger-key-service';
@@ -57,10 +58,11 @@ export default class ElementPointerService {
 
   private hoveredElement: HTMLElement | null = null;
 
-  constructor() {
+  constructor(modifierKey: ModifierKey) {
     this.triggerKeyService = new TriggerKeyService({
       onTriggerKeyStart: this.startPointing.bind(this),
       onTriggerKeyEnd: this.stopPointing.bind(this),
+      modifierKey,
     });
     this.triggerMouseService = new TriggerMouseService({
       onHover: this.onHover.bind(this),
@@ -103,6 +105,10 @@ export default class ElementPointerService {
       this.overlayManagerService.clearHover();
       this.hoveredElement = null;
     }
+  }
+
+  public setModifierKey(key: ModifierKey): void {
+    this.triggerKeyService.setModifierKey(key);
   }
 
   public enable(): void {

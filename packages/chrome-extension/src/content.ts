@@ -1,22 +1,22 @@
-// Content script - has access to both React Fiber and Chrome APIs in ISOLATED world
 import ConfigStorageService from './services/config-storage-service';
 import ElementPointerService from './services/element-pointer-service';
+import { detectConflict } from './services/conflict-detection-service';
+import ToastService from './services/toast-service';
 import logger from './utils/logger';
 
 logger.debug('🌍 DOM Pointer MCP content script loaded');
 
 let pointer: ElementPointerService | null = null;
+const toast = new ToastService();
 
-// Initialize pointer based on config
 async function initializePointer() {
   try {
     const config = await ConfigStorageService.load();
 
     if (!pointer) {
-      pointer = new ElementPointerService();
+      pointer = new ElementPointerService(config.trigger.modifierKey);
 
       if (IS_DEV) {
-        // Export for potential debugging
         (window as any).pointerTargeter = pointer;
       }
     }
@@ -31,9 +31,10 @@ async function initializePointer() {
   }
 }
 
-// Listen for config changes and update pointer accordingly
 ConfigStorageService.onChange((newConfig) => {
   if (pointer) {
+    pointer.setModifierKey(newConfig.trigger.modifierKey);
+
     if (newConfig.enabled) {
       pointer.enable();
     } else {
@@ -42,5 +43,32 @@ ConfigStorageService.onChange((newConfig) => {
   }
 });
 
-// Initialize on script load
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === 'CHECK_CONFLICT') {
+    ConfigStorageService.load().then((config) => {
+      const result = detectConflict(config.trigger.modifierKey);
+      sendResponse(result);
+    });
+    return true;
+  }
+  return false;
+});
+
+function checkConflictOnLoad() {
+  ConfigStorageService.load().then((config) => {
+    const result = detectConflict(config.trigger.modifierKey);
+    if (result.hasConflict && result.message) {
+      toast.show(result.message, '去设置', () => {
+        chrome.runtime.sendMessage({ type: 'OPEN_POPUP' });
+      });
+    }
+  });
+}
+
 initializePointer();
+
+if (document.readyState === 'complete') {
+  setTimeout(checkConflictOnLoad, 500);
+} else {
+  window.addEventListener('load', () => setTimeout(checkConflictOnLoad, 500));
+}
