@@ -22,7 +22,7 @@ DOM Pointer MCP 是一个本地工具，由 Chrome 扩展 + MCP Server 组成。
 
 ## ✨ 特性
 
-- 🎯 **`Option+Click` 选择** —— 按住 `Option`（Windows 上是 `Alt`）点击任意元素
+- 🎯 **`Option+Click` 选择** —— 按住 `Option`（Windows 上是 `Alt`）点击任意元素，触发键可在插件设置中更改为 `Ctrl` 或 `Command`
 - 🧺 **多选 Batch** —— 多个元素叠加成一个 batch，配一段共享的 note 一起发送
 - 📝 **浮动 Note Panel** —— 在选中区域旁边写自由文本说明，可 Send 或 Copy
 - 🤖 **Skill / Slash command** —— 输入 `/pointed` 即可触发，AI 自动获取选区并执行
@@ -30,6 +30,7 @@ DOM Pointer MCP 是一个本地工具，由 Chrome 扩展 + MCP Server 组成。
 - 💡 **按需控制上下文体量** —— 每次调用可选只要可见文本、不要文本、CSS 详略 0–3
 - ⚛️ **组件信息识别** —— 通过运行时反射拿到 React（≤ 18）/ Vue 2 / Vue 3 的组件名和源文件（实验性）
 - 🟢 **服务端状态指示** —— 弹窗会探测 MCP server，发不出去之前你就能看到红灯
+- ⚡ **快捷键冲突检测** —— 自动检测页面是否占用当前触发键，提示并建议替代键
 - 🛠️ **交互式多 Agent 配置** —— 一条 `config` 命令为 Claude Code、Cursor、Windsurf、Codex、Opencode、JoyCode 安装 MCP + Skill + slash命令
 - 🌐 **i18n 支持** —— 配置界面支持中文 / 英文（`--lang en`）
 
@@ -170,7 +171,7 @@ AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag 
 
 ## 🎯 工作流程
 
-1. **按住 Option (Alt) 点击** 页面元素 —— 元素被选中并高亮
+1. **按住 Option (Alt) 点击** 页面元素 —— 元素被选中并高亮（触发键可在插件设置中自定义）
 2. *（可选）* 继续按住 Option 点更多元素 —— 多选叠加成一个 batch
 3. 第一个选中的元素旁会出现 **浮动 note panel**，里面有 textarea 和三个按钮
 4. 写下你想要的改动（例如 "把这些按钮改成蓝色"、"在 [1] 和 [2] 之间加分割线"）
