@@ -1,5 +1,7 @@
 import { LogLevel } from '@dom-pointer-mcp/shared/logger';
 
+export type ModifierKey = 'Alt' | 'Ctrl' | 'Meta';
+
 export interface ExtensionConfig {
   enabled: boolean;
   websocket: {
@@ -11,6 +13,9 @@ export interface ExtensionConfig {
   };
   behavior: {
     clearAfterSend: boolean;
+  };
+  trigger: {
+    modifierKey: ModifierKey;
   };
 }
 
@@ -25,6 +30,9 @@ const config: ExtensionConfig = {
   },
   behavior: {
     clearAfterSend: true,
+  },
+  trigger: {
+    modifierKey: 'Alt',
   },
 };
 

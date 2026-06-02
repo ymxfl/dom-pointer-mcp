@@ -6,6 +6,9 @@ import {
   ExtractResponseDetail,
 } from '../shared/bridge-events';
 import { extractComponentInfo } from '../extractors';
+import { installKeyListenerInterceptor } from './key-listener-interceptor';
+
+installKeyListenerInterceptor();
 
 window.addEventListener(EXTRACT_REQUEST_EVENT, (e: Event) => {
   const { detail } = (e as CustomEvent<ExtractRequestDetail>);

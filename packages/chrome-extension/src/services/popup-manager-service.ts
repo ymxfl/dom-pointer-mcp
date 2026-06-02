@@ -1,7 +1,10 @@
-import defaultConfig, { ExtensionConfig } from '../utils/config';
+import defaultConfig, { ExtensionConfig, ModifierKey } from '../utils/config';
+import { getModifierLabel } from '../utils/platform';
 import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
 import { checkReachability, ReachabilityState } from './server-reachability-service';
+
+const ALL_MODIFIER_KEYS: ModifierKey[] = ['Alt', 'Ctrl', 'Meta'];
 
 export default class PopupManagerService {
   private enabledInput: HTMLInputElement;
@@ -9,6 +12,10 @@ export default class PopupManagerService {
   private clearAfterSendInput: HTMLInputElement;
 
   private portInput: HTMLInputElement;
+
+  private triggerKeySelect: HTMLSelectElement;
+
+  private conflictWarning: HTMLElement;
 
   private saveBtn: HTMLButtonElement;
 
@@ -28,6 +35,8 @@ export default class PopupManagerService {
     this.enabledInput = document.getElementById('enabled') as HTMLInputElement;
     this.clearAfterSendInput = document.getElementById('clearAfterSend') as HTMLInputElement;
     this.portInput = document.getElementById('port') as HTMLInputElement;
+    this.triggerKeySelect = document.getElementById('triggerKey') as HTMLSelectElement;
+    this.conflictWarning = document.getElementById('conflictWarning') as HTMLElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
     this.status = document.getElementById('status') as HTMLElement;
@@ -36,8 +45,19 @@ export default class PopupManagerService {
     this.statusText = document.getElementById('statusText') as HTMLElement;
     this.recheckBtn = document.getElementById('recheckBtn') as HTMLButtonElement;
 
+    this.populateTriggerKeyOptions();
     this.setupEventListeners();
     this.loadConfig();
+  }
+
+  private populateTriggerKeyOptions(): void {
+    this.triggerKeySelect.innerHTML = '';
+    ALL_MODIFIER_KEYS.forEach((key) => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = getModifierLabel(key);
+      this.triggerKeySelect.appendChild(option);
+    });
   }
 
   private setupEventListeners(): void {
@@ -53,7 +73,9 @@ export default class PopupManagerService {
       this.enabledInput.checked = config.enabled;
       this.clearAfterSendInput.checked = config.behavior.clearAfterSend;
       this.portInput.value = config.websocket.port.toString();
+      this.triggerKeySelect.value = config.trigger.modifierKey;
       this.checkServer();
+      this.checkConflict(config.trigger.modifierKey);
     } catch (error) {
       this.showStatus('Failed to load configuration', 'error');
       logger.error('Error loading config:', error);
@@ -80,6 +102,9 @@ export default class PopupManagerService {
         behavior: {
           clearAfterSend: this.clearAfterSendInput.checked,
         },
+        trigger: {
+          modifierKey: this.triggerKeySelect.value as ModifierKey,
+        },
       };
 
       await ConfigStorageService.save(config);
@@ -100,6 +125,37 @@ export default class PopupManagerService {
       this.showStatus('Failed to reset configuration', 'error');
       logger.error('Error resetting config:', error);
     }
+  }
+
+  private checkConflict(currentKey: ModifierKey): void {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]?.id) return;
+
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { type: 'CHECK_CONFLICT' },
+        (response) => {
+          if (chrome.runtime.lastError || !response) {
+            this.conflictWarning.classList.remove('visible');
+            return;
+          }
+
+          if (response.hasConflict) {
+            const currentLabel = getModifierLabel(currentKey);
+            const suggestedLabel = response.suggestedKey
+              ? getModifierLabel(response.suggestedKey)
+              : null;
+            const text = suggestedLabel
+              ? `⚠️ ${currentLabel} may be used by this page. Suggested: ${suggestedLabel}`
+              : `⚠️ ${currentLabel} may be used by this page.`;
+            this.conflictWarning.textContent = text;
+            this.conflictWarning.classList.add('visible');
+          } else {
+            this.conflictWarning.classList.remove('visible');
+          }
+        },
+      );
+    });
   }
 
   private showStatus(message: string, type: 'success' | 'error'): void {

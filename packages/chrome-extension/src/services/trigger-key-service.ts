@@ -1,6 +1,9 @@
+import { ModifierKey } from '../utils/config';
+
 interface TriggerKeyServiceParams {
   onTriggerKeyStart: () => void;
   onTriggerKeyEnd: () => void;
+  modifierKey: ModifierKey;
 }
 
 export default class TriggerKeyService {
@@ -8,12 +11,19 @@ export default class TriggerKeyService {
 
   private onTriggerKeyEnd: () => void;
 
-  constructor({ onTriggerKeyStart, onTriggerKeyEnd }: TriggerKeyServiceParams) {
+  private modifierKey: ModifierKey;
+
+  constructor({ onTriggerKeyStart, onTriggerKeyEnd, modifierKey }: TriggerKeyServiceParams) {
     this.onTriggerKeyStart = onTriggerKeyStart;
     this.onTriggerKeyEnd = onTriggerKeyEnd;
+    this.modifierKey = modifierKey;
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
+  }
+
+  setModifierKey(key: ModifierKey): void {
+    this.modifierKey = key;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
@@ -33,18 +43,45 @@ export default class TriggerKeyService {
   }
 
   private isTriggerKeyRelated(event: KeyboardEvent): boolean {
-    return event.altKey || event.key === 'Alt';
+    switch (this.modifierKey) {
+      case 'Alt':
+        return event.altKey || event.key === 'Alt';
+      case 'Ctrl':
+        return event.ctrlKey || event.key === 'Control';
+      case 'Meta':
+        return event.metaKey || event.key === 'Meta';
+      default:
+        return false;
+    }
   }
 
   private isOnlyTriggerKeyRelated(event: KeyboardEvent): boolean {
-    return this.isTriggerKeyRelated(event)
-      && !event.ctrlKey
-      && !event.shiftKey
-      && !event.metaKey;
+    const related = this.isTriggerKeyRelated(event);
+    if (!related) return false;
+
+    switch (this.modifierKey) {
+      case 'Alt':
+        return !event.ctrlKey && !event.shiftKey && !event.metaKey;
+      case 'Ctrl':
+        return !event.altKey && !event.shiftKey && !event.metaKey;
+      case 'Meta':
+        return !event.altKey && !event.shiftKey && !event.ctrlKey;
+      default:
+        return false;
+    }
   }
 
   private isTriggerKeyPressed(event: KeyboardEvent): boolean {
-    return event.altKey;
+    switch (this.modifierKey) {
+      case 'Alt':
+        return event.altKey;
+      case 'Ctrl':
+        return event.ctrlKey;
+      case 'Meta':
+        return event.metaKey;
+      default:
+        return false;
+    }
   }
 
   registerListeners(): void {

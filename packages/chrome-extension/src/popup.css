@@ -229,3 +229,19 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.conflict-warning {
+  display: none;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc02;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.conflict-warning.visible {
+  display: block;
+}

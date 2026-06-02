@@ -34,6 +34,17 @@
       </div>
 
       <div class="field-group">
+        <label for="triggerKey" class="field-label">Trigger Key</label>
+        <select id="triggerKey" class="field-input">
+          <option value="Alt">Alt</option>
+          <option value="Ctrl">Ctrl</option>
+          <option value="Meta">Meta</option>
+        </select>
+        <span class="field-hint">Hold this key to enter pointing mode</span>
+        <div class="conflict-warning" id="conflictWarning"></div>
+      </div>
+
+      <div class="field-group">
         <label for="port" class="field-label">MCP Server Port</label>
         <input type="number" id="port" class="field-input" min="1" max="65535" placeholder="7007">
         <span class="field-hint">Port for WebSocket connection to MCP server</span>
