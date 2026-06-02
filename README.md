@@ -18,14 +18,14 @@ DOM Pointer MCP 是一个本地工具，由 Chrome 扩展 + MCP Server 组成。
 2. **写一句话描述你想要的改动**
 3. **按 Send**——AI 自动拿到上下文并修改源码
 
-**无需手动调用 MCP 工具。** 通过 Skill / slash命令，AI 工具会自动识别"做一下""pointed""改一下选中的"等触发词并获取选中的元素上下文，用户完全不需要了解底层 MCP 协议。
+**无需手动调用 MCP 工具。** 通过 `/pointed` 命令（Skill 或 slash command），AI 自动获取选中的元素上下文并执行你写的 note，用户完全不需要了解底层 MCP 协议。
 
 ## ✨ 特性
 
 - 🎯 **`Option+Click` 选择** —— 按住 `Option`（Windows 上是 `Alt`）点击任意元素
 - 🧺 **多选 Batch** —— 多个元素叠加成一个 batch，配一段共享的 note 一起发送
 - 📝 **浮动 Note Panel** —— 在选中区域旁边写自由文本说明，可 Send 或 Copy
-- 🤖 **Skill 自动触发** —— 安装后无需输入 `/pointed`，只需说"做一下""改一下选中的"等自然语言，AI 自动调用
+- 🤖 **Skill / Slash command** —— 输入 `/pointed` 即可触发，AI 自动获取选区并执行
 - 📋 **完整元素数据** —— 文本内容、CSS 类、HTML 属性、定位、样式等
 - 💡 **按需控制上下文体量** —— 每次调用可选只要可见文本、不要文本、CSS 详略 0–3
 - ⚛️ **组件信息识别** —— 通过运行时反射拿到 React（≤ 18）/ Vue 2 / Vue 3 的组件名和源文件（实验性）
@@ -132,45 +132,39 @@ npm update -g @dom-pointer-mcp/server
 
 ### 3. 开始使用
 
-配置完成后有 **三种使用方式**（推荐前两种——无需了解 MCP）：
+配置完成后有 **两种使用方式**（推荐第一种——无需了解 MCP）：
 
-#### 方式一：Skill 自动触发（推荐）
+#### 方式一：`/pointed` 命令（推荐）
 
-安装时自动注册了 `pointed` Skill。使用时只需：
+Skill 和 slash command 均以 `/pointed` 触发，行为一致：
+
 1. 在浏览器中 `Option+Click` 选择元素，写好 note 按 Send
-2. 在 AI 工具中说"**做一下**""**pointed**""**改一下选中的**"等触发词
-3. AI 自动调用 MCP 获取选区，按你的 note 修改代码
+2. 在 AI 工具中输入 `/pointed`（或触发 `pointed` skill）
+3. AI 自动调用 MCP 获取选区：
+   - **有 note** → 直接执行你写的改动，不会再问确认
+   - **没有 note** → 询问 "你想对这些元素做什么？"
 
-> Skill 的优势是不需要记任何命令——自然语言即可触发。
+支持追加参数控制上下文详略：`/pointed 0 0`（数字分别对应 textDetail 和 cssLevel，省略则使用服务端默认值）
 
-#### 方式二：`/pointed` 斜杠命令
-
-如果配置时选择了安装斜杠命令：
-1. 在浏览器中 `Option+Click` 选择元素，写好 note 按 Send
-2. 在 AI 工具中输入 `/pointed`
-3. AI 自动获取选区并执行
-
-支持追加参数控制上下文详略：`/pointed 0 0`（数字分别对应 textDetail 和 cssLevel）
-
-#### 方式二 (b)：`/pointed get` —— 只看不改
+##### `/pointed get` —— 只看不改
 
 如果你只想预览选区信息、不需要 AI 立即动手改代码：
 
 ```
-/pointed get          # 默认 textDetail=2, cssLevel=0
+/pointed get          # 使用服务端默认参数
 /pointed get 2 2      # textDetail=2, cssLevel=2
 /pointed get 1 3      # textDetail=1, cssLevel=3
 ```
 
 AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag / selector / 组件名等），然后：
-- 如果浏览器里写了 note → 提示"是否执行？"
+- 如果浏览器里写了 note → 提示"是否执行？"，**等你确认后才会改代码**
 - 如果没写 note → 提示"你想对这些元素做什么？"
 
 适合你想先看看选到了什么，再决定下一步操作的场景。
 
-#### 方式三：直接调用 MCP 工具
+#### 方式二：直接调用 MCP 工具
 
-高级用户也可以直接要求 AI 调用 `get-pointed-element` 工具：
+高级用户也可以直接要求 AI 调用 `get-pointed-element` 工具（省略参数则使用服务端默认值）：
 - `textDetail`：`0`（不含文本）| `1`（仅可见文本）| `2`（可见 + 隐藏，默认）
 - `cssLevel`：`0`（无 CSS）| `1`（布局，默认）| `2`（+ 盒模型）| `3`（完整 computed style）
 
@@ -181,7 +175,7 @@ AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag 
 3. 第一个选中的元素旁会出现 **浮动 note panel**，里面有 textarea 和三个按钮
 4. 写下你想要的改动（例如 "把这些按钮改成蓝色"、"在 [1] 和 [2] 之间加分割线"）
 5. **Send**（`⌘/Ctrl+Enter`）把选区 + note 发到 MCP server；**Copy** 把同样的内容拷到剪贴板；**×** 关闭面板
-6. 在 AI 工具中触发（说"做一下"或输入 `/pointed`），AI 拿到 `{ userNote, url, timestamp, elements: [...] }` 并执行
+6. 在 AI 工具中输入 `/pointed`，AI 拿到 `{ userNote, url, timestamp, elements: [...] }` 并执行
 
 要取消某个选中：再次 Option+Click 该元素，或者点 chip 上的 ×。Note panel 会一直保留，直到 **所有** 选中都被取消——防止你正在写的文本被误点丢掉。
 
