@@ -145,6 +145,31 @@ describe('NotePanelService', () => {
     expect(copyBtn.disabled).toBe(false);
   });
 
+  it('Copy falls back to execCommand when navigator.clipboard is unavailable', async () => {
+    // Remove clipboard to simulate HTTP page
+    delete (navigator as any).clipboard;
+
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    store.toggle(el);
+
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    textarea.value = 'http note';
+    const copyBtn = document.querySelector('.dom-pointer-mcp__note-copy') as HTMLButtonElement;
+
+    document.execCommand = jest.fn().mockReturnValue(true);
+    const execCommand = document.execCommand as jest.Mock;
+    copyBtn.click();
+
+    await flushMicrotasks();
+    await flushMicrotasks();
+
+    expect(onCopy).toHaveBeenCalledWith([el], 'http note');
+    expect(execCommand).toHaveBeenCalledWith('copy');
+    expect(copyBtn.disabled).toBe(false);
+    delete (document as any).execCommand;
+  });
+
   it('Close button clears the store and destroys the panel', () => {
     const a = document.createElement('div');
     const b = document.createElement('span');

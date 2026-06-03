@@ -203,7 +203,18 @@ export default class NotePanelService {
 
     try {
       const json = await this.onCopy(elements, note);
-      await navigator.clipboard.writeText(json);
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(json);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = json;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
       this.flashCopyFeedback('Copied!');
     } catch (err) {
       if (this.errorText) {
