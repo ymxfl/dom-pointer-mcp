@@ -43,6 +43,10 @@ function setupProcessHandlers(): void {
   process.on('SIGINT', gracefulShutdown);
   process.on('SIGHUP', gracefulShutdown);
   process.on('SIGUSR2', gracefulShutdown); // For nodemon
+
+  // When the MCP client disconnects, stdin closes — exit to avoid orphan processes
+  process.stdin.on('end', gracefulShutdown);
+  process.stdin.on('close', gracefulShutdown);
 }
 
 function startWebSocketService(): void {
