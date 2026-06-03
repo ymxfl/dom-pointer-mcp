@@ -7,12 +7,12 @@
 <body>
   <div class="container">
     <header class="header">
-      <h1>DOM Pointer MCP Settings</h1>
+      <h1 id="title"></h1>
     </header>
 
     <div class="server-status checking" id="serverStatus">
       <span class="status-indicator" id="statusIndicator">⏳</span>
-      <span class="status-text" id="statusText">Checking server...</span>
+      <span class="status-text" id="statusText"></span>
       <button type="button" id="recheckBtn" class="btn-recheck">Recheck</button>
     </div>
 
@@ -21,7 +21,7 @@
         <label class="toggle-label">
           <input type="checkbox" id="enabled" class="toggle-input">
           <span class="toggle-slider"></span>
-          <span class="toggle-text">Extension Enabled</span>
+          <span class="toggle-text" id="enabledLabel"></span>
         </label>
       </div>
 
@@ -29,36 +29,40 @@
         <label class="toggle-label">
           <input type="checkbox" id="clearAfterSend" class="toggle-input">
           <span class="toggle-slider"></span>
-          <span class="toggle-text">Clear selection after Send</span>
+          <span class="toggle-text" id="clearAfterSendLabel"></span>
         </label>
       </div>
 
       <div class="field-group">
-        <label for="triggerKey" class="field-label">Trigger Key</label>
-        <select id="triggerKey" class="field-input">
-          <option value="Alt">Alt</option>
-          <option value="Ctrl">Ctrl</option>
-          <option value="Meta">Meta</option>
-        </select>
-        <span class="field-hint">Hold this key to enter pointing mode</span>
+        <label for="triggerKey" class="field-label" id="triggerKeyLabel"></label>
+        <select id="triggerKey" class="field-input"></select>
+        <span class="field-hint" id="triggerKeyHint"></span>
         <div class="conflict-warning" id="conflictWarning"></div>
       </div>
 
       <div class="field-group">
-        <label for="port" class="field-label">MCP Server Port</label>
+        <label for="port" class="field-label" id="portLabel"></label>
         <input type="number" id="port" class="field-input" min="1" max="65535" placeholder="7007">
-        <span class="field-hint">Port for WebSocket connection to MCP server</span>
+        <span class="field-hint" id="portHint"></span>
+      </div>
+
+      <div class="field-group">
+        <label for="locale" class="field-label" id="localeLabel"></label>
+        <select id="locale" class="field-input">
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+        </select>
       </div>
 
       <div class="button-group">
-        <button type="button" id="saveBtn" class="btn btn-primary">Save Settings</button>
-        <button type="button" id="resetBtn" class="btn btn-secondary">Reset to Defaults</button>
+        <button type="button" id="saveBtn" class="btn btn-primary"></button>
+        <button type="button" id="resetBtn" class="btn btn-secondary"></button>
       </div>
     </form>
 
     <div class="status" id="status"></div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
 </html>

@@ -1,8 +1,9 @@
-import defaultConfig, { ExtensionConfig, Locale, ModifierKey } from '../utils/config';
+import defaultConfig, { ExtensionConfig, ModifierKey, Locale } from '../utils/config';
 import { getModifierLabel } from '../utils/platform';
 import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
 import { checkReachability, ReachabilityState } from './server-reachability-service';
+import { t, setLocale } from '../i18n';
 
 const ALL_MODIFIER_KEYS: ModifierKey[] = ['Alt', 'Ctrl', 'Meta'];
 
@@ -14,6 +15,8 @@ export default class PopupManagerService {
   private portInput: HTMLInputElement;
 
   private triggerKeySelect: HTMLSelectElement;
+
+  private localeSelect: HTMLSelectElement;
 
   private conflictWarning: HTMLElement;
 
@@ -36,6 +39,7 @@ export default class PopupManagerService {
     this.clearAfterSendInput = document.getElementById('clearAfterSend') as HTMLInputElement;
     this.portInput = document.getElementById('port') as HTMLInputElement;
     this.triggerKeySelect = document.getElementById('triggerKey') as HTMLSelectElement;
+    this.localeSelect = document.getElementById('locale') as HTMLSelectElement;
     this.conflictWarning = document.getElementById('conflictWarning') as HTMLElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
@@ -48,6 +52,19 @@ export default class PopupManagerService {
     this.populateTriggerKeyOptions();
     this.setupEventListeners();
     this.loadConfig();
+  }
+
+  private applyLocaleToUI(): void {
+    document.getElementById('title')!.textContent = t('popup.title');
+    document.getElementById('enabledLabel')!.textContent = t('popup.enabled');
+    document.getElementById('clearAfterSendLabel')!.textContent = t('popup.clearAfterSend');
+    document.getElementById('triggerKeyLabel')!.textContent = t('popup.triggerKey');
+    document.getElementById('triggerKeyHint')!.textContent = t('popup.triggerKeyHint');
+    document.getElementById('portLabel')!.textContent = t('popup.port');
+    document.getElementById('portHint')!.textContent = t('popup.portHint');
+    document.getElementById('localeLabel')!.textContent = t('popup.language');
+    this.saveBtn.textContent = t('popup.save');
+    this.resetBtn.textContent = t('popup.reset');
   }
 
   private populateTriggerKeyOptions(): void {
@@ -70,14 +87,18 @@ export default class PopupManagerService {
     try {
       const config = await ConfigStorageService.load();
 
+      setLocale(config.locale);
+      this.applyLocaleToUI();
+
       this.enabledInput.checked = config.enabled;
       this.clearAfterSendInput.checked = config.behavior.clearAfterSend;
       this.portInput.value = config.websocket.port.toString();
       this.triggerKeySelect.value = config.trigger.modifierKey;
+      this.localeSelect.value = config.locale;
       this.checkServer();
       this.checkConflict(config.trigger.modifierKey);
     } catch (error) {
-      this.showStatus('Failed to load configuration', 'error');
+      this.showStatus(t('popup.loadError'), 'error');
       logger.error('Error loading config:', error);
     }
   }
@@ -86,13 +107,15 @@ export default class PopupManagerService {
     try {
       const port = parseInt(this.portInput.value, 10);
       if (Number.isNaN(port) || port < 1 || port > 65535) {
-        this.showStatus('Port must be a number between 1 and 65535', 'error');
+        this.showStatus(t('popup.portError'), 'error');
         return;
       }
 
+      const newLocale = this.localeSelect.value as Locale;
+
       const config: ExtensionConfig = {
         enabled: this.enabledInput.checked,
-        locale: defaultConfig.locale as Locale,
+        locale: newLocale,
         websocket: {
           port,
         },
@@ -109,10 +132,14 @@ export default class PopupManagerService {
       };
 
       await ConfigStorageService.save(config);
-      this.showStatus('Settings saved successfully', 'success');
+
+      setLocale(newLocale);
+      this.applyLocaleToUI();
+
+      this.showStatus(t('popup.savedSuccess'), 'success');
       this.checkServer();
     } catch (error) {
-      this.showStatus('Failed to save configuration', 'error');
+      this.showStatus(t('popup.saveError'), 'error');
       logger.error('Error saving config:', error);
     }
   }
@@ -121,9 +148,9 @@ export default class PopupManagerService {
     try {
       await ConfigStorageService.save(defaultConfig);
       await this.loadConfig();
-      this.showStatus('Settings reset to defaults', 'success');
+      this.showStatus(t('popup.resetSuccess'), 'success');
     } catch (error) {
-      this.showStatus('Failed to reset configuration', 'error');
+      this.showStatus(t('popup.resetError'), 'error');
       logger.error('Error resetting config:', error);
     }
   }
@@ -147,8 +174,8 @@ export default class PopupManagerService {
               ? getModifierLabel(response.suggestedKey)
               : null;
             const text = suggestedLabel
-              ? `⚠️ ${currentLabel} may be used by this page. Suggested: ${suggestedLabel}`
-              : `⚠️ ${currentLabel} may be used by this page.`;
+              ? t('conflict.warning', { key: currentLabel, suggested: suggestedLabel })
+              : t('conflict.warningNoSuggestion', { key: currentLabel });
             this.conflictWarning.textContent = text;
             this.conflictWarning.classList.add('visible');
           } else {
@@ -171,17 +198,17 @@ export default class PopupManagerService {
   private async checkServer(): Promise<void> {
     const port = parseInt(this.portInput.value, 10);
     if (Number.isNaN(port) || port < 1 || port > 65535) {
-      this.setStatus('unreachable', `Invalid port: ${this.portInput.value}`);
+      this.setStatus('unreachable', t('popup.invalidPort', { port: this.portInput.value }));
       return;
     }
 
-    this.setStatus('checking', 'Checking server...');
+    this.setStatus('checking', t('popup.serverChecking'));
     const reachable = await checkReachability(port);
     this.setStatus(
       reachable ? 'reachable' : 'unreachable',
       reachable
-        ? `Reachable on port ${port}`
-        : `Cannot reach server on port ${port}`,
+        ? t('popup.serverReachable', { port })
+        : t('popup.serverUnreachable', { port }),
     );
   }
 
