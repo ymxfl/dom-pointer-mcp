@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.3.0
+
+### Minor Changes
+
+- c662488: Chrome 扩展全面国际化：Popup、Content Script、manifest 支持中英文切换
+
 ## 1.2.1
 
 ### Patch Changes
