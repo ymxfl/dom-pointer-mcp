@@ -16,26 +16,92 @@ const ELEMENT_READING = `Read the returned payload:
 
 const NO_SELECTION_HINT = 'If the tool returns "No selection pointed", tell the user to Option+Click elements in the browser and press Cmd/Ctrl+Enter before retrying.';
 
-const BODY = `# /pointed
+// --- GET mode fragments (platform-specific) ---
 
-## Step 1 — Always call the tool first
+const GET_MODE_GENERIC = `### GET mode (read-only preview)
 
-Regardless of mode, call \`get-pointed-element\` IMMEDIATELY with no questions.
+⚠️ **CRITICAL: In GET mode, after summarizing elements you MUST ask the user for confirmation. Do NOT take ANY other action (no searching, no reading files, no answering questions, no code analysis) until the user confirms.**
+
+1. Summarize the pointed elements concisely: include page URL, userNote, and for each element its component name, source file, and tag.
+2. If \`userNote\` is non-empty → ask: "用户备注为「{userNote}」，是否继续？"
+   If \`userNote\` is empty → ask: "你想对这些元素做什么？"
+3. **STOP HERE. Do NOT read files, search code, or perform any action. Wait for user reply.**`;
+
+const GET_MODE_CLAUDE = `### GET mode (read-only preview)
+
+⚠️ **CRITICAL: In GET mode, after summarizing elements you MUST ask the user for confirmation via AskUserQuestion. Do NOT take ANY other action (no searching, no reading files, no answering questions, no code analysis) until the user confirms.**
+
+1. Summarize the pointed elements concisely: include page URL, userNote, and for each element its component name, source file, and tag.
+2. Confirm with user via \`AskUserQuestion\`:
+   - If \`userNote\` is non-empty → use AskUserQuestion with question "用户备注为「{userNote}」，是否继续？", options: "继续" (description: "按备注内容执行操作") and "取消" (description: "不做任何操作").
+   - If \`userNote\` is empty → use AskUserQuestion with question "你想对这些元素做什么？", options: "自定义操作" (description: "输入具体操作指令") and "取消" (description: "不做任何操作").
+3. **STOP HERE. Do NOT read files, search code, or perform any action. Wait for user selection.**
+4. If user selects "取消" → respond "已取消" and end. Do NOT proceed.`;
+
+const GET_MODE_JOYCODE = `### GET mode (read-only preview)
+
+⚠️ **CRITICAL: In GET mode, after summarizing elements you MUST ask the user for confirmation via task_ask_question. Do NOT take ANY other action (no searching, no reading files, no answering questions, no code analysis) until the user confirms.**
+
+1. Summarize the pointed elements concisely: include page URL, userNote, and for each element its component name, source file, and tag.
+2. Confirm with user via \`task_ask_question\`:
+   - If \`userNote\` is non-empty → use task_ask_question with question "用户备注为「{userNote}」，是否继续？", options: "继续" (description: "按备注内容执行操作") and "取消" (description: "不做任何操作").
+   - If \`userNote\` is empty → use task_ask_question with question "你想对这些元素做什么？", options: "自定义操作" (description: "输入具体操作指令") and "取消" (description: "不做任何操作").
+3. **STOP HERE. Do NOT read files, search code, or perform any action. Wait for user selection.**
+4. If user selects "取消" → respond "已取消" and end. Do NOT proceed.`;
+
+const GET_MODE_CURSOR = `### GET mode (read-only preview)
+
+⚠️ **CRITICAL: In GET mode, after summarizing elements you MUST ask the user for confirmation via ask_question. Do NOT take ANY other action (no searching, no reading files, no answering questions, no code analysis) until the user confirms.**
+
+1. Summarize the pointed elements concisely: include page URL, userNote, and for each element its component name, source file, and tag.
+2. Confirm with user via \`ask_question\`:
+   - If \`userNote\` is non-empty → use ask_question with question "用户备注为「{userNote}」，是否继续？", options: "继续" (description: "按备注内容执行操作") and "取消" (description: "不做任何操作").
+   - If \`userNote\` is empty → use ask_question with question "你想对这些元素做什么？", options: "自定义操作" (description: "输入具体操作指令") and "取消" (description: "不做任何操作").
+3. **STOP HERE. Do NOT read files, search code, or perform any action. Wait for user selection.**
+4. If user selects "取消" → respond "已取消" and end. Do NOT proceed.`;
+
+const GET_MODE_OPENCODE = `### GET mode (read-only preview)
+
+⚠️ **CRITICAL: In GET mode, after summarizing elements you MUST ask the user for confirmation via AskUserQuestion. Do NOT take ANY other action (no searching, no reading files, no answering questions, no code analysis) until the user confirms.**
+
+1. Summarize the pointed elements concisely: include page URL, userNote, and for each element its component name, source file, and tag.
+2. Confirm with user via \`AskUserQuestion\`:
+   - If \`userNote\` is non-empty → use AskUserQuestion with question "用户备注为「{userNote}」，是否继续？", options: "继续" (description: "按备注内容执行操作") and "取消" (description: "不做任何操作").
+   - If \`userNote\` is empty → use AskUserQuestion with question "你想对这些元素做什么？", options: "自定义操作" (description: "输入具体操作指令") and "取消" (description: "不做任何操作").
+3. **STOP HERE. Do NOT read files, search code, or perform any action. Wait for user selection.**
+4. If user selects "取消" → respond "已取消" and end. Do NOT proceed.`;
+
+const GET_MODE_CODEX = `### GET mode (read-only preview)
+
+⚠️ **CRITICAL: In GET mode, after summarizing elements you MUST ask the user for confirmation via request_user_input. Do NOT take ANY other action (no searching, no reading files, no answering questions, no code analysis) until the user confirms.**
+
+1. Summarize the pointed elements concisely: include page URL, userNote, and for each element its component name, source file, and tag.
+2. Confirm with user via \`request_user_input\`:
+   - If \`userNote\` is non-empty → use request_user_input with question "用户备注为「{userNote}」，是否继续？", options: "继续" (description: "按备注内容执行操作") and "取消" (description: "不做任何操作").
+   - If \`userNote\` is empty → use request_user_input with question "你想对这些元素做什么？", options: "自定义操作" (description: "输入具体操作指令") and "取消" (description: "不做任何操作").
+3. **STOP HERE. Do NOT read files, search code, or perform any action. Wait for user selection.**
+4. If user selects "取消" → respond "已取消" and end. Do NOT proceed.`;
+
+function buildBody(getMode: string): string {
+  return `# /pointed
+
+## Step 1 — Determine mode BEFORE calling the tool
+
+**If the first arg is "get"** → you are in **GET mode (read-only, NO file modifications allowed)**.
+**Otherwise** → you are in **EXECUTE mode**.
+
+Remember which mode you are in. This decision is FINAL and cannot change after the tool call.
+
+## Step 2 — Call the tool
+
+Call \`get-pointed-element\` IMMEDIATELY with no questions.
 Parse optional trailing integers as textDetail/cssLevel; if absent, pass NO arguments.
 
-## Step 2 — Route by mode
-
-**If the first arg is "get"** → GET mode.
-**Otherwise** → EXECUTE mode.
+## Step 3 — Act according to mode
 
 ---
 
-### GET mode (read-only preview)
-
-1. Summarize: page URL, element count, per-element tag/selector/component.
-2. If \`userNote\` is non-empty → ask: "用户备注为「{userNote}」，是否执行？"
-   If \`userNote\` is empty → ask: "你想对这些元素做什么？"
-3. **STOP. Wait for user reply. Do NOT modify any file until user explicitly says yes.**
+${getMode}
 
 ### EXECUTE mode (default)
 
@@ -49,6 +115,14 @@ ${PARAM_HINT}
 
 ${NO_SELECTION_HINT}
 `;
+}
+
+const BODY = buildBody(GET_MODE_GENERIC);
+const BODY_CLAUDE = buildBody(GET_MODE_CLAUDE);
+const BODY_JOYCODE = buildBody(GET_MODE_JOYCODE);
+const BODY_CURSOR = buildBody(GET_MODE_CURSOR);
+const BODY_OPENCODE = buildBody(GET_MODE_OPENCODE);
+const BODY_CODEX = buildBody(GET_MODE_CODEX);
 
 // --- Slash command ---
 
@@ -61,3 +135,29 @@ export const COMMAND_BODY = BODY;
 export const SKILL_DESCRIPTION = COMMAND_DESCRIPTION;
 
 export const SKILL_BODY = BODY;
+
+// --- Claude Code specific (with AskUserQuestion support) ---
+
+export const COMMAND_BODY_CLAUDE = BODY_CLAUDE;
+
+export const SKILL_BODY_CLAUDE = BODY_CLAUDE;
+
+// --- JoyCode specific (with task_ask_question support) ---
+
+export const COMMAND_BODY_JOYCODE = BODY_JOYCODE;
+
+export const SKILL_BODY_JOYCODE = BODY_JOYCODE;
+
+// --- Cursor specific (with ask_question support) ---
+
+export const COMMAND_BODY_CURSOR = BODY_CURSOR;
+
+export const SKILL_BODY_CURSOR = BODY_CURSOR;
+
+// --- OpenCode specific (with AskUserQuestion support) ---
+
+export const COMMAND_BODY_OPENCODE = BODY_OPENCODE;
+
+// --- Codex specific (with request_user_input support) ---
+
+export const COMMAND_BODY_CODEX = BODY_CODEX;
