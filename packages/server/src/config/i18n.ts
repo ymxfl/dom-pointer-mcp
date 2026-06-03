@@ -49,7 +49,15 @@ const texts = {
   },
   confirmSlash: {
     zh: '是否同时安装斜杠命令？',
-    en: 'Also install the slash command for the selected agents?',
+    en: 'Install the slash command?',
+  },
+  slashYes: {
+    zh: '是 — 同时安装斜杠命令',
+    en: 'Yes — install the slash command',
+  },
+  slashNo: {
+    zh: '否 — 仅安装 MCP 和 Skill',
+    en: 'No — MCP and skill only',
   },
   confirmUninstall: {
     zh: (agents: string) => `将移除以下 Agent 的用户级 MCP 配置、技能和斜杠命令：${agents}。\n`

@@ -62,9 +62,12 @@ export async function selectLaunchMode(): Promise<LaunchMode> {
 
 export async function confirmSlash(): Promise<boolean> {
   ensureTTY();
-  return confirm({
+  return select<boolean>({
     message: t('confirmSlash') as string,
-    default: true,
+    choices: [
+      { name: t('slashYes') as string, value: true },
+      { name: t('slashNo') as string, value: false },
+    ],
   });
 }
 
