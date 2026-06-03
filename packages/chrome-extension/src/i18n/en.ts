@@ -1,0 +1,38 @@
+import type { MessageKey } from './zh';
+
+const en: Record<MessageKey, string> = {
+  'popup.title': 'DOM Pointer MCP Settings',
+  'popup.enabled': 'Extension Enabled',
+  'popup.clearAfterSend': 'Clear selection after Send',
+  'popup.triggerKey': 'Trigger Key',
+  'popup.triggerKeyHint': 'Hold this key to enter pointing mode',
+  'popup.port': 'MCP Server Port',
+  'popup.portHint': 'Port for WebSocket connection to MCP server',
+  'popup.save': 'Save Settings',
+  'popup.reset': 'Reset to Defaults',
+  'popup.language': 'Language',
+  'popup.serverChecking': 'Checking server...',
+  'popup.serverReachable': 'Reachable on port {port}',
+  'popup.serverUnreachable': 'Cannot reach server on port {port}',
+  'popup.savedSuccess': 'Settings saved successfully',
+  'popup.resetSuccess': 'Settings reset to defaults',
+  'popup.portError': 'Port must be a number between 1 and 65535',
+  'popup.loadError': 'Failed to load configuration',
+  'popup.saveError': 'Failed to save configuration',
+  'popup.resetError': 'Failed to reset configuration',
+  'popup.invalidPort': 'Invalid port: {port}',
+  'notePanel.placeholder': 'Describe what you want to change...',
+  'notePanel.send': 'Send',
+  'notePanel.copy': 'Copy',
+  'notePanel.copied': 'Copied!',
+  'notePanel.hint': '⌘/Ctrl+Enter to send',
+  'notePanel.sendFailed': 'Send failed: {error}',
+  'notePanel.copyFailed': 'Copy failed: {error}',
+  'notePanel.closeTitle': 'Clear all selections',
+  'conflict.warning': '{key} may be used by this page. Suggested: {suggested}',
+  'conflict.warningNoSuggestion': '{key} may be used by this page.',
+  'conflict.toastAction': 'Settings',
+  'extension.reloaded': 'Extension was reloaded or updated. Please refresh this page to reconnect.',
+};
+
+export default en;
