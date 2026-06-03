@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/server
 
+## 1.3.1
+
+### Patch Changes
+
+- fc75be0: 对齐 GitHub Release 与 npm 版本号
+
 ## 1.3.0
 
 ### Minor Changes
