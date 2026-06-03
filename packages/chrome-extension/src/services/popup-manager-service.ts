@@ -1,4 +1,4 @@
-import defaultConfig, { ExtensionConfig, ModifierKey } from '../utils/config';
+import defaultConfig, { ExtensionConfig, Locale, ModifierKey } from '../utils/config';
 import { getModifierLabel } from '../utils/platform';
 import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
@@ -92,6 +92,7 @@ export default class PopupManagerService {
 
       const config: ExtensionConfig = {
         enabled: this.enabledInput.checked,
+        locale: defaultConfig.locale as Locale,
         websocket: {
           port,
         },

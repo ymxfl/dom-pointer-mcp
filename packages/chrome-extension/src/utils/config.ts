@@ -1,9 +1,12 @@
 import { LogLevel } from '@dom-pointer-mcp/shared/logger';
+import { Locale } from '../i18n/types';
 
 export type ModifierKey = 'Alt' | 'Ctrl' | 'Meta';
+export type { Locale } from '../i18n/types';
 
 export interface ExtensionConfig {
   enabled: boolean;
+  locale: Locale;
   websocket: {
     port: number;
   };
@@ -21,6 +24,7 @@ export interface ExtensionConfig {
 
 const config: ExtensionConfig = {
   enabled: true,
+  locale: 'zh',
   websocket: {
     port: 7007,
   },
