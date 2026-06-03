@@ -83,7 +83,7 @@ export default class NotePanelService {
       <div class="dom-pointer-mcp__note-error" hidden></div>
       <div class="dom-pointer-mcp__note-footer">
         <span class="dom-pointer-mcp__note-hint">${t('notePanel.hint')}</span>
-        <button type="button" class="dom-pointer-mcp__note-copy" title="${t('notePanel.copy')}">${t('notePanel.copy')}</button>
+        <button type="button" class="dom-pointer-mcp__note-copy" title="${t('notePanel.copyTooltip')}">${t('notePanel.copy')}</button>
         <button type="button" class="dom-pointer-mcp__note-send">${t('notePanel.send')}</button>
       </div>
     `;

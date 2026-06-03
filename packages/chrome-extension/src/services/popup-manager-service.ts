@@ -65,6 +65,7 @@ export default class PopupManagerService {
     document.getElementById('localeLabel')!.textContent = t('popup.language');
     this.saveBtn.textContent = t('popup.save');
     this.resetBtn.textContent = t('popup.reset');
+    this.recheckBtn.textContent = t('popup.recheck');
   }
 
   private populateTriggerKeyOptions(): void {
