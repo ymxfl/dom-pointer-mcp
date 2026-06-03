@@ -1,5 +1,6 @@
 import { ModifierKey } from '../utils/config';
 import { getModifierLabel } from '../utils/platform';
+import { t } from '../i18n';
 import logger from '../utils/logger';
 
 interface KeyListenerRecord {
@@ -37,8 +38,8 @@ export function detectConflict(currentKey: ModifierKey): ConflictResult {
   const suggestedLabel = suggested ? getModifierLabel(suggested) : null;
 
   const message = suggestedLabel
-    ? `${currentLabel} 键可能被当前页面占用，建议切换为 ${suggestedLabel}`
-    : `${currentLabel} 键可能被当前页面占用`;
+    ? t('conflict.warning', { key: currentLabel, suggested: suggestedLabel })
+    : t('conflict.warningNoSuggestion', { key: currentLabel });
 
   logger.debug('🔍 Conflict detected:', { currentKey, suggested });
 

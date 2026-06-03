@@ -1,5 +1,6 @@
 import { RawPointedSelection } from '@dom-pointer-mcp/shared/types';
 import { ModifierKey } from '../utils/config';
+import { t } from '../i18n';
 import logger from '../utils/logger';
 import TriggerMouseService from './trigger-mouse-service';
 import TriggerKeyService from './trigger-key-service';
@@ -10,8 +11,6 @@ import ConfigStorageService from './config-storage-service';
 import { extractRawPointedDOMElement } from '../utils/element';
 
 const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
-
-const EXTENSION_RELOADED_MESSAGE = 'Extension was reloaded or updated. Please refresh this page to reconnect.';
 
 function isExtensionContextValid(): boolean {
   try {
@@ -27,7 +26,7 @@ function isExtensionContextValid(): boolean {
 
 function assertExtensionContextValid(): void {
   if (!isExtensionContextValid()) {
-    throw new Error(EXTENSION_RELOADED_MESSAGE);
+    throw new Error(t('extension.reloaded'));
   }
 }
 
@@ -37,7 +36,7 @@ function translateRuntimeError(raw: string): Error {
     || raw.includes("Cannot read properties of undefined (reading 'sendMessage')")
     || raw.includes('chrome.runtime is undefined')
   ) {
-    return new Error(EXTENSION_RELOADED_MESSAGE);
+    return new Error(t('extension.reloaded'));
   }
   return new Error(raw);
 }

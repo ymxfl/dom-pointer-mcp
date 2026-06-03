@@ -2,6 +2,7 @@ import {
   autoUpdate, computePosition, flip, limitShift, shift,
 } from '@floating-ui/dom';
 import SelectionStoreService from './selection-store-service';
+import { t } from '../i18n';
 
 function viewportClippedRect(el: HTMLElement): DOMRect {
   const r = el.getBoundingClientRect();
@@ -75,15 +76,15 @@ export default class NotePanelService {
     this.root = document.createElement('div');
     this.root.className = PANEL_CLASS;
     this.root.innerHTML = `
-      <button type="button" class="dom-pointer-mcp__note-close" aria-label="Close" title="Clear all selections">×</button>
+      <button type="button" class="dom-pointer-mcp__note-close" aria-label="Close" title="${t('notePanel.closeTitle')}">×</button>
       <div class="dom-pointer-mcp__note-chips"></div>
       <textarea class="dom-pointer-mcp__note-textarea"
-        placeholder="Describe what you want to change..."></textarea>
+        placeholder="${t('notePanel.placeholder')}"></textarea>
       <div class="dom-pointer-mcp__note-error" hidden></div>
       <div class="dom-pointer-mcp__note-footer">
-        <span class="dom-pointer-mcp__note-hint">⌘/Ctrl+Enter to send</span>
-        <button type="button" class="dom-pointer-mcp__note-copy" title="Copy selection as JSON for manual paste into any agent">Copy</button>
-        <button type="button" class="dom-pointer-mcp__note-send">Send</button>
+        <span class="dom-pointer-mcp__note-hint">${t('notePanel.hint')}</span>
+        <button type="button" class="dom-pointer-mcp__note-copy" title="${t('notePanel.copy')}">${t('notePanel.copy')}</button>
+        <button type="button" class="dom-pointer-mcp__note-send">${t('notePanel.send')}</button>
       </div>
     `;
     document.body.appendChild(this.root);
@@ -182,7 +183,7 @@ export default class NotePanelService {
       if (this.textarea) this.textarea.value = '';
     } catch (err) {
       if (this.errorText) {
-        this.errorText.textContent = `Send failed: ${(err as Error).message}`;
+        this.errorText.textContent = t('notePanel.sendFailed', { error: (err as Error).message });
         this.errorText.hidden = false;
       }
     } finally {
@@ -215,10 +216,10 @@ export default class NotePanelService {
         document.execCommand('copy');
         document.body.removeChild(ta);
       }
-      this.flashCopyFeedback('Copied!');
+      this.flashCopyFeedback(t('notePanel.copied'));
     } catch (err) {
       if (this.errorText) {
-        this.errorText.textContent = `Copy failed: ${(err as Error).message}`;
+        this.errorText.textContent = t('notePanel.copyFailed', { error: (err as Error).message });
         this.errorText.hidden = false;
       }
     } finally {
@@ -228,7 +229,7 @@ export default class NotePanelService {
 
   private flashCopyFeedback(text: string): void {
     if (!this.copyBtn) return;
-    const original = 'Copy';
+    const original = t('notePanel.copy');
     this.copyBtn.textContent = text;
     if (this.feedbackTimer) clearTimeout(this.feedbackTimer);
     this.feedbackTimer = setTimeout(() => {
