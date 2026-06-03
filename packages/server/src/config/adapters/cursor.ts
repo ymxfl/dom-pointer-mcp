@@ -7,9 +7,9 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY,
+  COMMAND_BODY_CURSOR,
   SKILL_DESCRIPTION,
-  SKILL_BODY,
+  SKILL_BODY_CURSOR,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -19,7 +19,7 @@ function buildCommandFile(): string {
 description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${COMMAND_BODY}`;
+${COMMAND_BODY_CURSOR}`;
 }
 
 function buildMdcFile(): string {
@@ -28,7 +28,7 @@ description: ${JSON.stringify(SKILL_DESCRIPTION)}
 alwaysApply: false
 ---
 
-${SKILL_BODY}`;
+${SKILL_BODY_CURSOR}`;
 }
 
 function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {

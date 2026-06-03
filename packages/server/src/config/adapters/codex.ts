@@ -12,7 +12,7 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY,
+  COMMAND_BODY_CODEX,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -92,7 +92,7 @@ description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 argument-hint: command arguments
 ---
 
-${COMMAND_BODY}`;
+${COMMAND_BODY_CODEX}`;
 }
 
 export const codexAdapter: ToolAdapter = {

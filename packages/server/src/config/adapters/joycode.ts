@@ -13,9 +13,9 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY,
+  COMMAND_BODY_JOYCODE,
   SKILL_DESCRIPTION,
-  SKILL_BODY,
+  SKILL_BODY_JOYCODE,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -42,7 +42,7 @@ function buildPromptEntry(scope: Scope) {
     label: 'pointed',
     name: PROMPT_NAME,
     description: COMMAND_DESCRIPTION,
-    prompt: COMMAND_BODY,
+    prompt: COMMAND_BODY_JOYCODE,
     source: scope,
   };
 }
@@ -53,7 +53,7 @@ name: ${TRIGGER_NAME}
 description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${SKILL_BODY}`;
+${SKILL_BODY_JOYCODE}`;
 }
 
 export const joycodeAdapter: ToolAdapter = {

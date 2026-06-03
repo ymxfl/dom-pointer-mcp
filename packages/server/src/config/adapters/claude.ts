@@ -12,9 +12,9 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY,
+  COMMAND_BODY_CLAUDE,
   SKILL_DESCRIPTION,
-  SKILL_BODY,
+  SKILL_BODY_CLAUDE,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -24,7 +24,7 @@ function buildCommandFile(): string {
 description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${COMMAND_BODY}`;
+${COMMAND_BODY_CLAUDE}`;
 }
 
 function buildSkillFile(): string {
@@ -33,7 +33,7 @@ name: ${TRIGGER_NAME}
 description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${SKILL_BODY}`;
+${SKILL_BODY_CLAUDE}`;
 }
 
 function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {

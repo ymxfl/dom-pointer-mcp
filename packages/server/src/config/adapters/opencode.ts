@@ -11,7 +11,7 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY,
+  COMMAND_BODY_OPENCODE,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -21,7 +21,7 @@ function buildCommandFile(): string {
 description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${COMMAND_BODY}`;
+${COMMAND_BODY_OPENCODE}`;
 }
 
 function userConfigPath(): string {
