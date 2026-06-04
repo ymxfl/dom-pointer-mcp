@@ -1,25 +1,13 @@
 /* eslint-disable no-underscore-dangle */
-import type { ComponentInfo } from '@dom-pointer-mcp/shared/types';
+import type { ComponentInfo, ComponentAncestor } from '@dom-pointer-mcp/shared/types';
 import type { ComponentExtractor } from './types';
 
-/**
- * The fiber found on a DOM node usually represents the HTML element itself
- * (fiber.type === 'div' / 'code' / etc — a string). Walk up fiber.return
- * to the nearest fiber whose type is a component (function or object with
- * displayName/name), since that's the meaningful React component for the
- * clicked element.
- */
-function findComponentFiber(fiber: any): any | undefined {
-  let current = fiber;
-  while (current) {
-    const { type } = current;
-    if (type && typeof type !== 'string') {
-      const name = type.displayName || type.name;
-      if (name) return current;
-    }
-    current = current.return;
-  }
-  return undefined;
+function getSourceFile(fiber: any): string | undefined {
+  const debugSource = fiber._debugSource;
+  if (!debugSource?.fileName) return undefined;
+  return debugSource.lineNumber
+    ? `${debugSource.fileName}:${debugSource.lineNumber}`
+    : debugSource.fileName;
 }
 
 export function extractReact(element: HTMLElement): ComponentInfo | undefined {
@@ -28,18 +16,29 @@ export function extractReact(element: HTMLElement): ComponentInfo | undefined {
   if (!fiberKey) return undefined;
 
   const startFiber = (element as any)[fiberKey];
-  const componentFiber = findComponentFiber(startFiber);
-  if (!componentFiber) return undefined;
+  const ancestors: ComponentAncestor[] = [];
+  let current = startFiber;
 
-  const name = componentFiber.type.displayName || componentFiber.type.name;
-  const info: ComponentInfo = { name, framework: 'react' };
-
-  const debugSource = componentFiber._debugSource;
-  if (debugSource?.fileName) {
-    const file = debugSource.fileName.split('/').pop() || debugSource.fileName;
-    info.sourceFile = debugSource.lineNumber ? `${file}:${debugSource.lineNumber}` : file;
+  while (current) {
+    const { type } = current;
+    if (type && typeof type !== 'string') {
+      const name = type.displayName || type.name;
+      if (name) {
+        const sourceFile = getSourceFile(current);
+        const ancestor: ComponentAncestor = { name };
+        if (sourceFile) ancestor.sourceFile = sourceFile;
+        ancestors.push(ancestor);
+      }
+    }
+    current = current.return;
   }
 
+  if (ancestors.length === 0) return undefined;
+
+  const first = ancestors[0];
+  const info: ComponentInfo = { name: first.name, framework: 'react' };
+  if (first.sourceFile) info.sourceFile = first.sourceFile;
+  if (ancestors.length > 0) info.ancestors = ancestors;
   return info;
 }
 

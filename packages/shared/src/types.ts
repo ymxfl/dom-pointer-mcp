@@ -33,6 +33,12 @@ export interface ComponentInfo {
   name?: string;
   sourceFile?: string;
   framework?: 'react' | 'vue' | 'angular' | 'svelte';
+  ancestors?: ComponentAncestor[];
+}
+
+export interface ComponentAncestor {
+  name: string;
+  sourceFile?: string;
 }
 
 export interface TargetedElement {

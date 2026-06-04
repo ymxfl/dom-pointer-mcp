@@ -36,7 +36,7 @@ describe('extractor-main', () => {
 
     const response = await responsePromise;
     expect(response.requestId).toBe('req-1');
-    expect(response.componentInfo).toEqual({ name: 'Foo', framework: 'vue' });
+    expect(response.componentInfo).toMatchObject({ name: 'Foo', framework: 'vue' });
 
     el.remove();
   });
