@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.4.0
+
+### Minor Changes
+
+- a47f1ff: 组件提取器增加祖先链信息、返回完整源文件路径、自动跳过 node_modules 库组件
+
 ## 1.3.1
 
 ### Patch Changes
