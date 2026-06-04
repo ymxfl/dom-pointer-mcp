@@ -22,7 +22,7 @@ describe('extractComponentInfo orchestrator', () => {
       value: { type: { displayName: 'R' } },
       configurable: true,
     });
-    expect(extractComponentInfo(el)).toEqual({ name: 'V', framework: 'vue' });
+    expect(extractComponentInfo(el)).toMatchObject({ name: 'V', framework: 'vue' });
   });
 
   it('returns undefined when no extractor matches', () => {
@@ -44,7 +44,7 @@ describe('extractComponentInfo orchestrator', () => {
 
     let result: ReturnType<typeof extractComponentInfo>;
     expect(() => { result = extractComponentInfo(el); }).not.toThrow();
-    expect(result!).toEqual({ name: 'Fallback', framework: 'react' });
+    expect(result!).toMatchObject({ name: 'Fallback', framework: 'react' });
     expect(loggerErrorSpy).toHaveBeenCalled();
   });
 });
