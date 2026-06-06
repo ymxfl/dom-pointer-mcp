@@ -9,6 +9,16 @@ import { t } from '../i18n';
 
 interface HistoryElement {
   selector: string;
+  tagName?: string;
+  id?: string;
+  classes?: string[];
+  attributes?: Record<string, string>;
+  position?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 interface HistorySelection {
@@ -260,7 +270,7 @@ export default class HistoryDrawerService {
   private renderSelectionOverlays(selection: HistorySelection, prefix: string): number {
     let rendered = 0;
     selection.elements.forEach((element, index) => {
-      const target = this.findElement(element.selector);
+      const target = this.findElement(element);
       if (!target) return;
       this.createHistoryOverlay(target, `${prefix}${index + 1}`);
       rendered += 1;
@@ -290,17 +300,84 @@ export default class HistoryDrawerService {
     this.overlays = [];
   }
 
-  private findElement(selector: string): HTMLElement | null {
-    try {
-      const element = document.querySelector(selector);
-      return element instanceof HTMLElement ? element : null;
-    } catch {
-      return null;
+  private findElement(element: HistoryElement): HTMLElement | null {
+    const selectors = this.buildSelectorCandidates(element);
+    for (const selector of selectors) {
+      try {
+        const matched = Array.from(document.querySelectorAll(selector))
+          .filter((node): node is HTMLElement => node instanceof HTMLElement);
+        const best = this.pickBestElement(matched, element);
+        if (best) return best;
+      } catch {
+        // Try the next selector candidate.
+      }
     }
+    return null;
+  }
+
+  private buildSelectorCandidates(element: HistoryElement): string[] {
+    const selectors: string[] = [];
+    if (element.selector && element.selector !== 'unknown') {
+      selectors.push(element.selector);
+    }
+
+    if (element.id) {
+      selectors.push(`#${this.escapeIdentifier(element.id)}`);
+    }
+
+    const stableAttr = ['data-testid', 'data-test', 'data-cy', 'name', 'aria-label']
+      .find((attr) => element.attributes?.[attr]);
+    const tag = (element.tagName || '*').toLowerCase();
+    if (stableAttr && element.attributes?.[stableAttr]) {
+      selectors.push(`${tag}[${stableAttr}="${this.escapeAttributeValue(element.attributes[stableAttr])}"]`);
+    }
+
+    if (element.classes && element.classes.length > 0) {
+      selectors.push(`${tag}.${element.classes.slice(0, 3).map((cls) => this.escapeIdentifier(cls)).join('.')}`);
+    }
+
+    selectors.push(tag);
+    return Array.from(new Set(selectors.filter(Boolean)));
+  }
+
+  private pickBestElement(elements: HTMLElement[], expected: HistoryElement): HTMLElement | null {
+    if (elements.length === 0) return null;
+    if (elements.length === 1 || !expected.position) return elements[0];
+
+    return elements
+      .map((element) => ({
+        element,
+        score: this.positionScore(element.getBoundingClientRect(), expected.position!),
+      }))
+      .sort((a, b) => a.score - b.score)[0]?.element ?? null;
+  }
+
+  private positionScore(
+    actual: DOMRect,
+    expected: NonNullable<HistoryElement['position']>,
+  ): number {
+    return Math.abs(actual.x - expected.x)
+      + Math.abs(actual.y - expected.y)
+      + Math.abs(actual.width - expected.width)
+      + Math.abs(actual.height - expected.height);
+  }
+
+  private escapeIdentifier(value: string): string {
+    return window.CSS?.escape ? window.CSS.escape(value) : value.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+  }
+
+  private escapeAttributeValue(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   }
 
   private isCurrentPage(url: string): boolean {
-    return url === window.location.href;
+    try {
+      const source = new URL(url);
+      const current = new URL(window.location.href);
+      return source.origin === current.origin && source.pathname === current.pathname;
+    } catch {
+      return url === window.location.href;
+    }
   }
 
   private setStatus(text: string): void {

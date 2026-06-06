@@ -114,6 +114,7 @@ export interface RawPointedDOMElement {
   outerHTML: string;
   url: string;
   timestamp: number;
+  selector?: string;
 
   // Position data (optional but highly recommended)
   boundingClientRect?: DOMRect;

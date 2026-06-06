@@ -5,6 +5,7 @@ const en: Record<MessageKey, string> = {
   'popup.enabled': 'Extension Enabled',
   'popup.clearAfterSend': 'Clear selection after Send',
   'popup.captureScreenshot': 'Screenshots',
+  'popup.showHistoryDrawer': 'History',
   'popup.triggerKey': 'Trigger Key',
   'popup.triggerKeyHint': 'Hold this key to enter pointing mode',
   'popup.port': 'MCP Server Port',

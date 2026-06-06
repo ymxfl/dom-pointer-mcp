@@ -3,6 +3,7 @@ const zh = {
   'popup.enabled': '启用扩展',
   'popup.clearAfterSend': '发送后清除选区',
   'popup.captureScreenshot': '默认截图',
+  'popup.showHistoryDrawer': '历史抽屉',
   'popup.triggerKey': '触发键',
   'popup.triggerKeyHint': '按住此键进入指向模式',
   'popup.port': 'MCP 服务端口',

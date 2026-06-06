@@ -48,7 +48,7 @@ export default class ElementProcessor {
         attributes = element.attributes ? this.getAttributes(element) : {};
         innerText = element.textContent || '';
         textContent = element.textContent || undefined;
-        selector = generateSelector(element);
+        selector = raw.selector || generateSelector(element);
       } catch (err) {
         allWarnings.push(`Element extraction failed: ${(err as Error).message}`);
       }

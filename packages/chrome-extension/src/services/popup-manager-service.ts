@@ -14,6 +14,8 @@ export default class PopupManagerService {
 
   private captureScreenshotInput: HTMLInputElement;
 
+  private showHistoryDrawerInput: HTMLInputElement;
+
   private portInput: HTMLInputElement;
 
   private triggerKeySelect: HTMLSelectElement;
@@ -40,6 +42,7 @@ export default class PopupManagerService {
     this.enabledInput = document.getElementById('enabled') as HTMLInputElement;
     this.clearAfterSendInput = document.getElementById('clearAfterSend') as HTMLInputElement;
     this.captureScreenshotInput = document.getElementById('captureScreenshot') as HTMLInputElement;
+    this.showHistoryDrawerInput = document.getElementById('showHistoryDrawer') as HTMLInputElement;
     this.portInput = document.getElementById('port') as HTMLInputElement;
     this.triggerKeySelect = document.getElementById('triggerKey') as HTMLSelectElement;
     this.localeSelect = document.getElementById('locale') as HTMLSelectElement;
@@ -62,6 +65,7 @@ export default class PopupManagerService {
     document.getElementById('enabledLabel')!.textContent = t('popup.enabled');
     document.getElementById('clearAfterSendLabel')!.textContent = t('popup.clearAfterSend');
     document.getElementById('captureScreenshotLabel')!.textContent = t('popup.captureScreenshot');
+    document.getElementById('showHistoryDrawerLabel')!.textContent = t('popup.showHistoryDrawer');
     document.getElementById('triggerKeyLabel')!.textContent = t('popup.triggerKey');
     document.getElementById('triggerKeyHint')!.textContent = t('popup.triggerKeyHint');
     document.getElementById('portLabel')!.textContent = t('popup.port');
@@ -98,6 +102,7 @@ export default class PopupManagerService {
       this.enabledInput.checked = config.enabled;
       this.clearAfterSendInput.checked = config.behavior.clearAfterSend;
       this.captureScreenshotInput.checked = config.behavior.captureScreenshot;
+      this.showHistoryDrawerInput.checked = config.behavior.showHistoryDrawer;
       this.portInput.value = config.websocket.port.toString();
       this.triggerKeySelect.value = config.trigger.modifierKey;
       this.localeSelect.value = config.locale;
@@ -132,6 +137,7 @@ export default class PopupManagerService {
         behavior: {
           clearAfterSend: this.clearAfterSendInput.checked,
           captureScreenshot: this.captureScreenshotInput.checked,
+          showHistoryDrawer: this.showHistoryDrawerInput.checked,
         },
         trigger: {
           modifierKey: this.triggerKeySelect.value as ModifierKey,

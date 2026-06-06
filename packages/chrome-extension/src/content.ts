@@ -30,14 +30,10 @@ async function initializePointer() {
 
     if (config.enabled) {
       pointer.enable();
-      if (!historyDrawer) {
-        historyDrawer = new HistoryDrawerService();
-      }
-      historyDrawer.mount();
+      syncHistoryDrawer(config.behavior.showHistoryDrawer);
     } else {
       pointer.disable();
-      historyDrawer?.destroy();
-      historyDrawer = null;
+      syncHistoryDrawer(false);
     }
   } catch (error) {
     logger.error('❌ Failed to initialize pointer:', error);
@@ -52,17 +48,26 @@ ConfigStorageService.onChange((newConfig) => {
 
     if (newConfig.enabled) {
       pointer.enable();
-      if (!historyDrawer) {
-        historyDrawer = new HistoryDrawerService();
-      }
-      historyDrawer.mount();
+      syncHistoryDrawer(newConfig.behavior.showHistoryDrawer);
     } else {
       pointer.disable();
-      historyDrawer?.destroy();
-      historyDrawer = null;
+      syncHistoryDrawer(false);
     }
   }
 });
+
+function syncHistoryDrawer(show: boolean): void {
+  if (show) {
+    if (!historyDrawer) {
+      historyDrawer = new HistoryDrawerService();
+    }
+    historyDrawer.mount();
+    return;
+  }
+
+  historyDrawer?.destroy();
+  historyDrawer = null;
+}
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'CHECK_CONFLICT') {
