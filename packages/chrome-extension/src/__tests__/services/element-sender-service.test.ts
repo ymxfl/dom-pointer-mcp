@@ -199,4 +199,35 @@ describe('ElementSenderService', () => {
       selections: [{ selectionId: 'sel_1', elementCount: 2 }],
     });
   });
+
+  it('clears a history record and resolves removed count', async () => {
+    const svc = new ElementSenderService();
+    const promise = svc.clearHistory('sel_1', 7007);
+
+    await flushMicrotasks();
+    const sock = createdSockets[0];
+    sock.readyState = 1;
+    sock.emit('open');
+    await flushMicrotasks();
+
+    const sent = JSON.parse(sock.send.mock.calls[0][0]);
+    expect(sent.type).toBe(PointerMessageType.HISTORY_CLEAR_REQUEST);
+    expect(sent.data.selectionId).toBe('sel_1');
+
+    sock.emit('message', {
+      data: JSON.stringify({
+        type: PointerMessageType.HISTORY_CLEAR_RESPONSE,
+        data: {
+          requestId: sent.data.requestId,
+          removed: 1,
+        },
+        timestamp: Date.now(),
+      }),
+    });
+
+    await expect(promise).resolves.toMatchObject({
+      requestId: sent.data.requestId,
+      removed: 1,
+    });
+  });
 });

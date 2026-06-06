@@ -66,12 +66,20 @@ export interface PointerHistoryGetRequest extends PointerHistoryRequest {
   selectionId: string;
 }
 
+export interface PointerHistoryClearRequest extends PointerHistoryRequest {
+  selectionId?: string;
+}
+
 export interface PointerHistoryListResponse extends PointerHistoryRequest {
   selections: PointerHistorySummary[];
 }
 
 export interface PointerHistoryGetResponse extends PointerHistoryRequest {
   selection: any | null;
+}
+
+export interface PointerHistoryClearResponse extends PointerHistoryRequest {
+  removed: number;
 }
 
 export type CSSProperties = Record<string, string>;
@@ -142,6 +150,8 @@ export enum PointerMessageType {
   HISTORY_LIST_RESPONSE = 'history-list-response',
   HISTORY_GET_REQUEST = 'history-get-request',
   HISTORY_GET_RESPONSE = 'history-get-response',
+  HISTORY_CLEAR_REQUEST = 'history-clear-request',
+  HISTORY_CLEAR_RESPONSE = 'history-clear-response',
 }
 
 export interface PointerMessage {

@@ -122,5 +122,20 @@ chrome.runtime.onMessage
       return true;
     }
 
+    if (request.type === PointerMessageType.HISTORY_CLEAR_REQUEST) {
+      ready.then(() => elementSender.clearHistory(
+        request.selectionId,
+        currentConfig.websocket.port,
+      ))
+        .then((data) => {
+          sendResponse({ success: true, data });
+        })
+        .catch((error) => {
+          logger.error('❌ Failed to clear history:', error);
+          sendResponse({ success: false, error: (error as Error).message });
+        });
+      return true;
+    }
+
     return true; // Keep message channel open for async response
   });

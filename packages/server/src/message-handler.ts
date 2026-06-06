@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import {
   PointerMessageType,
   type RawPointedSelection,
+  type PointerHistoryClearRequest,
   type PointerHistoryGetRequest,
   type PointerHistoryRequest,
 } from '@dom-pointer-mcp/shared/types';
@@ -110,6 +111,16 @@ async function handleHistoryMessage(
     respond(PointerMessageType.HISTORY_GET_RESPONSE, {
       requestId: request?.requestId,
       selection,
+    });
+    return true;
+  }
+
+  if (type === PointerMessageType.HISTORY_CLEAR_REQUEST) {
+    const request = data as PointerHistoryClearRequest;
+    const removed = await services.sharedState.clearPointedSelections(request?.selectionId);
+    respond(PointerMessageType.HISTORY_CLEAR_RESPONSE, {
+      requestId: request?.requestId,
+      removed,
     });
     return true;
   }

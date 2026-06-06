@@ -6,6 +6,7 @@ import {
   ConnectionStatus,
   PointerHistoryListResponse,
   PointerHistoryGetResponse,
+  PointerHistoryClearResponse,
 } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 
@@ -88,6 +89,18 @@ export class ElementSenderService {
       PointerMessageType.HISTORY_GET_REQUEST,
       PointerMessageType.HISTORY_GET_RESPONSE,
       { selectionId },
+      port,
+    );
+  }
+
+  async clearHistory(
+    selectionId: string | undefined,
+    port: number,
+  ): Promise<PointerHistoryClearResponse> {
+    return this.sendRequest<PointerHistoryClearResponse>(
+      PointerMessageType.HISTORY_CLEAR_REQUEST,
+      PointerMessageType.HISTORY_CLEAR_RESPONSE,
+      selectionId ? { selectionId } : {},
       port,
     );
   }

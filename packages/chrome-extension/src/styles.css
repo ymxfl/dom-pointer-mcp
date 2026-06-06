@@ -664,6 +664,17 @@
   border-color: #fed7aa;
 }
 
+.dom-pointer-mcp__history-toolbar button {
+  flex: 1;
+}
+
+.dom-pointer-mcp__history-header button.dom-pointer-mcp__history-danger,
+.dom-pointer-mcp__history-toolbar button.dom-pointer-mcp__history-danger,
+.dom-pointer-mcp__history-item button.dom-pointer-mcp__history-danger {
+  color: #b42318;
+  border-color: #f2b8af;
+}
+
 .dom-pointer-mcp__history-status {
   margin: 8px 10px 0;
   padding: 7px 8px;
@@ -709,6 +720,12 @@
 
 .dom-pointer-mcp__history-item-main {
   min-width: 0;
+}
+
+.dom-pointer-mcp__history-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .dom-pointer-mcp__history-item-title {

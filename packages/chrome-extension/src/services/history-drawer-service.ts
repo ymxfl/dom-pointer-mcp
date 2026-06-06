@@ -1,4 +1,5 @@
 import {
+  PointerHistoryClearResponse,
   PointerHistoryGetResponse,
   PointerHistoryListResponse,
   PointerHistorySummary,
@@ -97,6 +98,7 @@ export default class HistoryDrawerService {
         <div class="dom-pointer-mcp__history-toolbar">
           <button type="button" data-action="show-all">${t('history.showAll')}</button>
           <button type="button" data-action="hide">${t('history.hide')}</button>
+          <button type="button" data-action="clear-all" class="dom-pointer-mcp__history-danger">${t('history.clearAll')}</button>
         </div>
         <div class="dom-pointer-mcp__history-status"></div>
         <div class="dom-pointer-mcp__history-list"></div>
@@ -147,10 +149,23 @@ export default class HistoryDrawerService {
       return;
     }
 
+    if (action === 'clear-all') {
+      await this.clearHistory();
+      return;
+    }
+
     if (action === 'show-one') {
       const { selectionId } = actionEl.dataset;
       if (selectionId) {
         await this.showSelectionOnPage(selectionId);
+      }
+      return;
+    }
+
+    if (action === 'delete-one') {
+      const { selectionId } = actionEl.dataset;
+      if (selectionId) {
+        await this.clearHistory(selectionId);
       }
     }
   }
@@ -207,16 +222,52 @@ export default class HistoryDrawerService {
 
       main.append(title, time, note, meta);
 
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.dataset.action = 'show-one';
-      button.dataset.selectionId = summary.selectionId;
-      button.textContent = t('history.show');
-      button.disabled = !this.isCurrentPage(summary.url);
+      const actions = document.createElement('div');
+      actions.className = 'dom-pointer-mcp__history-item-actions';
 
-      item.append(main, button);
+      const showButton = document.createElement('button');
+      showButton.type = 'button';
+      showButton.dataset.action = 'show-one';
+      showButton.dataset.selectionId = summary.selectionId;
+      showButton.textContent = t('history.show');
+      showButton.disabled = !this.isCurrentPage(summary.url);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.dataset.action = 'delete-one';
+      deleteButton.dataset.selectionId = summary.selectionId;
+      deleteButton.className = 'dom-pointer-mcp__history-danger';
+      deleteButton.textContent = t('history.delete');
+
+      actions.append(showButton, deleteButton);
+
+      item.append(main, actions);
       this.list!.appendChild(item);
     });
+  }
+
+  private async clearHistory(selectionId?: string): Promise<void> {
+    const confirmed = window.confirm(
+      selectionId ? t('history.confirmDelete') : t('history.confirmClearAll'),
+    );
+    if (!confirmed) return;
+
+    try {
+      const response = await this.sendRuntimeMessage<PointerHistoryClearResponse>({
+        type: PointerMessageType.HISTORY_CLEAR_REQUEST,
+        selectionId,
+      });
+
+      if (!selectionId || selectionId === this.activeSelectionId) {
+        this.clearHistoryOverlays();
+        this.activeSelectionId = null;
+      }
+
+      this.setStatus(t('history.cleared', { count: response.removed }));
+      await this.loadHistory();
+    } catch (error) {
+      this.setStatus(t('history.clearFailed', { error: (error as Error).message }));
+    }
   }
 
   private async showAllOnPage(): Promise<void> {
