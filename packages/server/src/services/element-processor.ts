@@ -5,15 +5,26 @@ import {
 } from '@dom-pointer-mcp/shared/types';
 import { ProcessedPointedDOMElement, ProcessedPointedSelection } from '../types';
 import { extractFromHTML, generateSelector } from '../utils/dom-extractor';
+import { formatLocalTimestamp } from '../utils/time';
 import logger from '../logger';
 
+export interface ProcessBatchOptions {
+  selectionId?: string;
+  screenshot?: ProcessedPointedSelection['screenshot'];
+}
+
 export default class ElementProcessor {
-  processBatchFromRaw(raw: RawPointedSelection): ProcessedPointedSelection {
+  processBatchFromRaw(
+    raw: RawPointedSelection,
+    options: ProcessBatchOptions = {},
+  ): ProcessedPointedSelection {
     return {
+      selectionId: options.selectionId,
       userNote: raw.userNote,
       url: raw.url,
-      timestamp: new Date(raw.timestamp).toISOString(),
+      timestamp: formatLocalTimestamp(raw.timestamp),
       elements: raw.elements.map((el) => this.processSingleRaw(el)),
+      screenshot: options.screenshot,
     };
   }
 
@@ -37,7 +48,7 @@ export default class ElementProcessor {
         attributes = element.attributes ? this.getAttributes(element) : {};
         innerText = element.textContent || '';
         textContent = element.textContent || undefined;
-        selector = generateSelector(element);
+        selector = raw.selector || generateSelector(element);
       } catch (err) {
         allWarnings.push(`Element extraction failed: ${(err as Error).message}`);
       }
@@ -54,7 +65,7 @@ export default class ElementProcessor {
 
       position: this.getPosition(raw.boundingClientRect),
       url: raw.url,
-      timestamp: new Date(raw.timestamp).toISOString(),
+      timestamp: formatLocalTimestamp(raw.timestamp),
 
       cssComputed: raw.computedStyles ? { ...raw.computedStyles } : undefined,
       componentInfo: raw.componentInfo,

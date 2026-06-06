@@ -21,7 +21,12 @@ describe('trigger content sanity', () => {
 
   it('COMMAND_BODY contains tool name and key payload fields', () => {
     expect(COMMAND_BODY).toContain('get-pointed-element');
+    expect(COMMAND_BODY).toContain('list-pointed-selections');
+    expect(COMMAND_BODY).toContain('get-pointed-selection');
+    expect(COMMAND_BODY).toContain('clear-pointed-selections');
     expect(COMMAND_BODY).toContain('userNote');
+    expect(COMMAND_BODY).toContain('selectionId');
+    expect(COMMAND_BODY).toContain('screenshot.path');
     expect(COMMAND_BODY).toContain('elements[]');
   });
 
@@ -54,6 +59,12 @@ describe('trigger content sanity', () => {
   it('COMMAND_BODY has EXECUTE mode that acts immediately when userNote present', () => {
     expect(COMMAND_BODY).toContain('EXECUTE mode');
     expect(COMMAND_BODY).toContain('Do NOT ask for confirmation');
+  });
+
+  it('COMMAND_BODY preserves the fast skill-trigger path', () => {
+    expect(COMMAND_BODY).toContain('The user intentionally triggered `/pointed`');
+    expect(COMMAND_BODY).toContain('The first action after mode parsing MUST be the exact MCP tool call');
+    expect(COMMAND_BODY).toContain('call `get-pointed-element` IMMEDIATELY');
   });
 
   it('COMMAND_BODY_CLAUDE uses AskUserQuestion for GET mode confirmation', () => {

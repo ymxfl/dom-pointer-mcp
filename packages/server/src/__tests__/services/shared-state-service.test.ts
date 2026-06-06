@@ -36,6 +36,80 @@ describe('SharedStateService', () => {
       const content = await fs.readFile(testPath, 'utf8');
       const parsed = JSON.parse(content);
       expect(parsed.data.processedPointedSelection).toEqual(state.data.processedPointedSelection);
+      expect(parsed.history).toHaveLength(1);
+    });
+
+    it('keeps latest state and prepends history', async () => {
+      const first = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_first', userNote: 'first note' },
+      );
+      const second = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_second', userNote: 'second note' },
+      );
+
+      await service.saveState(first);
+      await service.saveState(second);
+
+      const content = await fs.readFile(testPath, 'utf8');
+      const parsed = JSON.parse(content);
+      expect(parsed.data.selectionId).toBe('sel_second');
+      expect(parsed.history.map((item: any) => item.selectionId)).toEqual([
+        'sel_second',
+        'sel_first',
+      ]);
+    });
+
+    it('deletes screenshot files for selections evicted by the history cap', async () => {
+      const originalMaxHistoryItems = SharedStateService.MAX_HISTORY_ITEMS;
+      const screenshotDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dom-pointer-test-'));
+      const evictedScreenshotPath = path.join(screenshotDir, 'evicted.png');
+      await fs.writeFile(evictedScreenshotPath, 'png');
+      (SharedStateService as any).MAX_HISTORY_ITEMS = 2;
+
+      try {
+        const first = createSharedState(
+          {},
+          {},
+          { selectionId: 'sel_first', userNote: 'first note' },
+        );
+        first.data.processedPointedSelection.screenshot = {
+          path: evictedScreenshotPath,
+          mimeType: 'image/png',
+          width: 1,
+          height: 1,
+          capturedAt: first.data.processedPointedSelection.timestamp,
+        };
+
+        await service.saveState(first);
+        await service.saveState(createSharedState(
+          {},
+          {},
+          { selectionId: 'sel_second', userNote: 'second note' },
+        ));
+        await service.saveState(createSharedState(
+          {},
+          {},
+          { selectionId: 'sel_third', userNote: 'third note' },
+        ));
+
+        await expect(fs.access(evictedScreenshotPath)).rejects.toMatchObject({
+          code: 'ENOENT',
+        });
+
+        const content = await fs.readFile(testPath, 'utf8');
+        const parsed = JSON.parse(content);
+        expect(parsed.history.map((item: any) => item.selectionId)).toEqual([
+          'sel_third',
+          'sel_second',
+        ]);
+      } finally {
+        (SharedStateService as any).MAX_HISTORY_ITEMS = originalMaxHistoryItems;
+        await fs.rm(screenshotDir, { recursive: true, force: true });
+      }
     });
 
     it('overwrites corrupted file', async () => {
@@ -75,6 +149,83 @@ describe('SharedStateService', () => {
       const result = await service.getPointedSelection();
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('listPointedSelections', () => {
+    it('returns recent selection summaries', async () => {
+      const first = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_first', userNote: 'first note' },
+      );
+      const second = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_second', userNote: 'second note' },
+      );
+      await service.saveState(first);
+      await service.saveState(second);
+
+      const result = await service.listPointedSelections();
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          selectionId: 'sel_second',
+          userNotePreview: 'second note',
+          elementCount: 1,
+        }),
+        expect.objectContaining({
+          selectionId: 'sel_first',
+          userNotePreview: 'first note',
+          elementCount: 1,
+        }),
+      ]);
+    });
+  });
+
+  describe('getPointedSelectionById', () => {
+    it('returns a historical selection by id', async () => {
+      const first = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_first', userNote: 'first note' },
+      );
+      const second = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_second', userNote: 'second note' },
+      );
+      await service.saveState(first);
+      await service.saveState(second);
+
+      const result = await service.getPointedSelectionById('sel_first');
+
+      expect(result?.userNote).toBe('first note');
+    });
+  });
+
+  describe('clearPointedSelections', () => {
+    it('clears one selection by id', async () => {
+      const first = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_first', userNote: 'first note' },
+      );
+      const second = createSharedState(
+        {},
+        {},
+        { selectionId: 'sel_second', userNote: 'second note' },
+      );
+      await service.saveState(first);
+      await service.saveState(second);
+
+      const removed = await service.clearPointedSelections('sel_second');
+      const result = await service.listPointedSelections();
+
+      expect(removed).toBe(1);
+      expect(result).toHaveLength(1);
+      expect(result[0].selectionId).toBe('sel_first');
     });
   });
 });

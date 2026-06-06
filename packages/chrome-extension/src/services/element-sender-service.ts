@@ -1,6 +1,12 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
-  RawPointedDOMElement, PointerMessage, PointerMessageType, ConnectionStatus,
+  RawPointedSelection,
+  PointerMessage,
+  PointerMessageType,
+  ConnectionStatus,
+  PointerHistoryListResponse,
+  PointerHistoryGetResponse,
+  PointerHistoryClearResponse,
 } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 
@@ -35,8 +41,10 @@ export class ElementSenderService {
 
   private readonly SEND_VERIFY_WINDOW = 300; // 300ms post-send watch for close/error
 
-  async sendElement(
-    element: RawPointedDOMElement,
+  private readonly REQUEST_TIMEOUT = 5000;
+
+  async sendSelection(
+    selection: RawPointedSelection,
     port: number,
     statusCallback?: StatusCallback,
   ): Promise<void> {
@@ -49,7 +57,7 @@ export class ElementSenderService {
         await sleep(this.SEND_RETRY_INTERVAL);
       }
 
-      const ok = await this.attemptSend(element, port, statusCallback);
+      const ok = await this.attemptSend(selection, port, statusCallback);
       if (ok) {
         statusCallback?.(ConnectionStatus.SENT);
         this.startIdleTimer();
@@ -64,8 +72,129 @@ export class ElementSenderService {
     this.disconnect();
   }
 
+  async listHistory(port: number): Promise<PointerHistoryListResponse> {
+    return this.sendRequest<PointerHistoryListResponse>(
+      PointerMessageType.HISTORY_LIST_REQUEST,
+      PointerMessageType.HISTORY_LIST_RESPONSE,
+      {},
+      port,
+    );
+  }
+
+  async getHistorySelection(
+    selectionId: string,
+    port: number,
+  ): Promise<PointerHistoryGetResponse> {
+    return this.sendRequest<PointerHistoryGetResponse>(
+      PointerMessageType.HISTORY_GET_REQUEST,
+      PointerMessageType.HISTORY_GET_RESPONSE,
+      { selectionId },
+      port,
+    );
+  }
+
+  async clearHistory(
+    selectionId: string | undefined,
+    port: number,
+  ): Promise<PointerHistoryClearResponse> {
+    return this.sendRequest<PointerHistoryClearResponse>(
+      PointerMessageType.HISTORY_CLEAR_REQUEST,
+      PointerMessageType.HISTORY_CLEAR_RESPONSE,
+      selectionId ? { selectionId } : {},
+      port,
+    );
+  }
+
+  private async sendRequest<T extends { requestId: string }>(
+    requestType: PointerMessageType,
+    responseType: PointerMessageType,
+    data: Record<string, any>,
+    port: number,
+  ): Promise<T> {
+    this.clearIdleTimer();
+    const connected = await this.ensureConnection(port);
+    if (!connected) {
+      throw new Error('Connection timeout');
+    }
+
+    const requestId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    try {
+      return await new Promise<T>((resolve, reject) => {
+        if (!this.ws) {
+          reject(new Error('WebSocket is not connected'));
+          return;
+        }
+
+        const { ws } = this;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+
+        function onClose() {
+          if (timer) clearTimeout(timer);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('message', onMessage);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('error', onError);
+          reject(new Error('WebSocket closed'));
+        }
+
+        function onError() {
+          if (timer) clearTimeout(timer);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('message', onMessage);
+          ws.removeEventListener('close', onClose);
+          reject(new Error('WebSocket error'));
+        }
+
+        function onMessage(event: MessageEvent) {
+          try {
+            const message: PointerMessage = JSON.parse(String(event.data));
+            if (message.type !== responseType || message.data?.requestId !== requestId) {
+              return;
+            }
+            if (timer) clearTimeout(timer);
+            ws.removeEventListener('message', onMessage);
+            ws.removeEventListener('close', onClose);
+            ws.removeEventListener('error', onError);
+            resolve(message.data as T);
+          } catch (error) {
+            if (timer) clearTimeout(timer);
+            ws.removeEventListener('message', onMessage);
+            ws.removeEventListener('close', onClose);
+            ws.removeEventListener('error', onError);
+            reject(error);
+          }
+        }
+
+        ws.addEventListener('message', onMessage);
+        ws.addEventListener('close', onClose);
+        ws.addEventListener('error', onError);
+
+        timer = setTimeout(() => {
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('message', onMessage);
+          ws.removeEventListener('close', onClose);
+          ws.removeEventListener('error', onError);
+          reject(new Error('History request timeout'));
+        }, this.REQUEST_TIMEOUT);
+
+        const message: PointerMessage = {
+          type: requestType,
+          data: { ...data, requestId },
+          timestamp: Date.now(),
+        };
+        ws.send(JSON.stringify(message));
+      });
+    } finally {
+      if (this.isConnected) {
+        this.startIdleTimer();
+      } else {
+        this.disconnect();
+      }
+    }
+  }
+
   private async attemptSend(
-    element: RawPointedDOMElement,
+    selection: RawPointedSelection,
     port: number,
     statusCallback?: StatusCallback,
   ): Promise<boolean> {
@@ -76,7 +205,7 @@ export class ElementSenderService {
 
     const message: PointerMessage = {
       type: PointerMessageType.SELECTION_SENT,
-      data: element,
+      data: selection,
       timestamp: Date.now(),
     };
 
@@ -87,7 +216,7 @@ export class ElementSenderService {
       return false;
     }
 
-    logger.info('📤 Element sent:', element);
+    logger.info('📤 Selection sent:', selection);
 
     return this.verifyDelivery();
   }

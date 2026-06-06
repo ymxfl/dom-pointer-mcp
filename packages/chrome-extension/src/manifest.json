@@ -28,7 +28,8 @@
       "css": [
         "styles.css"
       ],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": true
     },
     {
       "matches": [
@@ -38,7 +39,8 @@
         "main-world/extractor-main.js"
       ],
       "run_at": "document_start",
-      "world": "MAIN"
+      "world": "MAIN",
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
@@ -54,5 +56,8 @@
   "permissions": [
     "storage",
     "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
   ]
 }

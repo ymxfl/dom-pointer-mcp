@@ -2,6 +2,7 @@ import { RawPointedDOMElement, PointerMessageType } from '@dom-pointer-mcp/share
 import {
   SharedState, SharedStateData, ProcessedPointedDOMElement,
 } from '../../types';
+import { formatLocalTimestamp } from '../../utils/time';
 
 export const createProcessedElement = (
   overrides: Partial<ProcessedPointedDOMElement> = {},
@@ -15,7 +16,7 @@ export const createProcessedElement = (
     x: 10, y: 20, width: 100, height: 50,
   },
   url: 'https://example.com',
-  timestamp: '2023-01-01T00:00:00.000Z',
+  timestamp: formatLocalTimestamp(1672531200000),
   ...overrides,
 });
 
@@ -42,16 +43,23 @@ export const createRawElement = (
 export const createSharedState = (
   rawOverrides: Partial<RawPointedDOMElement> = {},
   processedOverrides: Partial<ProcessedPointedDOMElement> = {},
-  selectionOverrides: { userNote?: string; url?: string; timestamp?: string | number } = {},
+  selectionOverrides: {
+    selectionId?: string;
+    userNote?: string;
+    url?: string;
+    timestamp?: string | number;
+  } = {},
 ): SharedState => {
   const userNote = selectionOverrides.userNote ?? 'test note';
   const url = selectionOverrides.url ?? 'https://example.com';
   const rawTimestamp = (selectionOverrides.timestamp as number | undefined) ?? 1672531200000;
   const processedTimestamp = (selectionOverrides.timestamp as string | undefined)
-    ?? '2023-01-01T00:00:00.000Z';
+    ?? formatLocalTimestamp(rawTimestamp);
+  const selectionId = selectionOverrides.selectionId ?? 'sel_test';
 
   return {
     data: {
+      selectionId,
       rawPointedSelection: {
         url,
         timestamp: rawTimestamp,
@@ -59,13 +67,14 @@ export const createSharedState = (
         elements: [createRawElement(rawOverrides)],
       },
       processedPointedSelection: {
+        selectionId,
         userNote,
         url,
         timestamp: processedTimestamp,
         elements: [createProcessedElement(processedOverrides)],
       },
       metadata: {
-        receivedAt: '2023-01-01T00:00:00.000Z',
+        receivedAt: formatLocalTimestamp(rawTimestamp),
         messageType: PointerMessageType.SELECTION_SENT,
       },
     } as SharedStateData,

@@ -1,27 +1,56 @@
-import { PointerMessageType, type RawPointedSelection } from '@dom-pointer-mcp/shared/types';
+import { randomUUID } from 'crypto';
+import {
+  PointerMessageType,
+  type RawPointedSelection,
+  type PointerHistoryClearRequest,
+  type PointerHistoryGetRequest,
+  type PointerHistoryRequest,
+} from '@dom-pointer-mcp/shared/types';
 import logger from './logger';
 import ElementProcessor from './services/element-processor';
 import SharedStateService from './services/shared-state-service';
-import { SharedState, SharedStateData } from './types';
+import ScreenshotStorageService from './services/screenshot-storage-service';
+import { SharedState, SharedStateData, ProcessedPointedSelection } from './types';
+import { formatLocalTimestamp } from './utils/time';
 
 function buildMetadata(messageType: string) {
-  const now = new Date().toISOString();
+  const now = formatLocalTimestamp(new Date());
   return {
     receivedAt: now,
     messageType,
   };
 }
 
-function buildState(
+function createSelectionId(): string {
+  return `sel_${Date.now().toString(36)}_${randomUUID().slice(0, 8)}`;
+}
+
+async function buildState(
   type: string,
   data: any,
-  elementProcessor: ElementProcessor,
-): SharedState {
+  services: HandlerServices,
+): Promise<SharedState> {
   const raw = data as RawPointedSelection;
-  const processed = elementProcessor.processBatchFromRaw(raw);
+  const selectionId = createSelectionId();
+  let screenshot: ProcessedPointedSelection['screenshot'];
+
+  try {
+    screenshot = await services.screenshotStorage.save(selectionId, raw.screenshot);
+  } catch (err) {
+    logger.warn(`Failed to save selection screenshot: ${(err as Error).message}`);
+  }
+
+  const processed = services.elementProcessor.processBatchFromRaw(raw, {
+    selectionId,
+    screenshot,
+  });
 
   const stateData: SharedStateData = {
-    rawPointedSelection: raw,
+    selectionId,
+    rawPointedSelection: {
+      ...raw,
+      screenshot: undefined,
+    },
     processedPointedSelection: processed,
     metadata: buildMetadata(type),
   };
@@ -29,13 +58,13 @@ function buildState(
   return { data: stateData };
 }
 
-function buildStateFromMessage(
+async function buildStateFromMessage(
   type: string,
   data: any,
   services: HandlerServices,
-): SharedState | null {
+): Promise<SharedState | null> {
   if (type === PointerMessageType.SELECTION_SENT) {
-    return buildState(type, data, services.elementProcessor);
+    return buildState(type, data, services);
   }
 
   if (type === PointerMessageType.DOM_ELEMENT_POINTED) {
@@ -53,10 +82,63 @@ function buildStateFromMessage(
 interface HandlerServices {
   sharedState: SharedStateService;
   elementProcessor: ElementProcessor;
+  screenshotStorage: ScreenshotStorageService;
 }
 
-const messageHandler = async (type: string, data: any, services: HandlerServices) => {
-  const buildedState = buildStateFromMessage(type, data, services);
+type MessageResponder = (type: string, data: any) => void;
+
+async function handleHistoryMessage(
+  type: string,
+  data: any,
+  respond: MessageResponder,
+  services: HandlerServices,
+): Promise<boolean> {
+  if (type === PointerMessageType.HISTORY_LIST_REQUEST) {
+    const request = data as PointerHistoryRequest;
+    const selections = await services.sharedState.listPointedSelections();
+    respond(PointerMessageType.HISTORY_LIST_RESPONSE, {
+      requestId: request?.requestId,
+      selections,
+    });
+    return true;
+  }
+
+  if (type === PointerMessageType.HISTORY_GET_REQUEST) {
+    const request = data as PointerHistoryGetRequest;
+    const selection = request?.selectionId
+      ? await services.sharedState.getPointedSelectionById(request.selectionId)
+      : null;
+    respond(PointerMessageType.HISTORY_GET_RESPONSE, {
+      requestId: request?.requestId,
+      selection,
+    });
+    return true;
+  }
+
+  if (type === PointerMessageType.HISTORY_CLEAR_REQUEST) {
+    const request = data as PointerHistoryClearRequest;
+    const removed = await services.sharedState.clearPointedSelections(request?.selectionId);
+    respond(PointerMessageType.HISTORY_CLEAR_RESPONSE, {
+      requestId: request?.requestId,
+      removed,
+    });
+    return true;
+  }
+
+  return false;
+}
+
+const messageHandler = async (
+  type: string,
+  data: any,
+  respond: MessageResponder,
+  services: HandlerServices,
+) => {
+  if (await handleHistoryMessage(type, data, respond, services)) {
+    return;
+  }
+
+  const buildedState = await buildStateFromMessage(type, data, services);
   if (buildedState) {
     await services.sharedState.saveState(buildedState);
   }

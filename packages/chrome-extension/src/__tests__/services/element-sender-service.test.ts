@@ -1,4 +1,8 @@
-import { ConnectionStatus, RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
+import {
+  ConnectionStatus,
+  PointerMessageType,
+  RawPointedSelection,
+} from '@dom-pointer-mcp/shared/types';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { ElementSenderService } from '../../services/element-sender-service';
 
@@ -45,19 +49,19 @@ function flushMicrotasks(): Promise<void> {
   return Promise.resolve().then(() => Promise.resolve());
 }
 
-function makeElement(): RawPointedDOMElement {
+function makeSelection(): RawPointedSelection {
   return {
-    tagName: 'div',
-    selector: 'div',
-    classes: [],
-    id: '',
-    attributes: {},
-    innerText: '',
-    componentInfo: null,
-    position: {
-      x: 0, y: 0, width: 0, height: 0,
-    },
-  } as unknown as RawPointedDOMElement;
+    url: 'https://example.com',
+    timestamp: 1672531200000,
+    userNote: 'test note',
+    elements: [
+      {
+        outerHTML: '<div>test</div>',
+        url: 'https://example.com',
+        timestamp: 1672531200000,
+      },
+    ],
+  };
 }
 
 describe('ElementSenderService', () => {
@@ -74,7 +78,7 @@ describe('ElementSenderService', () => {
   it('sends successfully on the first attempt without retry delay', async () => {
     const svc = new ElementSenderService();
     const status = jest.fn();
-    const promise = svc.sendElement(makeElement(), 7007, status);
+    const promise = svc.sendSelection(makeSelection(), 7007, status);
 
     // Allow the constructor microtask to run, then open the socket.
     await flushMicrotasks();
@@ -98,7 +102,7 @@ describe('ElementSenderService', () => {
   it('retries after a failed first attempt and ends in SENT', async () => {
     const svc = new ElementSenderService();
     const status = jest.fn();
-    const promise = svc.sendElement(makeElement(), 7007, status);
+    const promise = svc.sendSelection(makeSelection(), 7007, status);
 
     // First attempt: socket opens, send happens, then server closes inside verify window.
     await flushMicrotasks();
@@ -133,7 +137,7 @@ describe('ElementSenderService', () => {
   it('reports ERROR with "5 attempts" message after all attempts fail', async () => {
     const svc = new ElementSenderService();
     const status = jest.fn();
-    const promise = svc.sendElement(makeElement(), 7007, status);
+    const promise = svc.sendSelection(makeSelection(), 7007, status);
 
     for (let i = 0; i < 5; i += 1) {
       // Allow the constructor for this attempt.
@@ -157,5 +161,73 @@ describe('ElementSenderService', () => {
     const lastCall = status.mock.calls[status.mock.calls.length - 1];
     expect(lastCall[0]).toBe(ConnectionStatus.ERROR);
     expect(lastCall[1]).toMatch(/5 attempts/);
+  });
+
+  it('requests history list and resolves the matching response', async () => {
+    const svc = new ElementSenderService();
+    const promise = svc.listHistory(7007);
+
+    await flushMicrotasks();
+    const sock = createdSockets[0];
+    sock.readyState = 1;
+    sock.emit('open');
+    await flushMicrotasks();
+
+    const sent = JSON.parse(sock.send.mock.calls[0][0]);
+    expect(sent.type).toBe(PointerMessageType.HISTORY_LIST_REQUEST);
+    expect(sent.data.requestId).toEqual(expect.any(String));
+
+    sock.emit('message', {
+      data: JSON.stringify({
+        type: PointerMessageType.HISTORY_LIST_RESPONSE,
+        data: {
+          requestId: sent.data.requestId,
+          selections: [{
+            selectionId: 'sel_1',
+            url: 'https://example.com',
+            timestamp: '2026-06-06T10:00:00.000+08:00',
+            userNotePreview: 'note',
+            elementCount: 2,
+          }],
+        },
+        timestamp: Date.now(),
+      }),
+    });
+
+    await expect(promise).resolves.toMatchObject({
+      requestId: sent.data.requestId,
+      selections: [{ selectionId: 'sel_1', elementCount: 2 }],
+    });
+  });
+
+  it('clears a history record and resolves removed count', async () => {
+    const svc = new ElementSenderService();
+    const promise = svc.clearHistory('sel_1', 7007);
+
+    await flushMicrotasks();
+    const sock = createdSockets[0];
+    sock.readyState = 1;
+    sock.emit('open');
+    await flushMicrotasks();
+
+    const sent = JSON.parse(sock.send.mock.calls[0][0]);
+    expect(sent.type).toBe(PointerMessageType.HISTORY_CLEAR_REQUEST);
+    expect(sent.data.selectionId).toBe('sel_1');
+
+    sock.emit('message', {
+      data: JSON.stringify({
+        type: PointerMessageType.HISTORY_CLEAR_RESPONSE,
+        data: {
+          requestId: sent.data.requestId,
+          removed: 1,
+        },
+        timestamp: Date.now(),
+      }),
+    });
+
+    await expect(promise).resolves.toMatchObject({
+      requestId: sent.data.requestId,
+      removed: 1,
+    });
   });
 });

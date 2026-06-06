@@ -16,6 +16,9 @@ import {
 
 enum MCPToolName {
   GET_POINTED_ELEMENT = 'get-pointed-element',
+  LIST_POINTED_SELECTIONS = 'list-pointed-selections',
+  GET_POINTED_SELECTION = 'get-pointed-selection',
+  CLEAR_POINTED_SELECTIONS = 'clear-pointed-selections',
 }
 
 enum MCPServerName {
@@ -54,7 +57,7 @@ export default class MCPService {
       tools: [
         {
           name: MCPToolName.GET_POINTED_ELEMENT,
-          description: 'Returns { userNote, url, timestamp, elements: [...] } for the currently pointed DOM selection.',
+          description: 'Returns the currently pointed DOM selection.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -72,6 +75,53 @@ export default class MCPService {
             required: [],
           },
         },
+        {
+          name: MCPToolName.LIST_POINTED_SELECTIONS,
+          description: 'Lists recent pointed DOM selections with ids, notes, counts, and screenshots.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+            required: [],
+          },
+        },
+        {
+          name: MCPToolName.GET_POINTED_SELECTION,
+          description: 'Returns a recent pointed DOM selection by selectionId.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              selectionId: {
+                type: 'string',
+                description: 'Selection id from list-pointed-selections.',
+              },
+              textDetail: {
+                type: 'integer',
+                enum: [...TEXT_DETAIL_OPTIONS],
+                description: '0 none | 1 visible | 2 full; default 2',
+              },
+              cssLevel: {
+                type: 'integer',
+                enum: [...CSS_DETAIL_OPTIONS],
+                description: '0 none | 1 layout (default) | 2 box-model | 3 full',
+              },
+            },
+            required: ['selectionId'],
+          },
+        },
+        {
+          name: MCPToolName.CLEAR_POINTED_SELECTIONS,
+          description: 'Clears all stored pointed selections, or one selection by selectionId.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              selectionId: {
+                type: 'string',
+                description: 'Optional selection id. Omit to clear all selections.',
+              },
+            },
+            required: [],
+          },
+        },
       ],
     };
   }
@@ -82,6 +132,23 @@ export default class MCPService {
         request.params.arguments as DetailParameters | undefined,
       );
       return this.getPointedSelection(normalized);
+    }
+
+    if (request.params.name === MCPToolName.LIST_POINTED_SELECTIONS) {
+      return this.listPointedSelections();
+    }
+
+    if (request.params.name === MCPToolName.GET_POINTED_SELECTION) {
+      const args = request.params.arguments as (
+        DetailParameters & { selectionId?: string }
+      ) | undefined;
+      const normalized = normalizeDetailParameters(args);
+      return this.getPointedSelectionById(args?.selectionId, normalized);
+    }
+
+    if (request.params.name === MCPToolName.CLEAR_POINTED_SELECTIONS) {
+      const args = request.params.arguments as { selectionId?: string } | undefined;
+      return this.clearPointedSelections(args?.selectionId);
     }
 
     throw new Error(`Unknown tool: ${request.params.name}`);
@@ -104,9 +171,11 @@ export default class MCPService {
     }
 
     const payload = {
+      selectionId: selection.selectionId,
       userNote: selection.userNote,
       url: selection.url,
       timestamp: selection.timestamp,
+      screenshot: selection.screenshot,
       elements: selection.elements.map((el) => serializeElement(
         el,
         details.textDetail,
@@ -119,6 +188,73 @@ export default class MCPService {
         {
           type: 'text',
           text: JSON.stringify(payload, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async getPointedSelectionById(
+    selectionId: string | undefined,
+    details: NormalizedDetailParameters,
+  ) {
+    if (!selectionId) {
+      throw new Error('selectionId is required');
+    }
+
+    const selection = await this.sharedState.getPointedSelectionById(selectionId);
+    if (!selection) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `No pointed selection found for selectionId: ${selectionId}`,
+          },
+        ],
+      };
+    }
+
+    const payload = {
+      selectionId: selection.selectionId,
+      userNote: selection.userNote,
+      url: selection.url,
+      timestamp: selection.timestamp,
+      screenshot: selection.screenshot,
+      elements: selection.elements.map((el) => serializeElement(
+        el,
+        details.textDetail,
+        details.cssLevel,
+      )),
+    };
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(payload, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async listPointedSelections() {
+    const selections = await this.sharedState.listPointedSelections();
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({ selections }, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async clearPointedSelections(selectionId?: string) {
+    const removed = await this.sharedState.clearPointedSelections(selectionId);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({ removed }, null, 2),
         },
       ],
     };

@@ -5,7 +5,7 @@ interface TriggerClickServiceParams {
   onClick: (element: HTMLElement) => void;
 }
 
-const PANEL_SELECTOR = '.dom-pointer-mcp__note-panel';
+const PANEL_SELECTOR = '.dom-pointer-mcp__note-panel, .dom-pointer-mcp__history-drawer';
 
 function isInsidePanel(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest(PANEL_SELECTOR) !== null;

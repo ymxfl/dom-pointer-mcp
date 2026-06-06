@@ -23,4 +23,4 @@ docs/superpowers/
 # Local IDE / agent state — should not be tracked
 .claude/settings.json
 .joycode/prompt.json
-USAGE.md
+

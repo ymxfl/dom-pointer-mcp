@@ -1,4 +1,8 @@
-import { RawPointedSelection } from '@dom-pointer-mcp/shared/types';
+import {
+  RawPointedSelection,
+  RawSelectionScreenshot,
+  ScreenshotBounds,
+} from '@dom-pointer-mcp/shared/types';
 import { ModifierKey } from '../utils/config';
 import { t } from '../i18n';
 import logger from '../utils/logger';
@@ -11,6 +15,7 @@ import ConfigStorageService from './config-storage-service';
 import { extractRawPointedDOMElement } from '../utils/element';
 
 const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
+const SCREENSHOT_PADDING = 12;
 
 function isExtensionContextValid(): boolean {
   try {
@@ -57,7 +62,7 @@ export default class ElementPointerService {
 
   private hoveredElement: HTMLElement | null = null;
 
-  constructor(modifierKey: ModifierKey) {
+  constructor(modifierKey: ModifierKey, captureScreenshotDefault: boolean) {
     this.triggerKeyService = new TriggerKeyService({
       onTriggerKeyStart: this.startPointing.bind(this),
       onTriggerKeyEnd: this.stopPointing.bind(this),
@@ -71,8 +76,9 @@ export default class ElementPointerService {
     this.store = new SelectionStoreService();
     this.notePanel = new NotePanelService(
       this.store,
-      (els, note) => this.sendSelection(els, note),
+      (els, note, includeScreenshot) => this.sendSelection(els, note, includeScreenshot),
       (els, note) => this.buildSelectionJson(els, note),
+      captureScreenshotDefault,
     );
     this.store.subscribe(this.syncOverlays.bind(this));
   }
@@ -99,7 +105,8 @@ export default class ElementPointerService {
     current.filter((e) => !elements.includes(e))
       .forEach((e) => this.overlayManagerService.clearSelection(e));
     elements.filter((e) => !current.includes(e))
-      .forEach((e) => this.overlayManagerService.overlaySelection(e));
+      .forEach((e) => this.overlayManagerService.overlaySelection(e, elements.indexOf(e) + 1));
+    this.overlayManagerService.updateSelectionIndexes(elements);
     if (this.hoveredElement && elements.includes(this.hoveredElement)) {
       this.overlayManagerService.clearHover();
       this.hoveredElement = null;
@@ -108,6 +115,10 @@ export default class ElementPointerService {
 
   public setModifierKey(key: ModifierKey): void {
     this.triggerKeyService.setModifierKey(key);
+  }
+
+  public setCaptureScreenshotDefault(enabled: boolean): void {
+    this.notePanel.setCaptureScreenshotDefault(enabled);
   }
 
   public enable(): void {
@@ -141,11 +152,15 @@ export default class ElementPointerService {
     logger.debug('Pointing stopped');
   }
 
-  private async sendSelection(elements: HTMLElement[], note: string): Promise<void> {
+  private async sendSelection(
+    elements: HTMLElement[],
+    note: string,
+    includeScreenshot: boolean,
+  ): Promise<void> {
     logger.info(`📤 Sending selection (${elements.length} elements) to background`);
 
     assertExtensionContextValid();
-    const payload = await this.buildPayload(elements, note);
+    const payload = await this.buildPayload(elements, note, includeScreenshot);
 
     await new Promise<void>((resolve, reject) => {
       try {
@@ -177,28 +192,166 @@ export default class ElementPointerService {
     }
   }
 
-  private async buildPayload(elements: HTMLElement[], note: string): Promise<RawPointedSelection> {
+  private async buildPayload(
+    elements: HTMLElement[],
+    note: string,
+    includeScreenshot: boolean,
+  ): Promise<RawPointedSelection> {
     const rawElements = await Promise.all(
       elements.map((el) => extractRawPointedDOMElement(el)),
     );
+    const screenshot = includeScreenshot
+      ? await this.captureSelectionScreenshot(elements)
+      : undefined;
     return {
       url: window.location.href,
       timestamp: Date.now(),
       userNote: note,
       elements: rawElements,
+      screenshot,
     };
+  }
+
+  private async captureSelectionScreenshot(
+    elements: HTMLElement[],
+  ): Promise<RawSelectionScreenshot | undefined> {
+    const bounds = this.getSelectionBounds(elements);
+    if (!bounds) return undefined;
+
+    try {
+      const response = await this.requestVisibleTabScreenshot();
+      if (!response.success || !response.dataUrl) {
+        logger.warn('Unable to capture screenshot:', response.error);
+        return undefined;
+      }
+
+      return await this.cropScreenshot(response.dataUrl, bounds);
+    } catch (err) {
+      logger.warn('Unable to capture screenshot:', err);
+      return undefined;
+    }
+  }
+
+  private getSelectionBounds(elements: HTMLElement[]): ScreenshotBounds | undefined {
+    const rects = elements
+      .map((el) => el.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0);
+    if (rects.length === 0) return undefined;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const left = Math.max(
+      0,
+      Math.min(...rects.map((rect) => rect.left)) - SCREENSHOT_PADDING,
+    );
+    const top = Math.max(
+      0,
+      Math.min(...rects.map((rect) => rect.top)) - SCREENSHOT_PADDING,
+    );
+    const right = Math.min(
+      viewportWidth,
+      Math.max(...rects.map((rect) => rect.right)) + SCREENSHOT_PADDING,
+    );
+    const bottom = Math.min(
+      viewportHeight,
+      Math.max(...rects.map((rect) => rect.bottom)) + SCREENSHOT_PADDING,
+    );
+
+    const width = right - left;
+    const height = bottom - top;
+    if (width <= 0 || height <= 0) return undefined;
+
+    return {
+      x: left,
+      y: top,
+      width,
+      height,
+      devicePixelRatio: window.devicePixelRatio,
+    };
+  }
+
+  private requestVisibleTabScreenshot(): Promise<{
+    success: boolean;
+    dataUrl?: string;
+    error?: string;
+  }> {
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.runtime.sendMessage(
+          { type: 'CAPTURE_VISIBLE_TAB_SCREENSHOT' },
+          (response) => {
+            if (chrome.runtime?.lastError) {
+              reject(translateRuntimeError(chrome.runtime.lastError.message || 'unknown error'));
+              return;
+            }
+            resolve(response);
+          },
+        );
+      } catch (err) {
+        reject(translateRuntimeError((err as Error).message));
+      }
+    });
+  }
+
+  private cropScreenshot(
+    dataUrl: string,
+    bounds: ScreenshotBounds,
+  ): Promise<RawSelectionScreenshot | undefined> {
+    return new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const scaleX = image.naturalWidth / window.innerWidth;
+        const scaleY = image.naturalHeight / window.innerHeight;
+        const sourceX = Math.round(bounds.x * scaleX);
+        const sourceY = Math.round(bounds.y * scaleY);
+        const sourceWidth = Math.max(1, Math.round(bounds.width * scaleX));
+        const sourceHeight = Math.max(1, Math.round(bounds.height * scaleY));
+        const canvas = document.createElement('canvas');
+        canvas.width = sourceWidth;
+        canvas.height = sourceHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+        ctx.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          sourceWidth,
+          sourceHeight,
+        );
+        resolve({
+          dataUrl: canvas.toDataURL('image/png'),
+          mimeType: 'image/png',
+          width: sourceWidth,
+          height: sourceHeight,
+          bounds: {
+            ...bounds,
+            devicePixelRatio: scaleX,
+          },
+          capturedAt: Date.now(),
+        });
+      };
+      image.onerror = () => resolve(undefined);
+      image.src = dataUrl;
+    });
   }
 
   /**
    * Build a JSON string for the Copy button. This serializes the same
-   * RawPointedSelection that goes to the server. Compared to what the
+   * RawPointedSelection shape that goes to the server. Compared to what the
    * agent receives via mcp__dom-pointer__get-pointed-element, this is a
    * SUPERSET (contains outerHTML and full computedStyles instead of the
    * server's filtered cssProperties), so an agent can still consume it.
-   * It does not include the server-generated `selector` field.
+   * It does not include the server-generated `selector` field or screenshot.
    */
   private async buildSelectionJson(elements: HTMLElement[], note: string): Promise<string> {
-    const payload = await this.buildPayload(elements, note);
+    const payload = await this.buildPayload(elements, note, false);
     return JSON.stringify(payload, null, 2);
   }
 }

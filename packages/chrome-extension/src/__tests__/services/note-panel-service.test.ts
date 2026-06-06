@@ -29,7 +29,7 @@ describe('NotePanelService', () => {
 
     // Constructor subscribes to store; instance kept alive by that subscription.
     // eslint-disable-next-line no-new
-    new NotePanelService(store, onSend, onCopy);
+    new NotePanelService(store, onSend, onCopy, false);
   });
 
   afterEach(() => {
@@ -87,9 +87,25 @@ describe('NotePanelService', () => {
     const event = new KeyboardEvent('keydown', { key: 'Enter', metaKey: true, cancelable: true });
     textarea.dispatchEvent(event);
 
-    expect(onSend).toHaveBeenCalledWith([el], 'change me');
+    expect(onSend).toHaveBeenCalledWith([el], 'change me', false);
     await flushMicrotasks();
     expect(textarea.value).toBe('');
+  });
+
+  it('Screenshot toggle passes includeScreenshot to onSend', async () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    store.toggle(el);
+
+    const screenshotBtn = document
+      .querySelector('.dom-pointer-mcp__note-screenshot') as HTMLButtonElement;
+    const sendBtn = document.querySelector('.dom-pointer-mcp__note-send') as HTMLButtonElement;
+    screenshotBtn.click();
+    sendBtn.click();
+
+    await flushMicrotasks();
+
+    expect(onSend).toHaveBeenCalledWith([el], '', true);
   });
 
   it('onSend rejection does NOT clear textarea; sendBtn re-enabled', async () => {

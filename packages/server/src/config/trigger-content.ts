@@ -11,10 +11,36 @@ Strip these numbers from the user's note before treating remaining text as instr
 
 const ELEMENT_READING = `Read the returned payload:
 - \`userNote\`: the user's primary instruction
+- \`selectionId\`: stable id for this selection
+- \`screenshot.path\`: local screenshot file path when available
 - \`elements[]\`: DOM info per element (selector, componentInfo.sourceFile, cssProperties, url)
-- Reference elements by 1-based index when user uses [1], [2] notation`;
+- Reference elements by 1-based index when user uses [1], [2] notation
+- For visual UI/layout/color changes, use \`screenshot.path\` immediately
+  if your runtime can inspect local images; do not ask the user to upload it`;
 
 const NO_SELECTION_HINT = 'If the tool returns "No selection pointed", tell the user to Option+Click elements in the browser and press Cmd/Ctrl+Enter before retrying.';
+
+const FAST_PATH_RULE = `Core product rule:
+- The user intentionally triggered \`/pointed\`; do not wait for automatic intent detection.
+- Do not list tools, browse, or ask what to call first.
+- The first action after mode parsing MUST be the exact MCP tool call for that mode.`;
+
+const HISTORY_MODE = `### HISTORY mode
+
+If the first arg is \`history\` or \`list\`:
+1. Call \`list-pointed-selections\` IMMEDIATELY with no arguments.
+2. Return a compact list: selectionId, timestamp, elementCount, note preview, screenshotPath if present.
+3. Do not modify files.
+
+If the first arg is \`use\` followed by a selectionId:
+1. Call \`get-pointed-selection\` IMMEDIATELY with that \`selectionId\` plus optional textDetail/cssLevel.
+2. Then follow EXECUTE mode using that historical payload.
+3. Text after the selectionId is a refinement of \`userNote\`.
+
+If the first arg is \`clear\`:
+1. Call \`clear-pointed-selections\` IMMEDIATELY.
+2. If a selectionId follows \`clear\`, pass it as \`selectionId\`; otherwise clear all.
+3. Report only the removed count.`;
 
 // --- GET mode fragments (platform-specific) ---
 
@@ -85,21 +111,31 @@ const GET_MODE_CODEX = `### GET mode (read-only preview)
 function buildBody(getMode: string): string {
   return `# /pointed
 
+${FAST_PATH_RULE}
+
 ## Step 1 — Determine mode BEFORE calling the tool
 
 **If the first arg is "get"** → you are in **GET mode (read-only, NO file modifications allowed)**.
+**If the first arg is "history" or "list"** → you are in **HISTORY mode (read-only list)**.
+**If the first arg is "use" plus a selectionId** → you are in **HISTORY EXECUTE mode**.
+**If the first arg is "clear"** → you are in **CLEAR mode**.
 **Otherwise** → you are in **EXECUTE mode**.
 
 Remember which mode you are in. This decision is FINAL and cannot change after the tool call.
 
 ## Step 2 — Call the tool
 
-Call \`get-pointed-element\` IMMEDIATELY with no questions.
+- EXECUTE mode: call \`get-pointed-element\` IMMEDIATELY with no questions.
+- GET mode: call \`get-pointed-element\` IMMEDIATELY with no questions.
+- HISTORY mode: follow the HISTORY mode tool call rules below.
+
 Parse optional trailing integers as textDetail/cssLevel; if absent, pass NO arguments.
 
 ## Step 3 — Act according to mode
 
 ---
+
+${HISTORY_MODE}
 
 ${getMode}
 

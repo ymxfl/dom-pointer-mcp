@@ -8,6 +8,7 @@ interface OverlayWrapper {
 const OVERLAY_BASE_CLASS = 'dom-pointer-mcp__overlay';
 const HOVER_CLASS = 'dom-pointer-mcp__overlay--hover';
 const SELECTION_CLASS = 'dom-pointer-mcp__overlay--selection';
+const INDEX_BADGE_CLASS = 'dom-pointer-mcp__overlay-index';
 
 export default class OverlayManagerService {
   private hoverOverlay: OverlayWrapper | null = null;
@@ -35,14 +36,23 @@ export default class OverlayManagerService {
 
   // --- Selection (multi) ---
 
-  overlaySelection(target: HTMLElement): void {
+  overlaySelection(target: HTMLElement, index?: number): void {
     if (this.selectionOverlays.has(target)) return;
     const wrapper: OverlayWrapper = {
       overlay: this.buildOverlayElement(SELECTION_CLASS, true),
       target,
     };
     this.selectionOverlays.set(target, wrapper);
+    this.setOverlayIndex(wrapper.overlay, index);
     autoAssignOverlayPositionAndSize(target, wrapper.overlay);
+  }
+
+  updateSelectionIndexes(elements: HTMLElement[]): void {
+    elements.forEach((element, index) => {
+      const wrapper = this.selectionOverlays.get(element);
+      if (!wrapper) return;
+      this.setOverlayIndex(wrapper.overlay, index + 1);
+    });
   }
 
   clearSelection(target: HTMLElement): void {
@@ -79,5 +89,20 @@ export default class OverlayManagerService {
 
     document.body.appendChild(overlay);
     return overlay;
+  }
+
+  private setOverlayIndex(overlay: HTMLDivElement, index?: number): void {
+    let badge = overlay.querySelector(`.${INDEX_BADGE_CLASS}`) as HTMLSpanElement | null;
+    if (!index) {
+      badge?.remove();
+      return;
+    }
+
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = INDEX_BADGE_CLASS;
+      overlay.appendChild(badge);
+    }
+    badge.textContent = String(index);
   }
 }

@@ -27,6 +27,61 @@ export interface ElementPosition {
   height: number;
 }
 
+export interface ScreenshotBounds extends ElementPosition {
+  devicePixelRatio?: number;
+}
+
+export interface RawSelectionScreenshot {
+  dataUrl: string;
+  mimeType: 'image/png';
+  width: number;
+  height: number;
+  bounds?: ScreenshotBounds;
+  capturedAt: number;
+}
+
+export interface SavedSelectionScreenshot {
+  path: string;
+  mimeType: 'image/png';
+  width: number;
+  height: number;
+  bounds?: ScreenshotBounds;
+  capturedAt: string;
+}
+
+export interface PointerHistorySummary {
+  selectionId: string;
+  url: string;
+  timestamp: string;
+  userNotePreview: string;
+  elementCount: number;
+  screenshotPath?: string;
+}
+
+export interface PointerHistoryRequest {
+  requestId: string;
+}
+
+export interface PointerHistoryGetRequest extends PointerHistoryRequest {
+  selectionId: string;
+}
+
+export interface PointerHistoryClearRequest extends PointerHistoryRequest {
+  selectionId?: string;
+}
+
+export interface PointerHistoryListResponse extends PointerHistoryRequest {
+  selections: PointerHistorySummary[];
+}
+
+export interface PointerHistoryGetResponse extends PointerHistoryRequest {
+  selection: any | null;
+}
+
+export interface PointerHistoryClearResponse extends PointerHistoryRequest {
+  removed: number;
+}
+
 export type CSSProperties = Record<string, string>;
 
 export interface ComponentInfo {
@@ -67,6 +122,7 @@ export interface RawPointedDOMElement {
   outerHTML: string;
   url: string;
   timestamp: number;
+  selector?: string;
 
   // Position data (optional but highly recommended)
   boundingClientRect?: DOMRect;
@@ -82,6 +138,7 @@ export interface RawPointedSelection {
   timestamp: number;
   userNote: string;
   elements: RawPointedDOMElement[];
+  screenshot?: RawSelectionScreenshot;
 }
 
 // Pointer message types between extension and MCP server
@@ -89,6 +146,12 @@ export enum PointerMessageType {
   LEGACY_ELEMENT_SELECTED = 'element-selected',
   DOM_ELEMENT_POINTED = 'dom-element-pointed',
   SELECTION_SENT = 'selection-sent',
+  HISTORY_LIST_REQUEST = 'history-list-request',
+  HISTORY_LIST_RESPONSE = 'history-list-response',
+  HISTORY_GET_REQUEST = 'history-get-request',
+  HISTORY_GET_RESPONSE = 'history-get-response',
+  HISTORY_CLEAR_REQUEST = 'history-clear-request',
+  HISTORY_CLEAR_RESPONSE = 'history-clear-response',
 }
 
 export interface PointerMessage {
