@@ -95,7 +95,7 @@ export default class WebSocketService {
     ws.on('close', this.handleWebSocketClose.bind(this));
   }
 
-  private handleWebSocketMessage(ws: any, data: any): void {
+  private async handleWebSocketMessage(ws: any, data: any): Promise<void> {
     try {
       const message: PointerMessage = JSON.parse(data.toString());
       logger.info('📨 Received message from browser:', message.type);
@@ -108,7 +108,7 @@ export default class WebSocketService {
             timestamp: Date.now(),
           }));
         };
-        this.messageHandler(message.type, message.data, respond);
+        await this.messageHandler(message.type, message.data, respond);
       }
     } catch (error) {
       logger.error('Failed to parse message:', error);

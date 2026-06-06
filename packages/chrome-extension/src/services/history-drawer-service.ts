@@ -258,7 +258,7 @@ export default class HistoryDrawerService {
         selectionId,
       });
 
-      if (!selectionId || selectionId === this.activeSelectionId) {
+      if (!selectionId || selectionId === this.activeSelectionId || this.activeSelectionId === '__all__') {
         this.clearHistoryOverlays();
         this.activeSelectionId = null;
       }

@@ -118,65 +118,70 @@ export class ElementSenderService {
     }
 
     const requestId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-    const response = await new Promise<T>((resolve, reject) => {
-      if (!this.ws) {
-        reject(new Error('WebSocket is not connected'));
-        return;
-      }
-
-      const ws = this.ws;
-      let timer: ReturnType<typeof setTimeout> | undefined;
-
-      function cleanup() {
-        if (timer) clearTimeout(timer);
-        ws.removeEventListener('message', onMessage);
-        ws.removeEventListener('close', onClose);
-        ws.removeEventListener('error', onError);
-      }
-
-      function onClose() {
-        cleanup();
-        reject(new Error('WebSocket closed'));
-      }
-
-      function onError() {
-        cleanup();
-        reject(new Error('WebSocket error'));
-      }
-
-      function onMessage(event: MessageEvent) {
-        try {
-          const message: PointerMessage = JSON.parse(String(event.data));
-          if (message.type !== responseType || message.data?.requestId !== requestId) {
-            return;
-          }
-          cleanup();
-          resolve(message.data as T);
-        } catch (error) {
-          cleanup();
-          reject(error);
+    try {
+      return await new Promise<T>((resolve, reject) => {
+        if (!this.ws) {
+          reject(new Error('WebSocket is not connected'));
+          return;
         }
+
+        const ws = this.ws;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+
+        function cleanup() {
+          if (timer) clearTimeout(timer);
+          ws.removeEventListener('message', onMessage);
+          ws.removeEventListener('close', onClose);
+          ws.removeEventListener('error', onError);
+        }
+
+        function onClose() {
+          cleanup();
+          reject(new Error('WebSocket closed'));
+        }
+
+        function onError() {
+          cleanup();
+          reject(new Error('WebSocket error'));
+        }
+
+        function onMessage(event: MessageEvent) {
+          try {
+            const message: PointerMessage = JSON.parse(String(event.data));
+            if (message.type !== responseType || message.data?.requestId !== requestId) {
+              return;
+            }
+            cleanup();
+            resolve(message.data as T);
+          } catch (error) {
+            cleanup();
+            reject(error);
+          }
+        }
+
+        ws.addEventListener('message', onMessage);
+        ws.addEventListener('close', onClose);
+        ws.addEventListener('error', onError);
+
+        timer = setTimeout(() => {
+          cleanup();
+          reject(new Error('History request timeout'));
+        }, this.REQUEST_TIMEOUT);
+
+        const message: PointerMessage = {
+          type: requestType,
+          data: { ...data, requestId },
+          timestamp: Date.now(),
+        };
+        ws.send(JSON.stringify(message));
+      });
+    } finally {
+      if (this.isConnected) {
+        this.startIdleTimer();
+      } else {
+        this.disconnect();
       }
-
-      ws.addEventListener('message', onMessage);
-      ws.addEventListener('close', onClose);
-      ws.addEventListener('error', onError);
-
-      timer = setTimeout(() => {
-        cleanup();
-        reject(new Error('History request timeout'));
-      }, this.REQUEST_TIMEOUT);
-
-      const message: PointerMessage = {
-        type: requestType,
-        data: { ...data, requestId },
-        timestamp: Date.now(),
-      };
-      ws.send(JSON.stringify(message));
-    });
-
-    this.startIdleTimer();
-    return response;
+    }
   }
 
   private async attemptSend(
