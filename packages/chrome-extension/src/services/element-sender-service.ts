@@ -170,7 +170,10 @@ export class ElementSenderService {
         ws.addEventListener('error', onError);
 
         timer = setTimeout(() => {
-          cleanup();
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('message', onMessage);
+          ws.removeEventListener('close', onClose);
+          ws.removeEventListener('error', onError);
           reject(new Error('History request timeout'));
         }, this.REQUEST_TIMEOUT);
 
