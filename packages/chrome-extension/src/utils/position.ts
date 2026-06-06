@@ -39,8 +39,8 @@ function updatePositionAndSize(target: HTMLElement, overlay: HTMLElement) {
 export default function autoAssignOverlayPositionAndSize(
   target: HTMLElement,
   overlay: HTMLElement,
-) {
+): () => void {
   const wrappedUpdatePosition = () => updatePositionAndSize(target, overlay);
 
-  autoUpdate(target, overlay, wrappedUpdatePosition);
+  return autoUpdate(target, overlay, wrappedUpdatePosition);
 }

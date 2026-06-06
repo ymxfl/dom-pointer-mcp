@@ -22,7 +22,7 @@ function initializeServices(port: string | number): void {
 
 function setupMessageHandler(): void {
   wsService.registerMessageHandler(
-    (type, data) => messageHandler(type, data, {
+    (type, data, respond) => messageHandler(type, data, respond, {
       sharedState,
       elementProcessor,
       screenshotStorage,

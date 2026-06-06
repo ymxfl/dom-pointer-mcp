@@ -1,5 +1,6 @@
 import ConfigStorageService from './services/config-storage-service';
 import ElementPointerService from './services/element-pointer-service';
+import HistoryDrawerService from './services/history-drawer-service';
 import { detectConflict } from './services/conflict-detection-service';
 import ToastService from './services/toast-service';
 import { setLocale, t } from './i18n';
@@ -8,6 +9,7 @@ import logger from './utils/logger';
 logger.debug('🌍 DOM Pointer MCP content script loaded');
 
 let pointer: ElementPointerService | null = null;
+let historyDrawer: HistoryDrawerService | null = null;
 const toast = new ToastService();
 
 async function initializePointer() {
@@ -16,7 +18,10 @@ async function initializePointer() {
     setLocale(config.locale);
 
     if (!pointer) {
-      pointer = new ElementPointerService(config.trigger.modifierKey);
+      pointer = new ElementPointerService(
+        config.trigger.modifierKey,
+        config.behavior.captureScreenshot,
+      );
 
       if (IS_DEV) {
         (window as any).pointerTargeter = pointer;
@@ -25,8 +30,14 @@ async function initializePointer() {
 
     if (config.enabled) {
       pointer.enable();
+      if (!historyDrawer) {
+        historyDrawer = new HistoryDrawerService();
+      }
+      historyDrawer.mount();
     } else {
       pointer.disable();
+      historyDrawer?.destroy();
+      historyDrawer = null;
     }
   } catch (error) {
     logger.error('❌ Failed to initialize pointer:', error);
@@ -37,11 +48,18 @@ ConfigStorageService.onChange((newConfig) => {
   setLocale(newConfig.locale);
   if (pointer) {
     pointer.setModifierKey(newConfig.trigger.modifierKey);
+    pointer.setCaptureScreenshotDefault(newConfig.behavior.captureScreenshot);
 
     if (newConfig.enabled) {
       pointer.enable();
+      if (!historyDrawer) {
+        historyDrawer = new HistoryDrawerService();
+      }
+      historyDrawer.mount();
     } else {
       pointer.disable();
+      historyDrawer?.destroy();
+      historyDrawer = null;
     }
   }
 });

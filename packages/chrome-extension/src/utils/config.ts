@@ -16,6 +16,7 @@ export interface ExtensionConfig {
   };
   behavior: {
     clearAfterSend: boolean;
+    captureScreenshot: boolean;
   };
   trigger: {
     modifierKey: ModifierKey;
@@ -34,6 +35,7 @@ const config: ExtensionConfig = {
   },
   behavior: {
     clearAfterSend: true,
+    captureScreenshot: false,
   },
   trigger: {
     modifierKey: 'Alt',

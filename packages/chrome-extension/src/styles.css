@@ -44,6 +44,41 @@
   border: var(--dom-pointer-mcp-border-color) solid 2px;
 }
 
+.dom-pointer-mcp__overlay--history {
+  pointer-events: none;
+  border-radius: 10px;
+  border: 2px dashed rgba(234, 88, 12, 0.85);
+  background: rgba(251, 146, 60, 0.08);
+  box-sizing: border-box;
+}
+
+.dom-pointer-mcp__overlay-index {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #1976d2;
+  color: white;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.22);
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dom-pointer-mcp__overlay-index--history {
+  background: #ea580c;
+}
+
 /* Complex shimmer effect (::before) */
 .dom-pointer-mcp__overlay--selection::after {
   content: '';
@@ -411,12 +446,79 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-top: 8px;
 }
 
 .dom-pointer-mcp__note-hint {
   color: #888;
   font-size: 11px;
+}
+
+.dom-pointer-mcp__note-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.dom-pointer-mcp__note-screenshot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  background: white;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dom-pointer-mcp__note-screenshot:hover {
+  background: #e3f2fd;
+}
+
+.dom-pointer-mcp__note-screenshot.is-active {
+  background: #1976d2;
+  color: white;
+}
+
+.dom-pointer-mcp__camera-icon {
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.dom-pointer-mcp__camera-icon::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: -5px;
+  width: 6px;
+  height: 3px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 2px 2px 0 0;
+  box-sizing: border-box;
+}
+
+.dom-pointer-mcp__camera-icon::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 1px;
+  width: 4px;
+  height: 4px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  box-sizing: border-box;
 }
 
 .dom-pointer-mcp__note-send {
@@ -440,7 +542,6 @@
 
 .dom-pointer-mcp__note-copy {
   padding: 4px 12px;
-  margin-right: 6px;
   background: white;
   color: #1976d2;
   border: 1px solid #1976d2;
@@ -456,6 +557,180 @@
 .dom-pointer-mcp__note-copy:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* History drawer: read-only selector recall panel */
+.dom-pointer-mcp__history-drawer {
+  position: fixed;
+  top: 96px;
+  right: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: flex-start;
+  width: 336px;
+  max-width: calc(100vw - 16px);
+  transform: translateX(300px);
+  transition: transform 0.18s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1f2933;
+  pointer-events: none;
+}
+
+.dom-pointer-mcp__history-drawer.is-open {
+  transform: translateX(0);
+}
+
+.dom-pointer-mcp__history-tab {
+  width: 36px;
+  min-height: 76px;
+  padding: 8px 4px;
+  border: 1px solid #d7dee8;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  background: #fff;
+  color: #374151;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  pointer-events: auto;
+}
+
+.dom-pointer-mcp__history-panel {
+  width: 300px;
+  max-height: min(560px, calc(100vh - 120px));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #d7dee8;
+  border-radius: 0 0 0 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+  pointer-events: auto;
+}
+
+.dom-pointer-mcp__history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.dom-pointer-mcp__history-header strong {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.dom-pointer-mcp__history-header button,
+.dom-pointer-mcp__history-toolbar button,
+.dom-pointer-mcp__history-item button {
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 1px solid #cfd7e2;
+  border-radius: 5px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.dom-pointer-mcp__history-header button:hover:not(:disabled),
+.dom-pointer-mcp__history-toolbar button:hover:not(:disabled),
+.dom-pointer-mcp__history-item button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.dom-pointer-mcp__history-item button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.dom-pointer-mcp__history-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.dom-pointer-mcp__history-toolbar button:first-child {
+  color: #b45309;
+  border-color: #fed7aa;
+}
+
+.dom-pointer-mcp__history-status {
+  margin: 8px 10px 0;
+  padding: 7px 8px;
+  border-radius: 6px;
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.dom-pointer-mcp__history-status[hidden] {
+  display: none;
+}
+
+.dom-pointer-mcp__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.dom-pointer-mcp__history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.dom-pointer-mcp__history-item.is-active {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.16);
+}
+
+.dom-pointer-mcp__history-item:not(.is-current-page) {
+  background: #f8fafc;
+}
+
+.dom-pointer-mcp__history-item-main {
+  min-width: 0;
+}
+
+.dom-pointer-mcp__history-item-title {
+  color: #111827;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dom-pointer-mcp__history-time,
+.dom-pointer-mcp__history-meta,
+.dom-pointer-mcp__history-note {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.dom-pointer-mcp__history-note {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #334155;
 }
 
 /* Chip-hover flash animation on the corresponding selection overlay */

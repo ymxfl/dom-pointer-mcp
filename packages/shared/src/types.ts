@@ -49,6 +49,31 @@ export interface SavedSelectionScreenshot {
   capturedAt: string;
 }
 
+export interface PointerHistorySummary {
+  selectionId: string;
+  url: string;
+  timestamp: string;
+  userNotePreview: string;
+  elementCount: number;
+  screenshotPath?: string;
+}
+
+export interface PointerHistoryRequest {
+  requestId: string;
+}
+
+export interface PointerHistoryGetRequest extends PointerHistoryRequest {
+  selectionId: string;
+}
+
+export interface PointerHistoryListResponse extends PointerHistoryRequest {
+  selections: PointerHistorySummary[];
+}
+
+export interface PointerHistoryGetResponse extends PointerHistoryRequest {
+  selection: any | null;
+}
+
 export type CSSProperties = Record<string, string>;
 
 export interface ComponentInfo {
@@ -112,6 +137,10 @@ export enum PointerMessageType {
   LEGACY_ELEMENT_SELECTED = 'element-selected',
   DOM_ELEMENT_POINTED = 'dom-element-pointed',
   SELECTION_SENT = 'selection-sent',
+  HISTORY_LIST_REQUEST = 'history-list-request',
+  HISTORY_LIST_RESPONSE = 'history-list-response',
+  HISTORY_GET_REQUEST = 'history-get-request',
+  HISTORY_GET_RESPONSE = 'history-get-response',
 }
 
 export interface PointerMessage {

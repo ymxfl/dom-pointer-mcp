@@ -21,7 +21,11 @@ const PANEL_CLASS = 'dom-pointer-mcp__note-panel';
 const CHIP_CLASS = 'dom-pointer-mcp__note-chip';
 const FLASH_CLASS = 'dom-pointer-mcp__overlay--flashing';
 
-export type OnSend = (elements: HTMLElement[], note: string) => Promise<void>;
+export type OnSend = (
+  elements: HTMLElement[],
+  note: string,
+  includeScreenshot: boolean,
+) => Promise<void>;
 export type OnCopy = (elements: HTMLElement[], note: string) => Promise<string>;
 
 export default class NotePanelService {
@@ -35,6 +39,8 @@ export default class NotePanelService {
 
   private copyBtn: HTMLButtonElement | null = null;
 
+  private screenshotBtn: HTMLButtonElement | null = null;
+
   private closeBtn: HTMLButtonElement | null = null;
 
   private errorText: HTMLDivElement | null = null;
@@ -45,12 +51,21 @@ export default class NotePanelService {
 
   private handleKeyDown: ((e: KeyboardEvent) => void) | null = null;
 
+  private includeScreenshot: boolean;
+
   constructor(
     private store: SelectionStoreService,
     private onSend: OnSend,
     private onCopy: OnCopy,
+    captureScreenshotDefault: boolean,
   ) {
+    this.includeScreenshot = captureScreenshotDefault;
     this.store.subscribe(this.handleSelectionChange.bind(this));
+  }
+
+  public setCaptureScreenshotDefault(enabled: boolean): void {
+    this.includeScreenshot = enabled;
+    this.updateScreenshotButton();
   }
 
   private handleSelectionChange(elements: HTMLElement[]): void {
@@ -83,8 +98,13 @@ export default class NotePanelService {
       <div class="dom-pointer-mcp__note-error" hidden></div>
       <div class="dom-pointer-mcp__note-footer">
         <span class="dom-pointer-mcp__note-hint">${t('notePanel.hint')}</span>
-        <button type="button" class="dom-pointer-mcp__note-copy" title="${t('notePanel.copyTooltip')}">${t('notePanel.copy')}</button>
-        <button type="button" class="dom-pointer-mcp__note-send">${t('notePanel.send')}</button>
+        <div class="dom-pointer-mcp__note-actions">
+          <button type="button" class="dom-pointer-mcp__note-screenshot" title="${t('notePanel.screenshotTooltip')}" aria-label="${t('notePanel.screenshotTooltip')}" aria-pressed="false">
+            <span class="dom-pointer-mcp__camera-icon" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="dom-pointer-mcp__note-copy" title="${t('notePanel.copyTooltip')}">${t('notePanel.copy')}</button>
+          <button type="button" class="dom-pointer-mcp__note-send">${t('notePanel.send')}</button>
+        </div>
       </div>
     `;
     document.body.appendChild(this.root);
@@ -93,11 +113,16 @@ export default class NotePanelService {
     this.textarea = this.root.querySelector('textarea');
     this.sendBtn = this.root.querySelector('.dom-pointer-mcp__note-send');
     this.copyBtn = this.root.querySelector('.dom-pointer-mcp__note-copy');
+    this.screenshotBtn = this.root.querySelector('.dom-pointer-mcp__note-screenshot');
     this.closeBtn = this.root.querySelector('.dom-pointer-mcp__note-close');
     this.errorText = this.root.querySelector('.dom-pointer-mcp__note-error');
 
     this.sendBtn!.addEventListener('click', () => { this.handleSend(); });
     this.copyBtn!.addEventListener('click', () => { this.handleCopy(); });
+    this.screenshotBtn!.addEventListener('click', () => {
+      this.includeScreenshot = !this.includeScreenshot;
+      this.updateScreenshotButton();
+    });
     this.closeBtn!.addEventListener('click', () => { this.store.clear(); });
     this.textarea!.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -141,6 +166,13 @@ export default class NotePanelService {
     document.addEventListener('keydown', this.handleKeyDown, true);
 
     this.textarea!.focus({ preventScroll: true });
+    this.updateScreenshotButton();
+  }
+
+  private updateScreenshotButton(): void {
+    if (!this.screenshotBtn) return;
+    this.screenshotBtn.classList.toggle('is-active', this.includeScreenshot);
+    this.screenshotBtn.setAttribute('aria-pressed', String(this.includeScreenshot));
   }
 
   private renderChips(elements: HTMLElement[]): void {
@@ -179,7 +211,7 @@ export default class NotePanelService {
     this.errorText.hidden = true;
 
     try {
-      await this.onSend(elements, note);
+      await this.onSend(elements, note, this.includeScreenshot);
       if (this.textarea) this.textarea.value = '';
     } catch (err) {
       if (this.errorText) {
@@ -255,6 +287,7 @@ export default class NotePanelService {
     this.textarea = null;
     this.sendBtn = null;
     this.copyBtn = null;
+    this.screenshotBtn = null;
     this.closeBtn = null;
     this.errorText = null;
   }

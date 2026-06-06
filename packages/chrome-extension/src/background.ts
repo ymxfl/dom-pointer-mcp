@@ -1,4 +1,4 @@
-import { ConnectionStatus } from '@dom-pointer-mcp/shared/types';
+import { ConnectionStatus, PointerMessageType } from '@dom-pointer-mcp/shared/types';
 import logger from './utils/logger';
 import { ElementSenderService } from './services/element-sender-service';
 import { ExtensionConfig } from './utils/config';
@@ -92,6 +92,34 @@ chrome.runtime.onMessage
       });
 
       sendResponse({ success: true });
+      return true;
+    }
+
+    if (request.type === PointerMessageType.HISTORY_LIST_REQUEST) {
+      ready.then(() => elementSender.listHistory(currentConfig.websocket.port))
+        .then((data) => {
+          sendResponse({ success: true, data });
+        })
+        .catch((error) => {
+          logger.error('❌ Failed to list history:', error);
+          sendResponse({ success: false, error: (error as Error).message });
+        });
+      return true;
+    }
+
+    if (request.type === PointerMessageType.HISTORY_GET_REQUEST && request.selectionId) {
+      ready.then(() => elementSender.getHistorySelection(
+        request.selectionId,
+        currentConfig.websocket.port,
+      ))
+        .then((data) => {
+          sendResponse({ success: true, data });
+        })
+        .catch((error) => {
+          logger.error('❌ Failed to get history selection:', error);
+          sendResponse({ success: false, error: (error as Error).message });
+        });
+      return true;
     }
 
     return true; // Keep message channel open for async response

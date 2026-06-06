@@ -7,7 +7,12 @@ import { sleep } from '../utils';
 // WebSocket constants
 const WEBSOCKET_RETRY_INTERVAL = 5000; // 5 seconds
 
-type MessageHandler = (type: string, data: any) => void | Promise<void>;
+type MessageResponder = (type: string, data: any) => void;
+type MessageHandler = (
+  type: string,
+  data: any,
+  respond: MessageResponder,
+) => void | Promise<void>;
 
 export default class WebSocketService {
   private wss: WebSocketServer | null = null;
@@ -86,17 +91,24 @@ export default class WebSocketService {
   private handleConnection(ws: any): void {
     logger.info('👆 Browser extension connected to WebSocket server');
 
-    ws.on('message', this.handleWebSocketMessage.bind(this));
+    ws.on('message', (data: any) => this.handleWebSocketMessage(ws, data));
     ws.on('close', this.handleWebSocketClose.bind(this));
   }
 
-  private handleWebSocketMessage(data: any): void {
+  private handleWebSocketMessage(ws: any, data: any): void {
     try {
       const message: PointerMessage = JSON.parse(data.toString());
       logger.info('📨 Received message from browser:', message.type);
 
       if (this.messageHandler) {
-        this.messageHandler(message.type, message.data);
+        const respond: MessageResponder = (type, responseData) => {
+          ws.send(JSON.stringify({
+            type,
+            data: responseData,
+            timestamp: Date.now(),
+          }));
+        };
+        this.messageHandler(message.type, message.data, respond);
       }
     } catch (error) {
       logger.error('Failed to parse message:', error);

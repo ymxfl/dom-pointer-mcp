@@ -1,5 +1,10 @@
 import { randomUUID } from 'crypto';
-import { PointerMessageType, type RawPointedSelection } from '@dom-pointer-mcp/shared/types';
+import {
+  PointerMessageType,
+  type RawPointedSelection,
+  type PointerHistoryGetRequest,
+  type PointerHistoryRequest,
+} from '@dom-pointer-mcp/shared/types';
 import logger from './logger';
 import ElementProcessor from './services/element-processor';
 import SharedStateService from './services/shared-state-service';
@@ -79,7 +84,49 @@ interface HandlerServices {
   screenshotStorage: ScreenshotStorageService;
 }
 
-const messageHandler = async (type: string, data: any, services: HandlerServices) => {
+type MessageResponder = (type: string, data: any) => void;
+
+async function handleHistoryMessage(
+  type: string,
+  data: any,
+  respond: MessageResponder,
+  services: HandlerServices,
+): Promise<boolean> {
+  if (type === PointerMessageType.HISTORY_LIST_REQUEST) {
+    const request = data as PointerHistoryRequest;
+    const selections = await services.sharedState.listPointedSelections();
+    respond(PointerMessageType.HISTORY_LIST_RESPONSE, {
+      requestId: request?.requestId,
+      selections,
+    });
+    return true;
+  }
+
+  if (type === PointerMessageType.HISTORY_GET_REQUEST) {
+    const request = data as PointerHistoryGetRequest;
+    const selection = request?.selectionId
+      ? await services.sharedState.getPointedSelectionById(request.selectionId)
+      : null;
+    respond(PointerMessageType.HISTORY_GET_RESPONSE, {
+      requestId: request?.requestId,
+      selection,
+    });
+    return true;
+  }
+
+  return false;
+}
+
+const messageHandler = async (
+  type: string,
+  data: any,
+  respond: MessageResponder,
+  services: HandlerServices,
+) => {
+  if (await handleHistoryMessage(type, data, respond, services)) {
+    return;
+  }
+
   const buildedState = await buildStateFromMessage(type, data, services);
   if (buildedState) {
     await services.sharedState.saveState(buildedState);

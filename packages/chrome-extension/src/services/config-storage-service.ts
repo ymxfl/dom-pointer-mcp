@@ -10,7 +10,14 @@ export default class ConfigStorageService {
       const stored = result[STORAGE_KEY];
 
       if (stored) {
-        const config = { ...defaultConfig, ...stored };
+        const config = {
+          ...defaultConfig,
+          ...stored,
+          websocket: { ...defaultConfig.websocket, ...stored.websocket },
+          logger: { ...defaultConfig.logger, ...stored.logger },
+          behavior: { ...defaultConfig.behavior, ...stored.behavior },
+          trigger: { ...defaultConfig.trigger, ...stored.trigger },
+        };
         logger.debug('📁 Config loaded from storage:', config);
         return config;
       }

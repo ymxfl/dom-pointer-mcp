@@ -62,7 +62,7 @@ export default class ElementPointerService {
 
   private hoveredElement: HTMLElement | null = null;
 
-  constructor(modifierKey: ModifierKey) {
+  constructor(modifierKey: ModifierKey, captureScreenshotDefault: boolean) {
     this.triggerKeyService = new TriggerKeyService({
       onTriggerKeyStart: this.startPointing.bind(this),
       onTriggerKeyEnd: this.stopPointing.bind(this),
@@ -76,8 +76,9 @@ export default class ElementPointerService {
     this.store = new SelectionStoreService();
     this.notePanel = new NotePanelService(
       this.store,
-      (els, note) => this.sendSelection(els, note),
+      (els, note, includeScreenshot) => this.sendSelection(els, note, includeScreenshot),
       (els, note) => this.buildSelectionJson(els, note),
+      captureScreenshotDefault,
     );
     this.store.subscribe(this.syncOverlays.bind(this));
   }
@@ -104,7 +105,8 @@ export default class ElementPointerService {
     current.filter((e) => !elements.includes(e))
       .forEach((e) => this.overlayManagerService.clearSelection(e));
     elements.filter((e) => !current.includes(e))
-      .forEach((e) => this.overlayManagerService.overlaySelection(e));
+      .forEach((e) => this.overlayManagerService.overlaySelection(e, elements.indexOf(e) + 1));
+    this.overlayManagerService.updateSelectionIndexes(elements);
     if (this.hoveredElement && elements.includes(this.hoveredElement)) {
       this.overlayManagerService.clearHover();
       this.hoveredElement = null;
@@ -113,6 +115,10 @@ export default class ElementPointerService {
 
   public setModifierKey(key: ModifierKey): void {
     this.triggerKeyService.setModifierKey(key);
+  }
+
+  public setCaptureScreenshotDefault(enabled: boolean): void {
+    this.notePanel.setCaptureScreenshotDefault(enabled);
   }
 
   public enable(): void {
@@ -146,11 +152,15 @@ export default class ElementPointerService {
     logger.debug('Pointing stopped');
   }
 
-  private async sendSelection(elements: HTMLElement[], note: string): Promise<void> {
+  private async sendSelection(
+    elements: HTMLElement[],
+    note: string,
+    includeScreenshot: boolean,
+  ): Promise<void> {
     logger.info(`📤 Sending selection (${elements.length} elements) to background`);
 
     assertExtensionContextValid();
-    const payload = await this.buildPayload(elements, note, true);
+    const payload = await this.buildPayload(elements, note, includeScreenshot);
 
     await new Promise<void>((resolve, reject) => {
       try {
