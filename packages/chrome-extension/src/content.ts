@@ -12,6 +12,19 @@ let pointer: ElementPointerService | null = null;
 let historyDrawer: HistoryDrawerService | null = null;
 const toast = new ToastService();
 
+function syncHistoryDrawer(show: boolean): void {
+  if (show) {
+    if (!historyDrawer) {
+      historyDrawer = new HistoryDrawerService();
+    }
+    historyDrawer.mount();
+    return;
+  }
+
+  historyDrawer?.destroy();
+  historyDrawer = null;
+}
+
 async function initializePointer() {
   try {
     const config = await ConfigStorageService.load();
@@ -55,19 +68,6 @@ ConfigStorageService.onChange((newConfig) => {
     }
   }
 });
-
-function syncHistoryDrawer(show: boolean): void {
-  if (show) {
-    if (!historyDrawer) {
-      historyDrawer = new HistoryDrawerService();
-    }
-    historyDrawer.mount();
-    return;
-  }
-
-  historyDrawer?.destroy();
-  historyDrawer = null;
-}
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'CHECK_CONFLICT') {

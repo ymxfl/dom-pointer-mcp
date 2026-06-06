@@ -125,23 +125,23 @@ export class ElementSenderService {
           return;
         }
 
-        const ws = this.ws;
+        const { ws } = this;
         let timer: ReturnType<typeof setTimeout> | undefined;
 
-        function cleanup() {
-          if (timer) clearTimeout(timer);
-          ws.removeEventListener('message', onMessage);
-          ws.removeEventListener('close', onClose);
-          ws.removeEventListener('error', onError);
-        }
-
         function onClose() {
-          cleanup();
+          if (timer) clearTimeout(timer);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('message', onMessage);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('error', onError);
           reject(new Error('WebSocket closed'));
         }
 
         function onError() {
-          cleanup();
+          if (timer) clearTimeout(timer);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ws.removeEventListener('message', onMessage);
+          ws.removeEventListener('close', onClose);
           reject(new Error('WebSocket error'));
         }
 
@@ -151,10 +151,16 @@ export class ElementSenderService {
             if (message.type !== responseType || message.data?.requestId !== requestId) {
               return;
             }
-            cleanup();
+            if (timer) clearTimeout(timer);
+            ws.removeEventListener('message', onMessage);
+            ws.removeEventListener('close', onClose);
+            ws.removeEventListener('error', onError);
             resolve(message.data as T);
           } catch (error) {
-            cleanup();
+            if (timer) clearTimeout(timer);
+            ws.removeEventListener('message', onMessage);
+            ws.removeEventListener('close', onClose);
+            ws.removeEventListener('error', onError);
             reject(error);
           }
         }

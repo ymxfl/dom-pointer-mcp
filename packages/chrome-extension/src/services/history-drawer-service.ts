@@ -123,7 +123,7 @@ export default class HistoryDrawerService {
     event.preventDefault();
     event.stopPropagation();
 
-    const action = actionEl.dataset.action;
+    const { action } = actionEl.dataset;
     if (action === 'toggle') {
       this.root?.classList.toggle(OPEN_CLASS);
       if (this.root?.classList.contains(OPEN_CLASS)) {
@@ -353,9 +353,9 @@ export default class HistoryDrawerService {
 
   private findElement(element: HistoryElement): HTMLElement | null {
     const selectors = this.buildSelectorCandidates(element);
-    for (const selector of selectors) {
+    for (let i = 0; i < selectors.length; i += 1) {
       try {
-        const matched = Array.from(document.querySelectorAll(selector))
+        const matched = Array.from(document.querySelectorAll(selectors[i]))
           .filter((node): node is HTMLElement => node instanceof HTMLElement);
         const best = this.pickBestElement(matched, element);
         if (best) return best;

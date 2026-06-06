@@ -18,32 +18,33 @@ function buildElementSelector(element: HTMLElement): string {
   let current: Element | null = element;
 
   while (current && current instanceof HTMLElement && current !== document.body) {
-    let segment = current.tagName.toLowerCase();
+    const node = current;
+    let segment = node.tagName.toLowerCase();
     const stableAttr = ['data-testid', 'data-test', 'data-cy', 'name', 'aria-label']
-      .find((attr) => current!.hasAttribute(attr));
+      .find((attr) => node.hasAttribute(attr));
 
-    if (current.id) {
-      segment += `#${escapeIdentifier(current.id)}`;
+    if (node.id) {
+      segment += `#${escapeIdentifier(node.id)}`;
       path.unshift(segment);
       break;
     }
 
     if (stableAttr) {
-      const value = current.getAttribute(stableAttr);
+      const value = node.getAttribute(stableAttr);
       if (value) {
         segment += `[${stableAttr}="${escapeAttributeValue(value)}"]`;
       }
     } else {
-      const classes = Array.from(current.classList).slice(0, 3);
+      const classes = Array.from(node.classList).slice(0, 3);
       if (classes.length > 0) {
         segment += `.${classes.map(escapeIdentifier).join('.')}`;
       }
-      const parent = current.parentElement;
+      const parent = node.parentElement;
       if (parent) {
         const siblings = Array.from(parent.children)
-          .filter((child) => child.tagName === current!.tagName);
+          .filter((child) => child.tagName === node.tagName);
         if (siblings.length > 1) {
-          segment += `:nth-of-type(${siblings.indexOf(current) + 1})`;
+          segment += `:nth-of-type(${siblings.indexOf(node) + 1})`;
         }
       }
     }
