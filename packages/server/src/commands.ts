@@ -3,6 +3,7 @@ enum CLICommand {
   REMOVE = 'remove',
   STATUS = 'status',
   CONFIG = 'config',
+  DOCTOR = 'doctor',
 }
 
 export default CLICommand;

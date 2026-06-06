@@ -13,7 +13,8 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish",
-    "release:prepare": "bash scripts/release.sh"
+    "release:prepare": "bash scripts/release.sh",
+    "claude:mcp:debug": "bash scripts/install-claude-user-debug-mcp.sh"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",

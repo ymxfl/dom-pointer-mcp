@@ -1,6 +1,6 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
-  RawPointedDOMElement, PointerMessage, PointerMessageType, ConnectionStatus,
+  RawPointedSelection, PointerMessage, PointerMessageType, ConnectionStatus,
 } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 
@@ -35,8 +35,8 @@ export class ElementSenderService {
 
   private readonly SEND_VERIFY_WINDOW = 300; // 300ms post-send watch for close/error
 
-  async sendElement(
-    element: RawPointedDOMElement,
+  async sendSelection(
+    selection: RawPointedSelection,
     port: number,
     statusCallback?: StatusCallback,
   ): Promise<void> {
@@ -49,7 +49,7 @@ export class ElementSenderService {
         await sleep(this.SEND_RETRY_INTERVAL);
       }
 
-      const ok = await this.attemptSend(element, port, statusCallback);
+      const ok = await this.attemptSend(selection, port, statusCallback);
       if (ok) {
         statusCallback?.(ConnectionStatus.SENT);
         this.startIdleTimer();
@@ -65,7 +65,7 @@ export class ElementSenderService {
   }
 
   private async attemptSend(
-    element: RawPointedDOMElement,
+    selection: RawPointedSelection,
     port: number,
     statusCallback?: StatusCallback,
   ): Promise<boolean> {
@@ -76,7 +76,7 @@ export class ElementSenderService {
 
     const message: PointerMessage = {
       type: PointerMessageType.SELECTION_SENT,
-      data: element,
+      data: selection,
       timestamp: Date.now(),
     };
 
@@ -87,7 +87,7 @@ export class ElementSenderService {
       return false;
     }
 
-    logger.info('📤 Element sent:', element);
+    logger.info('📤 Selection sent:', selection);
 
     return this.verifyDelivery();
   }

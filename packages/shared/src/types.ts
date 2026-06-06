@@ -27,6 +27,28 @@ export interface ElementPosition {
   height: number;
 }
 
+export interface ScreenshotBounds extends ElementPosition {
+  devicePixelRatio?: number;
+}
+
+export interface RawSelectionScreenshot {
+  dataUrl: string;
+  mimeType: 'image/png';
+  width: number;
+  height: number;
+  bounds?: ScreenshotBounds;
+  capturedAt: number;
+}
+
+export interface SavedSelectionScreenshot {
+  path: string;
+  mimeType: 'image/png';
+  width: number;
+  height: number;
+  bounds?: ScreenshotBounds;
+  capturedAt: string;
+}
+
 export type CSSProperties = Record<string, string>;
 
 export interface ComponentInfo {
@@ -82,6 +104,7 @@ export interface RawPointedSelection {
   timestamp: number;
   userNote: string;
   elements: RawPointedDOMElement[];
+  screenshot?: RawSelectionScreenshot;
 }
 
 // Pointer message types between extension and MCP server

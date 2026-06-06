@@ -2,6 +2,7 @@ import WebSocketService from './services/websocket-service';
 import MCPService from './services/mcp-service';
 import SharedStateService from './services/shared-state-service';
 import ElementProcessor from './services/element-processor';
+import ScreenshotStorageService from './services/screenshot-storage-service';
 import logger from './logger';
 import messageHandler from './message-handler';
 
@@ -9,17 +10,23 @@ let sharedState: SharedStateService;
 let wsService: WebSocketService;
 let mcpService: MCPService;
 let elementProcessor: ElementProcessor;
+let screenshotStorage: ScreenshotStorageService;
 
 function initializeServices(port: string | number): void {
   sharedState = new SharedStateService();
   wsService = new WebSocketService(port);
   mcpService = new MCPService(sharedState);
   elementProcessor = new ElementProcessor();
+  screenshotStorage = new ScreenshotStorageService();
 }
 
 function setupMessageHandler(): void {
   wsService.registerMessageHandler(
-    (type, data) => messageHandler(type, data, { sharedState, elementProcessor }),
+    (type, data) => messageHandler(type, data, {
+      sharedState,
+      elementProcessor,
+      screenshotStorage,
+    }),
   );
 }
 

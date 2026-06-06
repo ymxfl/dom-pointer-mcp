@@ -1,4 +1,4 @@
-import { ConnectionStatus, RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
+import { ConnectionStatus, RawPointedSelection } from '@dom-pointer-mcp/shared/types';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { ElementSenderService } from '../../services/element-sender-service';
 
@@ -45,19 +45,19 @@ function flushMicrotasks(): Promise<void> {
   return Promise.resolve().then(() => Promise.resolve());
 }
 
-function makeElement(): RawPointedDOMElement {
+function makeSelection(): RawPointedSelection {
   return {
-    tagName: 'div',
-    selector: 'div',
-    classes: [],
-    id: '',
-    attributes: {},
-    innerText: '',
-    componentInfo: null,
-    position: {
-      x: 0, y: 0, width: 0, height: 0,
-    },
-  } as unknown as RawPointedDOMElement;
+    url: 'https://example.com',
+    timestamp: 1672531200000,
+    userNote: 'test note',
+    elements: [
+      {
+        outerHTML: '<div>test</div>',
+        url: 'https://example.com',
+        timestamp: 1672531200000,
+      },
+    ],
+  };
 }
 
 describe('ElementSenderService', () => {
@@ -74,7 +74,7 @@ describe('ElementSenderService', () => {
   it('sends successfully on the first attempt without retry delay', async () => {
     const svc = new ElementSenderService();
     const status = jest.fn();
-    const promise = svc.sendElement(makeElement(), 7007, status);
+    const promise = svc.sendSelection(makeSelection(), 7007, status);
 
     // Allow the constructor microtask to run, then open the socket.
     await flushMicrotasks();
@@ -98,7 +98,7 @@ describe('ElementSenderService', () => {
   it('retries after a failed first attempt and ends in SENT', async () => {
     const svc = new ElementSenderService();
     const status = jest.fn();
-    const promise = svc.sendElement(makeElement(), 7007, status);
+    const promise = svc.sendSelection(makeSelection(), 7007, status);
 
     // First attempt: socket opens, send happens, then server closes inside verify window.
     await flushMicrotasks();
@@ -133,7 +133,7 @@ describe('ElementSenderService', () => {
   it('reports ERROR with "5 attempts" message after all attempts fail', async () => {
     const svc = new ElementSenderService();
     const status = jest.fn();
-    const promise = svc.sendElement(makeElement(), 7007, status);
+    const promise = svc.sendSelection(makeSelection(), 7007, status);
 
     for (let i = 0; i < 5; i += 1) {
       // Allow the constructor for this attempt.

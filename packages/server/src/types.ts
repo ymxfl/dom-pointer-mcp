@@ -3,6 +3,7 @@ import {
   CSSProperties,
   ComponentInfo,
   RawPointedSelection,
+  SavedSelectionScreenshot,
 } from '@dom-pointer-mcp/shared/types';
 
 // Server-processed data (extracted & enhanced)
@@ -18,7 +19,7 @@ export interface ProcessedPointedDOMElement {
   // Context data
   position: ElementPosition;
   url: string;
-  timestamp: string; // ISO format
+  timestamp: string; // Local time with timezone offset
 
   // Full CSS data for shaping
   cssComputed?: Record<string, string>; // Full computed styles
@@ -49,21 +50,35 @@ export interface SerializedDOMElement {
 
 // Selection batch: multiple elements + shared user note
 export interface ProcessedPointedSelection {
+  selectionId?: string;
   userNote: string;
   url: string;
   timestamp: string;
   elements: ProcessedPointedDOMElement[];
+  screenshot?: SavedSelectionScreenshot;
 }
 
 export interface SerializedSelection {
+  selectionId?: string;
   userNote: string;
   url: string;
   timestamp: string;
   elements: SerializedDOMElement[];
+  screenshot?: SavedSelectionScreenshot;
+}
+
+export interface SelectionSummary {
+  selectionId: string;
+  url: string;
+  timestamp: string;
+  userNotePreview: string;
+  elementCount: number;
+  screenshotPath?: string;
 }
 
 // State data structure
 export interface SharedStateData {
+  selectionId: string;
   rawPointedSelection: RawPointedSelection;
   processedPointedSelection: ProcessedPointedSelection;
   metadata: {
@@ -75,4 +90,5 @@ export interface SharedStateData {
 // Storage format
 export interface SharedState {
   data: SharedStateData;
+  history?: SharedStateData[];
 }

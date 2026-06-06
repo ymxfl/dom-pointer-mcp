@@ -6,6 +6,7 @@ import start from './start';
 import configCommand from './config';
 import CLICommand from './commands';
 import logger from './logger';
+import doctor from './doctor';
 
 function parseLogLevel(level: string): LogLevel {
   const levelMap: Record<string, LogLevel> = {
@@ -59,5 +60,11 @@ program
   .option('--lang <lang>', 'UI language: zh or en (default: zh)')
   .description('Configure DOM Pointer MCP for AI tools (interactive when no tool is given)')
   .action(configCommand);
+
+program
+  .command(CLICommand.DOCTOR)
+  .description('Check DOM Pointer MCP local setup and recent shared state')
+  .option('-p, --port <port>', 'WebSocket port', '7007')
+  .action(doctor);
 
 program.parse();
