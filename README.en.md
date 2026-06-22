@@ -175,6 +175,8 @@ Advanced users can also ask the AI to call `get-pointed-element` directly (omit 
 
 To cancel a selected element, Option+Click it again or click the × on its chip. The note panel stays visible until **all** selections are cancelled — your typed text is never lost from incidental clicks.
 
+If the note panel covers an element you want to select, **drag it by any empty area** to move it anywhere (once dragged, it stops auto-anchoring to the selection).
+
 The extension popup probes the configured server on open and shows a 🟢 / 🔴 status indicator, so you find out the server is down *before* you click Send.
 
 ## 🎨 Element Data Extracted

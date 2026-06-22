@@ -51,6 +51,16 @@ export default class NotePanelService {
 
   private handleKeyDown: ((e: KeyboardEvent) => void) | null = null;
 
+  private handleDragStart: ((e: MouseEvent) => void) | null = null;
+
+  private handleDragMove: ((e: MouseEvent) => void) | null = null;
+
+  private handleDragEnd: (() => void) | null = null;
+
+  private dragOrigin: { mouseX: number; mouseY: number; left: number; top: number } | null = null;
+
+  private positionFrozen = false;
+
   private includeScreenshot: boolean;
 
   constructor(
@@ -146,7 +156,7 @@ export default class NotePanelService {
     };
     this.cleanupAutoUpdate = autoUpdate(anchorEl, this.root, async () => {
       const { root } = this;
-      if (!root) return;
+      if (!root || this.positionFrozen) return;
       const { x, y } = await computePosition(virtualAnchor, root, {
         placement: 'bottom-start',
         middleware: [flip(), shift({
@@ -165,8 +175,52 @@ export default class NotePanelService {
     };
     document.addEventListener('keydown', this.handleKeyDown, true);
 
+    this.setupDragging();
+
     this.textarea!.focus({ preventScroll: true });
     this.updateScreenshotButton();
+  }
+
+  private setupDragging(): void {
+    if (!this.root) return;
+
+    const isInteractive = (target: EventTarget | null): boolean => {
+      if (!(target instanceof HTMLElement)) return false;
+      return !!target.closest('button, textarea, input, select, a');
+    };
+
+    this.handleDragStart = (e: MouseEvent) => {
+      if (e.button !== 0 || !this.root || isInteractive(e.target)) return;
+      e.preventDefault();
+      // Freeze floating-ui auto-positioning so the panel stays where dropped.
+      this.cleanupAutoUpdate?.();
+      this.cleanupAutoUpdate = null;
+      this.positionFrozen = true;
+      this.dragOrigin = {
+        mouseX: e.clientX,
+        mouseY: e.clientY,
+        left: parseFloat(this.root.style.left) || 0,
+        top: parseFloat(this.root.style.top) || 0,
+      };
+      document.addEventListener('mousemove', this.handleDragMove!, true);
+      document.addEventListener('mouseup', this.handleDragEnd!, true);
+    };
+
+    this.handleDragMove = (e: MouseEvent) => {
+      if (!this.root || !this.dragOrigin) return;
+      e.preventDefault();
+      const left = this.dragOrigin.left + (e.clientX - this.dragOrigin.mouseX);
+      const top = this.dragOrigin.top + (e.clientY - this.dragOrigin.mouseY);
+      Object.assign(this.root.style, { left: `${left}px`, top: `${top}px` });
+    };
+
+    this.handleDragEnd = () => {
+      this.dragOrigin = null;
+      document.removeEventListener('mousemove', this.handleDragMove!, true);
+      document.removeEventListener('mouseup', this.handleDragEnd!, true);
+    };
+
+    this.root.addEventListener('mousedown', this.handleDragStart, true);
   }
 
   private updateScreenshotButton(): void {
@@ -277,6 +331,17 @@ export default class NotePanelService {
       document.removeEventListener('keydown', this.handleKeyDown, true);
       this.handleKeyDown = null;
     }
+    if (this.handleDragMove) {
+      document.removeEventListener('mousemove', this.handleDragMove, true);
+      this.handleDragMove = null;
+    }
+    if (this.handleDragEnd) {
+      document.removeEventListener('mouseup', this.handleDragEnd, true);
+      this.handleDragEnd = null;
+    }
+    this.handleDragStart = null;
+    this.dragOrigin = null;
+    this.positionFrozen = false;
     if (this.feedbackTimer) {
       clearTimeout(this.feedbackTimer);
       this.feedbackTimer = null;
