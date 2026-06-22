@@ -370,6 +370,16 @@
   font-size: 13px;
   color: #333;
   box-sizing: border-box;
+  cursor: move;
+}
+
+.dom-pointer-mcp__note-panel button,
+.dom-pointer-mcp__note-panel textarea {
+  cursor: auto;
+}
+
+.dom-pointer-mcp__note-panel button {
+  cursor: pointer;
 }
 
 .dom-pointer-mcp__note-close {

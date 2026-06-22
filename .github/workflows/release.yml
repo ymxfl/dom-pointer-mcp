@@ -117,3 +117,19 @@ jobs:
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 自动发布到 Chrome 应用商店（暂时禁用）。
+      # 启用前需在仓库 Secrets 配置：
+      #   CHROME_EXTENSION_ID / CHROME_CLIENT_ID / CHROME_CLIENT_SECRET / CHROME_REFRESH_TOKEN
+      # 取消下方注释即可启用。
+      # - name: Publish Chrome extension to Web Store
+      #   if: steps.changesets.outputs.published == 'true' || steps.ext-version.outputs.changed == 'true'
+      #   uses: mnao305/chrome-extension-upload@v5.0.0
+      #   with:
+      #     file-path: dom-pointer-mcp-chrome-extension.zip
+      #     extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+      #     client-id: ${{ secrets.CHROME_CLIENT_ID }}
+      #     client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+      #     refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      #     publish: true
+
