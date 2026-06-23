@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.5.2
+
+### Patch Changes
+
+- 2e9340d: 设置弹窗标题栏新增「关于」图标，点击可在新标签页打开 GitHub 仓库。
+
 ## 1.5.1
 
 ### Patch Changes
