@@ -15,8 +15,26 @@ body {
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
   padding: 0 2px;
+}
+
+.about-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  border-radius: 6px;
+  padding: 2px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.about-link:hover {
+  color: #111827;
+  background-color: #f3f4f6;
 }
 
 .header h1 {

@@ -24,6 +24,8 @@ export default class PopupManagerService {
 
   private conflictWarning: HTMLElement;
 
+  private aboutLink: HTMLAnchorElement;
+
   private saveBtn: HTMLButtonElement;
 
   private resetBtn: HTMLButtonElement;
@@ -47,6 +49,7 @@ export default class PopupManagerService {
     this.triggerKeySelect = document.getElementById('triggerKey') as HTMLSelectElement;
     this.localeSelect = document.getElementById('locale') as HTMLSelectElement;
     this.conflictWarning = document.getElementById('conflictWarning') as HTMLElement;
+    this.aboutLink = document.getElementById('aboutLink') as HTMLAnchorElement;
     this.saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     this.resetBtn = document.getElementById('resetBtn') as HTMLButtonElement;
     this.status = document.getElementById('status') as HTMLElement;
@@ -74,6 +77,8 @@ export default class PopupManagerService {
     this.saveBtn.textContent = t('popup.save');
     this.resetBtn.textContent = t('popup.reset');
     this.recheckBtn.textContent = t('popup.recheck');
+    this.aboutLink.title = t('popup.aboutTitle');
+    this.aboutLink.setAttribute('aria-label', t('popup.aboutTitle'));
   }
 
   private populateTriggerKeyOptions(): void {
