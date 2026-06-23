@@ -24,6 +24,7 @@ const en: Record<MessageKey, string> = {
   'popup.resetError': 'Failed to reset configuration',
   'popup.recheck': 'Recheck',
   'popup.invalidPort': 'Invalid port: {port}',
+  'popup.aboutTitle': 'View this project on GitHub',
   'notePanel.placeholder': 'Describe what you want to change...',
   'notePanel.send': 'Send',
   'notePanel.copy': 'Copy',

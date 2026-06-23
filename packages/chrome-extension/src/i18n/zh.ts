@@ -22,6 +22,7 @@ const zh = {
   'popup.resetError': '重置配置失败',
   'popup.recheck': '重新检查',
   'popup.invalidPort': '无效端口: {port}',
+  'popup.aboutTitle': '在 GitHub 上查看本项目',
   'notePanel.placeholder': '描述你想要的修改...',
   'notePanel.send': '发送',
   'notePanel.copy': '复制',
