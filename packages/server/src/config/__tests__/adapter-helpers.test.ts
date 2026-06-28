@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import {
   fileExists,
   deleteFileIfExists,
+  deleteDirIfExists,
   removeJsonKey,
 } from '../adapter-helpers';
 
@@ -35,6 +36,21 @@ describe('deleteFileIfExists', () => {
   it('returns "missing" when the file was absent', async () => {
     const p = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-nope.tmp`);
     await expect(deleteFileIfExists(p)).resolves.toBe('missing');
+  });
+});
+
+describe('deleteDirIfExists', () => {
+  it('returns "deleted" and removes a non-empty directory', async () => {
+    const dir = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-dir`);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, 'SKILL.md'), 'x', 'utf8');
+    await expect(deleteDirIfExists(dir)).resolves.toBe('deleted');
+    await expect(fileExists(dir)).resolves.toBe(false);
+  });
+
+  it('returns "missing" when the directory was absent', async () => {
+    const dir = path.join(os.tmpdir(), `dom-pointer-mcp-${Date.now()}-nodir`);
+    await expect(deleteDirIfExists(dir)).resolves.toBe('missing');
   });
 });
 

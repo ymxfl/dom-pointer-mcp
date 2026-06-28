@@ -7,6 +7,7 @@ import {
   readJsonOrDefault,
   fileExists,
   deleteFileIfExists,
+  deleteDirIfExists,
   removeJsonKey,
 } from '../adapter-helpers';
 import {
@@ -193,15 +194,15 @@ export const claudeAdapter: ToolAdapter = {
 
   async uninstallSkill(scope): Promise<OperationResult> {
     const base = scope === 'user' ? os.homedir() : process.cwd();
-    const filePath = path.join(base, '.claude', 'skills', TRIGGER_NAME, 'SKILL.md');
+    const dirPath = path.join(base, '.claude', 'skills', TRIGGER_NAME);
     try {
-      const r = await deleteFileIfExists(filePath);
+      const r = await deleteDirIfExists(dirPath);
       return r === 'deleted'
         ? {
-          status: 'success', scope, path: filePath, message: 'Skill removed',
+          status: 'success', scope, path: dirPath, message: 'Skill removed',
         }
         : {
-          status: 'skipped', scope, path: filePath, message: 'Skill file not found',
+          status: 'skipped', scope, path: dirPath, message: 'Skill directory not found',
         };
     } catch (e) {
       return { status: 'failed', scope, message: `Delete failed: ${(e as Error).message}` };

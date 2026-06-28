@@ -9,12 +9,14 @@ jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' })),
   unlink: jest.fn().mockResolvedValue(undefined),
+  rm: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockResolvedValue(undefined),
 }));
 
 const mockedWriteFile = fs.writeFile as jest.Mock;
 const mockedReadFile = fs.readFile as jest.Mock;
 const mockedUnlink = fs.unlink as jest.Mock;
+const mockedRm = fs.rm as jest.Mock;
 const mockedAccess = fs.access as jest.Mock;
 
 beforeEach(() => {
@@ -24,6 +26,8 @@ beforeEach(() => {
   mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
   mockedUnlink.mockReset();
   mockedUnlink.mockResolvedValue(undefined);
+  mockedRm.mockReset();
+  mockedRm.mockResolvedValue(undefined);
   mockedAccess.mockReset();
   mockedAccess.mockResolvedValue(undefined);
 });
@@ -62,7 +66,7 @@ describe('joycodeAdapter', () => {
         { name: 'someOtherCommand', label: 'Other', prompt: 'x' },
         { name: 'pointerOld', label: 'Old', prompt: 'stale' },
       ]));
-      const result = await joycodeAdapter.installCommand('project');
+      const result = await joycodeAdapter.installCommand!('project');
       expect(result.status).toBe('success');
       expect(result.scope).toBe('project');
       expect(result.path).toBe(path.join(process.cwd(), '.joycode', 'prompt.json'));
@@ -77,7 +81,7 @@ describe('joycodeAdapter', () => {
     });
 
     it('user writes ~/.joycode/prompt.json with source=user', async () => {
-      const result = await joycodeAdapter.installCommand('user');
+      const result = await joycodeAdapter.installCommand!('user');
       expect(result.status).toBe('success');
       expect(result.scope).toBe('user');
       expect(result.path).toBe(path.join(os.homedir(), '.joycode', 'prompt.json'));
@@ -107,24 +111,24 @@ describe('joycodeAdapter', () => {
 
 describe('joycodeAdapter uninstall', () => {
   describe('uninstallSkill', () => {
-    it('user scope unlinks ~/.joycode/skills/pointed/SKILL.md', async () => {
+    it('user scope removes ~/.joycode/skills/pointed directory', async () => {
       const result = await joycodeAdapter.uninstallSkill!('user');
       expect(result.status).toBe('success');
-      const expected = path.join(os.homedir(), '.joycode', 'skills', 'pointed', 'SKILL.md');
+      const expected = path.join(os.homedir(), '.joycode', 'skills', 'pointed');
       expect(result.path).toBe(expected);
-      expect(mockedUnlink).toHaveBeenCalledWith(expected);
+      expect(mockedRm).toHaveBeenCalledWith(expected, { recursive: true, force: false });
     });
 
-    it('project scope unlinks <cwd>/.joycode/skills/pointed/SKILL.md', async () => {
+    it('project scope removes <cwd>/.joycode/skills/pointed directory', async () => {
       const result = await joycodeAdapter.uninstallSkill!('project');
       expect(result.status).toBe('success');
-      const expected = path.join(process.cwd(), '.joycode', 'skills', 'pointed', 'SKILL.md');
+      const expected = path.join(process.cwd(), '.joycode', 'skills', 'pointed');
       expect(result.path).toBe(expected);
-      expect(mockedUnlink).toHaveBeenCalledWith(expected);
+      expect(mockedRm).toHaveBeenCalledWith(expected, { recursive: true, force: false });
     });
 
-    it('returns skipped when skill file is missing', async () => {
-      mockedUnlink.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
+    it('returns skipped when skill directory is missing', async () => {
+      mockedRm.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
       const result = await joycodeAdapter.uninstallSkill!('user');
       expect(result.status).toBe('skipped');
     });
@@ -190,7 +194,7 @@ describe('joycodeAdapter uninstall', () => {
         { name: 'pointerPointed', label: 'p', prompt: 'x' },
         { name: 'other', label: 'o', prompt: 'y' },
       ]));
-      const result = await joycodeAdapter.uninstallCommand('project');
+      const result = await joycodeAdapter.uninstallCommand!('project');
       expect(result.status).toBe('success');
       expect(result.scope).toBe('project');
       const expectedPath = path.join(process.cwd(), '.joycode', 'prompt.json');
@@ -205,7 +209,7 @@ describe('joycodeAdapter uninstall', () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify([
         { name: 'pointerPointed', label: 'p', prompt: 'x' },
       ]));
-      const result = await joycodeAdapter.uninstallCommand('project');
+      const result = await joycodeAdapter.uninstallCommand!('project');
       expect(result.status).toBe('success');
       const expectedPath = path.join(process.cwd(), '.joycode', 'prompt.json');
       const writeCall = mockedWriteFile.mock.calls.find((c) => c[0] === expectedPath);
@@ -216,7 +220,7 @@ describe('joycodeAdapter uninstall', () => {
     it('returns skipped when prompt.json is missing', async () => {
       mockedAccess.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
       mockedReadFile.mockRejectedValueOnce(Object.assign(new Error(), { code: 'ENOENT' }));
-      const result = await joycodeAdapter.uninstallCommand('project');
+      const result = await joycodeAdapter.uninstallCommand!('project');
       expect(result.status).toBe('skipped');
     });
 
@@ -224,7 +228,7 @@ describe('joycodeAdapter uninstall', () => {
       mockedReadFile.mockResolvedValueOnce(JSON.stringify([
         { name: 'other', label: 'o', prompt: 'y' },
       ]));
-      const result = await joycodeAdapter.uninstallCommand('project');
+      const result = await joycodeAdapter.uninstallCommand!('project');
       expect(result.status).toBe('skipped');
     });
 
@@ -233,7 +237,7 @@ describe('joycodeAdapter uninstall', () => {
         { name: 'pointerPointed', label: 'p', prompt: 'x' },
         { name: 'other', label: 'o', prompt: 'y' },
       ]));
-      const result = await joycodeAdapter.uninstallCommand('user');
+      const result = await joycodeAdapter.uninstallCommand!('user');
       expect(result.status).toBe('success');
       expect(result.scope).toBe('user');
       const expectedPath = path.join(os.homedir(), '.joycode', 'prompt.json');

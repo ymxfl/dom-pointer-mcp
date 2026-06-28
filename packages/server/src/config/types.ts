@@ -21,11 +21,11 @@ export interface ToolAdapter {
 
   // Install
   registerMcp(scope: Scope, port: number, launchMode?: LaunchMode): Promise<OperationResult>;
-  installCommand(scope: Scope): Promise<OperationResult>;
+  installCommand?(scope: Scope): Promise<OperationResult>;
   installSkill?(scope: Scope): Promise<OperationResult>;
 
   // Uninstall (symmetric; idempotent — return 'skipped' when nothing to remove)
   unregisterMcp(scope: Scope): Promise<OperationResult>;
-  uninstallCommand(scope: Scope): Promise<OperationResult>;
+  uninstallCommand?(scope: Scope): Promise<OperationResult>;
   uninstallSkill?(scope: Scope): Promise<OperationResult>;
 }

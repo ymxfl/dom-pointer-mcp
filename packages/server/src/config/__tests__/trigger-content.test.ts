@@ -11,7 +11,7 @@ import {
   COMMAND_BODY_CURSOR,
   SKILL_BODY_CURSOR,
   COMMAND_BODY_OPENCODE,
-  COMMAND_BODY_CODEX,
+  SKILL_BODY_CODEX,
 } from '../trigger-content';
 
 describe('trigger content sanity', () => {
@@ -114,9 +114,9 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY_OPENCODE).toContain('STOP HERE');
   });
 
-  it('COMMAND_BODY_CODEX uses request_user_input for GET mode confirmation', () => {
-    expect(COMMAND_BODY_CODEX).toContain('GET mode');
-    expect(COMMAND_BODY_CODEX).toContain('request_user_input');
-    expect(COMMAND_BODY_CODEX).toContain('STOP HERE');
+  it('SKILL_BODY_CODEX uses request_user_input for GET mode confirmation', () => {
+    expect(SKILL_BODY_CODEX).toContain('GET mode');
+    expect(SKILL_BODY_CODEX).toContain('request_user_input');
+    expect(SKILL_BODY_CODEX).toContain('STOP HERE');
   });
 });

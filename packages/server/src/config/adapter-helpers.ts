@@ -48,6 +48,16 @@ export async function deleteFileIfExists(filePath: string): Promise<'deleted' | 
   }
 }
 
+export async function deleteDirIfExists(dirPath: string): Promise<'deleted' | 'missing'> {
+  try {
+    await fs.rm(dirPath, { recursive: true, force: false });
+    return 'deleted';
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return 'missing';
+    throw e;
+  }
+}
+
 export function removeJsonKey(obj: Record<string, any>, keyPath: string[]): boolean {
   if (keyPath.length === 0) return false;
   let cursor: any = obj;

@@ -10,6 +10,7 @@ jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' })),
   unlink: jest.fn().mockResolvedValue(undefined),
+  rm: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockResolvedValue(undefined),
 }));
 
@@ -30,6 +31,8 @@ beforeEach(() => {
   mockedExecSync.mockReturnValue('');
   (fs.unlink as jest.Mock).mockReset();
   (fs.unlink as jest.Mock).mockResolvedValue(undefined);
+  (fs.rm as jest.Mock).mockReset();
+  (fs.rm as jest.Mock).mockResolvedValue(undefined);
   (fs.access as jest.Mock).mockReset();
   (fs.access as jest.Mock).mockResolvedValue(undefined);
 });
@@ -37,7 +40,7 @@ beforeEach(() => {
 describe('claudeAdapter', () => {
   describe('installCommand', () => {
     it('user scope writes ~/.claude/commands/pointed.md', async () => {
-      const result = await claudeAdapter.installCommand('user');
+      const result = await claudeAdapter.installCommand!('user');
       expect(result.status).toBe('success');
       const expectedPath = path.join(os.homedir(), '.claude', 'commands', 'pointed.md');
       expect(result.path).toBe(expectedPath);
@@ -47,7 +50,7 @@ describe('claudeAdapter', () => {
     });
 
     it('project scope writes <cwd>/.claude/commands/pointed.md', async () => {
-      const result = await claudeAdapter.installCommand('project');
+      const result = await claudeAdapter.installCommand!('project');
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.claude', 'commands', 'pointed.md'));
     });
@@ -121,7 +124,7 @@ describe('claudeAdapter uninstall', () => {
       mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
       (fs.unlink as jest.Mock).mockReset();
       (fs.unlink as jest.Mock).mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
-      const result = await claudeAdapter.uninstallCommand('user');
+      const result = await claudeAdapter.uninstallCommand!('user');
       expect(result.status).toBe('skipped');
     });
 
@@ -129,7 +132,7 @@ describe('claudeAdapter uninstall', () => {
       const unlinkMock = fs.unlink as jest.Mock;
       unlinkMock.mockReset();
       unlinkMock.mockResolvedValue(undefined);
-      const result = await claudeAdapter.uninstallCommand('user');
+      const result = await claudeAdapter.uninstallCommand!('user');
       expect(result.status).toBe('success');
       const expected = path.join(os.homedir(), '.claude', 'commands', 'pointed.md');
       expect(unlinkMock).toHaveBeenCalledWith(expected);
@@ -137,14 +140,14 @@ describe('claudeAdapter uninstall', () => {
   });
 
   describe('uninstallSkill', () => {
-    it('deletes ~/.claude/skills/pointed/SKILL.md when present', async () => {
-      const unlinkMock = fs.unlink as jest.Mock;
-      unlinkMock.mockReset();
-      unlinkMock.mockResolvedValue(undefined);
+    it('removes ~/.claude/skills/pointed directory when present', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockResolvedValue(undefined);
       const result = await claudeAdapter.uninstallSkill!('user');
       expect(result.status).toBe('success');
-      const expected = path.join(os.homedir(), '.claude', 'skills', 'pointed', 'SKILL.md');
-      expect(unlinkMock).toHaveBeenCalledWith(expected);
+      const expected = path.join(os.homedir(), '.claude', 'skills', 'pointed');
+      expect(rmMock).toHaveBeenCalledWith(expected, { recursive: true, force: false });
     });
   });
 

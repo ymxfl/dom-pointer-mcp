@@ -29,7 +29,7 @@ beforeEach(() => {
 describe('windsurfAdapter', () => {
   describe('installCommand', () => {
     it('user scope writes ~/.codeium/windsurf/workflows/pointed.md', async () => {
-      const result = await windsurfAdapter.installCommand('user');
+      const result = await windsurfAdapter.installCommand!('user');
       expect(result.status).toBe('success');
       expect(result.path).toBe(
         path.join(os.homedir(), '.codeium', 'windsurf', 'workflows', 'pointed.md'),
@@ -37,7 +37,7 @@ describe('windsurfAdapter', () => {
     });
 
     it('project scope writes <cwd>/.windsurf/workflows/pointed.md', async () => {
-      const result = await windsurfAdapter.installCommand('project');
+      const result = await windsurfAdapter.installCommand!('project');
       expect(result.status).toBe('success');
       expect(result.path).toBe(
         path.join(process.cwd(), '.windsurf', 'workflows', 'pointed.md'),
