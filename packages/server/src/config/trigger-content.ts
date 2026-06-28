@@ -196,4 +196,4 @@ export const COMMAND_BODY_OPENCODE = BODY_OPENCODE;
 
 // --- Codex specific (with request_user_input support) ---
 
-export const COMMAND_BODY_CODEX = BODY_CODEX;
+export const SKILL_BODY_CODEX = BODY_CODEX;

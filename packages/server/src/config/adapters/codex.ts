@@ -7,12 +7,12 @@ import {
   writeFileEnsuringDir,
   readTextOrEmpty,
   fileExists,
-  deleteFileIfExists,
+  deleteDirIfExists,
 } from '../adapter-helpers';
 import {
   TRIGGER_NAME,
-  COMMAND_DESCRIPTION,
-  COMMAND_BODY_CODEX,
+  SKILL_DESCRIPTION,
+  SKILL_BODY_CODEX,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -86,13 +86,13 @@ function stripPointerToml(existing: string): { changed: boolean; next: string } 
   return { changed, next: collapsed };
 }
 
-function buildPromptFile(): string {
+function buildSkillFile(): string {
   return `---
-description: ${JSON.stringify(COMMAND_DESCRIPTION)}
-argument-hint: command arguments
+name: ${TRIGGER_NAME}
+description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${COMMAND_BODY_CODEX}`;
+${SKILL_BODY_CODEX}`;
 }
 
 export const codexAdapter: ToolAdapter = {
@@ -117,20 +117,20 @@ export const codexAdapter: ToolAdapter = {
     }
   },
 
-  async installCommand(scope): Promise<OperationResult> {
-    // Codex prompts/ directory IS the slash command mechanism, user-only.
-    const filePath = path.join(os.homedir(), '.codex', 'prompts', `${TRIGGER_NAME}.md`);
+  async installSkill(scope): Promise<OperationResult> {
+    // Codex skills live under ~/.codex/skills, user-only.
+    const filePath = path.join(os.homedir(), '.codex', 'skills', TRIGGER_NAME, 'SKILL.md');
     const isDegraded = scope === 'project';
     const effectiveScope: Scope = 'user';
     try {
-      await writeFileEnsuringDir(filePath, buildPromptFile());
+      await writeFileEnsuringDir(filePath, buildSkillFile());
       return {
         status: isDegraded ? 'degraded' : 'success',
         scope: effectiveScope,
         path: filePath,
         message: isDegraded
-          ? 'Codex only supports user-level prompts; installed at user scope instead.'
-          : 'Slash command (prompt) installed',
+          ? 'Codex only supports user-level skills; installed at user scope instead.'
+          : 'Skill installed',
       };
     } catch (e) {
       return {
@@ -140,7 +140,7 @@ export const codexAdapter: ToolAdapter = {
       };
     }
   },
-  // No installSkill: Codex has no separate skill mechanism distinct from prompts.
+  // No installCommand: Codex no longer supports prompts-based slash commands.
 
   async unregisterMcp(scope): Promise<OperationResult> {
     const base = scope === 'user' ? os.homedir() : process.cwd();
@@ -170,27 +170,27 @@ export const codexAdapter: ToolAdapter = {
     }
   },
 
-  async uninstallCommand(scope): Promise<OperationResult> {
-    const filePath = path.join(os.homedir(), '.codex', 'prompts', `${TRIGGER_NAME}.md`);
+  async uninstallSkill(scope): Promise<OperationResult> {
+    const dirPath = path.join(os.homedir(), '.codex', 'skills', TRIGGER_NAME);
     const isDegraded = scope === 'project';
     const effectiveScope: Scope = 'user';
     try {
-      const r = await deleteFileIfExists(filePath);
+      const r = await deleteDirIfExists(dirPath);
       if (r === 'missing') {
         return {
           status: 'skipped',
           scope: effectiveScope,
-          path: filePath,
-          message: 'Prompt file not found',
+          path: dirPath,
+          message: 'Skill directory not found',
         };
       }
       return {
         status: isDegraded ? 'degraded' : 'success',
         scope: effectiveScope,
-        path: filePath,
+        path: dirPath,
         message: isDegraded
-          ? 'Codex prompts live at user scope; slash command (prompt) removed there.'
-          : 'Slash command (prompt) removed',
+          ? 'Codex skills live at user scope; skill removed there.'
+          : 'Skill removed',
       };
     } catch (e) {
       return {
@@ -200,5 +200,5 @@ export const codexAdapter: ToolAdapter = {
       };
     }
   },
-  // No uninstallSkill: codex has no separate skill mechanism.
+  // No uninstallCommand: Codex no longer supports prompts-based slash commands.
 };

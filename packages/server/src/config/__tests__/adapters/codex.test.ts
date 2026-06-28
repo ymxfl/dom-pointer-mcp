@@ -9,6 +9,7 @@ jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' })),
   unlink: jest.fn().mockResolvedValue(undefined),
+  rm: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockResolvedValue(undefined),
 }));
 
@@ -22,28 +23,34 @@ beforeEach(() => {
   mockedReadFile.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
   (fs.unlink as jest.Mock).mockReset();
   (fs.unlink as jest.Mock).mockResolvedValue(undefined);
+  (fs.rm as jest.Mock).mockReset();
+  (fs.rm as jest.Mock).mockResolvedValue(undefined);
   (fs.access as jest.Mock).mockReset();
   (fs.access as jest.Mock).mockResolvedValue(undefined);
 });
 
 describe('codexAdapter', () => {
-  describe('installCommand', () => {
-    it('user writes ~/.codex/prompts/pointed.md', async () => {
-      const result = await codexAdapter.installCommand('user');
+  describe('installSkill', () => {
+    it('user writes ~/.codex/skills/pointed/SKILL.md', async () => {
+      const result = await codexAdapter.installSkill!('user');
       expect(result.status).toBe('success');
-      expect(result.path).toBe(path.join(os.homedir(), '.codex', 'prompts', 'pointed.md'));
+      expect(result.path).toBe(
+        path.join(os.homedir(), '.codex', 'skills', 'pointed', 'SKILL.md'),
+      );
+      const content = mockedWriteFile.mock.calls[0][1] as string;
+      expect(content).toContain('name: pointed');
     });
 
     it('project degrades to user scope', async () => {
-      const result = await codexAdapter.installCommand('project');
+      const result = await codexAdapter.installSkill!('project');
       expect(result.status).toBe('degraded');
       expect(result.scope).toBe('user');
       expect(result.message).toMatch(/only supports user-level/i);
     });
   });
 
-  it('has no installSkill (codex prompts ARE the slash mechanism)', () => {
-    expect(codexAdapter.installSkill).toBeUndefined();
+  it('has no installCommand (Codex dropped prompts-based slash commands)', () => {
+    expect(codexAdapter.installCommand).toBeUndefined();
   });
 
   describe('registerMcp', () => {
@@ -73,46 +80,50 @@ describe('codexAdapter', () => {
 });
 
 describe('codexAdapter uninstall', () => {
-  describe('uninstallCommand', () => {
-    it('user scope deletes ~/.codex/prompts/pointed.md', async () => {
-      const unlinkMock = fs.unlink as jest.Mock;
-      unlinkMock.mockReset();
-      unlinkMock.mockResolvedValue(undefined);
-      const result = await codexAdapter.uninstallCommand('user');
+  describe('uninstallSkill', () => {
+    it('user scope removes ~/.codex/skills/pointed directory', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockResolvedValue(undefined);
+      const result = await codexAdapter.uninstallSkill!('user');
       expect(result.status).toBe('success');
       expect(result.scope).toBe('user');
-      const expected = path.join(os.homedir(), '.codex', 'prompts', 'pointed.md');
+      const expected = path.join(os.homedir(), '.codex', 'skills', 'pointed');
       expect(result.path).toBe(expected);
-      expect(unlinkMock).toHaveBeenCalledWith(expected);
+      expect(rmMock).toHaveBeenCalledWith(expected, { recursive: true, force: false });
     });
 
-    it('user scope returns skipped when file missing', async () => {
-      const unlinkMock = fs.unlink as jest.Mock;
-      unlinkMock.mockReset();
-      unlinkMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
-      const result = await codexAdapter.uninstallCommand('user');
+    it('user scope returns skipped when directory missing', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await codexAdapter.uninstallSkill!('user');
       expect(result.status).toBe('skipped');
     });
 
-    it('project scope still operates on user file, status degraded', async () => {
-      const unlinkMock = fs.unlink as jest.Mock;
-      unlinkMock.mockReset();
-      unlinkMock.mockResolvedValue(undefined);
-      const result = await codexAdapter.uninstallCommand('project');
+    it('project scope still operates on user directory, status degraded', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockResolvedValue(undefined);
+      const result = await codexAdapter.uninstallSkill!('project');
       expect(result.status).toBe('degraded');
       expect(result.scope).toBe('user');
-      const expected = path.join(os.homedir(), '.codex', 'prompts', 'pointed.md');
+      const expected = path.join(os.homedir(), '.codex', 'skills', 'pointed');
       expect(result.path).toBe(expected);
-      expect(unlinkMock).toHaveBeenCalledWith(expected);
+      expect(rmMock).toHaveBeenCalledWith(expected, { recursive: true, force: false });
     });
 
-    it('project scope returns skipped when file missing', async () => {
-      const unlinkMock = fs.unlink as jest.Mock;
-      unlinkMock.mockReset();
-      unlinkMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
-      const result = await codexAdapter.uninstallCommand('project');
+    it('project scope returns skipped when directory missing', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
+      const result = await codexAdapter.uninstallSkill!('project');
       expect(result.status).toBe('skipped');
     });
+  });
+
+  it('has no uninstallCommand', () => {
+    expect(codexAdapter.uninstallCommand).toBeUndefined();
   });
 
   describe('unregisterMcp', () => {

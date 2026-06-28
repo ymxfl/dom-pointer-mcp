@@ -211,7 +211,9 @@ export default class HistoryDrawerService {
 
       const note = document.createElement('div');
       note.className = 'dom-pointer-mcp__history-note';
-      note.textContent = summary.userNotePreview || t('history.noNote');
+      const noteText = summary.userNotePreview || t('history.noNote');
+      note.textContent = noteText;
+      note.title = noteText;
 
       const meta = document.createElement('div');
       meta.className = 'dom-pointer-mcp__history-meta';

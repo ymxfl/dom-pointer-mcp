@@ -52,7 +52,7 @@ export async function executeForAgents(
         results.push(sk);
       }
 
-      if (opts.withSlash) {
+      if (opts.withSlash && adapter.installCommand) {
         const cmd = await adapter.installCommand(opts.scope);
         printResult(adapter, 'Slash command', cmd);
         results.push(cmd);
@@ -68,9 +68,11 @@ export async function executeForAgents(
         results.push(sk);
       }
 
-      const cmd = await adapter.uninstallCommand(opts.scope);
-      printResult(adapter, 'Slash command', cmd);
-      results.push(cmd);
+      if (adapter.uninstallCommand) {
+        const cmd = await adapter.uninstallCommand(opts.scope);
+        printResult(adapter, 'Slash command', cmd);
+        results.push(cmd);
+      }
     }
   }, Promise.resolve());
 

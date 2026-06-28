@@ -29,13 +29,13 @@ beforeEach(() => {
 describe('cursorAdapter', () => {
   describe('installCommand', () => {
     it('user scope writes ~/.cursor/commands/pointed.md', async () => {
-      const result = await cursorAdapter.installCommand('user');
+      const result = await cursorAdapter.installCommand!('user');
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(os.homedir(), '.cursor', 'commands', 'pointed.md'));
     });
 
     it('project scope writes <cwd>/.cursor/commands/pointed.md', async () => {
-      const result = await cursorAdapter.installCommand('project');
+      const result = await cursorAdapter.installCommand!('project');
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.cursor', 'commands', 'pointed.md'));
     });

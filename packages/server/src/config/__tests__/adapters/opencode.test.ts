@@ -29,13 +29,13 @@ beforeEach(() => {
 describe('opencodeAdapter', () => {
   describe('installCommand', () => {
     it('user writes ~/.config/opencode/commands/pointed.md', async () => {
-      const result = await opencodeAdapter.installCommand('user');
+      const result = await opencodeAdapter.installCommand!('user');
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(os.homedir(), '.config', 'opencode', 'commands', 'pointed.md'));
     });
 
     it('project writes <cwd>/.opencode/commands/pointed.md', async () => {
-      const result = await opencodeAdapter.installCommand('project');
+      const result = await opencodeAdapter.installCommand!('project');
       expect(result.status).toBe('success');
       expect(result.path).toBe(path.join(process.cwd(), '.opencode', 'commands', 'pointed.md'));
     });
@@ -67,7 +67,7 @@ describe('opencodeAdapter uninstall', () => {
       const unlinkMock = fs.unlink as jest.Mock;
       unlinkMock.mockReset();
       unlinkMock.mockResolvedValue(undefined);
-      const result = await opencodeAdapter.uninstallCommand('user');
+      const result = await opencodeAdapter.uninstallCommand!('user');
       expect(result.status).toBe('success');
       const expected = path.join(os.homedir(), '.config', 'opencode', 'commands', 'pointed.md');
       expect(result.path).toBe(expected);
@@ -78,7 +78,7 @@ describe('opencodeAdapter uninstall', () => {
       const unlinkMock = fs.unlink as jest.Mock;
       unlinkMock.mockReset();
       unlinkMock.mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' }));
-      const result = await opencodeAdapter.uninstallCommand('user');
+      const result = await opencodeAdapter.uninstallCommand!('user');
       expect(result.status).toBe('skipped');
     });
 
@@ -86,7 +86,7 @@ describe('opencodeAdapter uninstall', () => {
       const unlinkMock = fs.unlink as jest.Mock;
       unlinkMock.mockReset();
       unlinkMock.mockResolvedValue(undefined);
-      const result = await opencodeAdapter.uninstallCommand('project');
+      const result = await opencodeAdapter.uninstallCommand!('project');
       expect(result.status).toBe('success');
       const expected = path.join(process.cwd(), '.opencode', 'commands', 'pointed.md');
       expect(result.path).toBe(expected);
