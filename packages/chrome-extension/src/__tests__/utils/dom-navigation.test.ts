@@ -7,6 +7,7 @@ import {
 
 // jsdom 不计算布局；用非零 rect 标记「可见」
 function makeVisible(el: HTMLElement): HTMLElement {
+  // eslint-disable-next-line no-param-reassign
   el.getBoundingClientRect = () => ({
     width: 10, height: 10, top: 0, left: 0, right: 10, bottom: 10, x: 0, y: 0, toJSON() {},
   } as DOMRect);
@@ -14,6 +15,7 @@ function makeVisible(el: HTMLElement): HTMLElement {
 }
 
 function makeHidden(el: HTMLElement): HTMLElement {
+  // eslint-disable-next-line no-param-reassign
   el.getBoundingClientRect = () => ({
     width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0, x: 0, y: 0, toJSON() {},
   } as DOMRect);

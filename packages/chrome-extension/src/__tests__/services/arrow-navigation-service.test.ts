@@ -1,5 +1,11 @@
 import ArrowNavigationService from '../../services/arrow-navigation-service';
 import SelectionStoreService from '../../services/selection-store-service';
+import {
+  getParent,
+  getFirstChild,
+  getPrevSibling,
+  getNextSibling,
+} from '../../utils/dom-navigation';
 
 jest.mock('../../utils/dom-navigation', () => ({
   getParent: jest.fn(),
@@ -7,13 +13,6 @@ jest.mock('../../utils/dom-navigation', () => ({
   getPrevSibling: jest.fn(),
   getNextSibling: jest.fn(),
 }));
-
-import {
-  getParent,
-  getFirstChild,
-  getPrevSibling,
-  getNextSibling,
-} from '../../utils/dom-navigation';
 
 function press(key: string): KeyboardEvent {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
