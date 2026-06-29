@@ -10,9 +10,10 @@ import TriggerMouseService from './trigger-mouse-service';
 import TriggerKeyService from './trigger-key-service';
 import OverlayManagerService from './overlay-manager-service';
 import SelectionStoreService from './selection-store-service';
+import ArrowNavigationService from './arrow-navigation-service';
 import NotePanelService from './note-panel-service';
 import ConfigStorageService from './config-storage-service';
-import { extractRawPointedDOMElement } from '../utils/element';
+import { extractRawPointedDOMElement, dedupeElements } from '../utils/element';
 
 const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
 const SCREENSHOT_PADDING = 12;
@@ -55,6 +56,8 @@ export default class ElementPointerService {
 
   private store: SelectionStoreService;
 
+  private arrowNavigationService: ArrowNavigationService;
+
   // eslint-disable-next-line no-unused-vars
   private notePanel: NotePanelService;
 
@@ -74,6 +77,7 @@ export default class ElementPointerService {
     });
     this.overlayManagerService = new OverlayManagerService();
     this.store = new SelectionStoreService();
+    this.arrowNavigationService = new ArrowNavigationService(this.store);
     this.notePanel = new NotePanelService(
       this.store,
       (els, note, includeScreenshot) => this.sendSelection(els, note, includeScreenshot),
@@ -123,6 +127,7 @@ export default class ElementPointerService {
 
   public enable(): void {
     this.triggerKeyService.registerListeners();
+    this.arrowNavigationService.registerListeners();
     logger.info('✅ Element pointer enabled');
   }
 
@@ -132,6 +137,7 @@ export default class ElementPointerService {
     this.store.clear();
     this.hoveredElement = null;
     this.triggerKeyService.unregisterListeners();
+    this.arrowNavigationService.unregisterListeners();
     logger.info('⏸️ Element pointer disabled');
   }
 
@@ -197,8 +203,9 @@ export default class ElementPointerService {
     note: string,
     includeScreenshot: boolean,
   ): Promise<RawPointedSelection> {
+    const uniqueElements = dedupeElements(elements);
     const rawElements = await Promise.all(
-      elements.map((el) => extractRawPointedDOMElement(el)),
+      uniqueElements.map((el) => extractRawPointedDOMElement(el)),
     );
     const screenshot = includeScreenshot
       ? await this.captureSelectionScreenshot(elements)

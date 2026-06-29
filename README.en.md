@@ -23,6 +23,7 @@ DOM Pointer MCP is a local tool combining a Chrome Extension and an MCP Server. 
 ## ✨ Features
 
 - 🎯 **`Option+Click` Selection** — Simply hold `Option` (Alt on Windows) and click any element
+- ⬆️ **Arrow-key Fine-tuning** — After selecting, move the selection box with arrow keys: `↑` parent, `↓` child, `←` `→` siblings — easily target elements packed too close to click
 - 🧺 **Multi-select Batches** — Stack multiple elements into one batch and send them with a shared note
 - 📝 **Floating Note Panel** — Type a free-form instruction next to your selection, then Send or Copy
 - 🤖 **Skill / Slash Command** — Type `/pointed` to trigger; the AI fetches your selection and acts on it
@@ -172,6 +173,8 @@ Advanced users can also ask the AI to call `get-pointed-element` directly (omit 
 4. Type a description of what you want changed (e.g. "make these buttons primary blue", "add a divider between [1] and [2]")
 5. **Send** (⌘/Ctrl+Enter) ships the selection + your note to the MCP server; **Copy** puts the same payload on your clipboard; **×** dismisses the panel
 6. Type `/pointed` in your AI tool — the AI receives `{ userNote, url, timestamp, elements: [...] }` and acts
+
+When an element is packed too close to its neighbors to click precisely, select any one of them and use the **arrow keys** to move the selection box onto your target — `↑` to the parent, `↓` to the first child, `←` `→` between siblings. Arrow keys only adjust the **last selected** element; other selections are untouched (and they are ignored while the cursor is in an input field).
 
 To cancel a selected element, Option+Click it again or click the × on its chip. The note panel stays visible until **all** selections are cancelled — your typed text is never lost from incidental clicks.
 

@@ -36,6 +36,17 @@ export default class SelectionStoreService {
     return this.elements[0];
   }
 
+  getLast(): HTMLElement | undefined {
+    return this.elements[this.elements.length - 1];
+  }
+
+  replace(oldEl: HTMLElement, newEl: HTMLElement): void {
+    const idx = this.elements.indexOf(oldEl);
+    if (idx < 0) return;
+    this.elements[idx] = newEl;
+    this.emit();
+  }
+
   size(): number {
     return this.elements.length;
   }
