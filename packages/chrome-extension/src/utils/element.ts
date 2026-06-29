@@ -85,3 +85,7 @@ export async function extractRawPointedDOMElement(
 
   return raw;
 }
+
+export function dedupeElements(elements: HTMLElement[]): HTMLElement[] {
+  return [...new Set(elements)];
+}

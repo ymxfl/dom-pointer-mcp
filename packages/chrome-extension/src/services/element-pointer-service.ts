@@ -13,7 +13,7 @@ import SelectionStoreService from './selection-store-service';
 import ArrowNavigationService from './arrow-navigation-service';
 import NotePanelService from './note-panel-service';
 import ConfigStorageService from './config-storage-service';
-import { extractRawPointedDOMElement } from '../utils/element';
+import { extractRawPointedDOMElement, dedupeElements } from '../utils/element';
 
 const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
 const SCREENSHOT_PADDING = 12;
@@ -203,8 +203,9 @@ export default class ElementPointerService {
     note: string,
     includeScreenshot: boolean,
   ): Promise<RawPointedSelection> {
+    const uniqueElements = dedupeElements(elements);
     const rawElements = await Promise.all(
-      elements.map((el) => extractRawPointedDOMElement(el)),
+      uniqueElements.map((el) => extractRawPointedDOMElement(el)),
     );
     const screenshot = includeScreenshot
       ? await this.captureSelectionScreenshot(elements)
