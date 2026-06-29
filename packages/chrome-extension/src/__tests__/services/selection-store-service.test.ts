@@ -61,4 +61,45 @@ describe('SelectionStoreService', () => {
 
     expect(listener).not.toHaveBeenCalled();
   });
+
+  it('getLast returns the last element or undefined when empty', () => {
+    const store = new SelectionStoreService();
+    expect(store.getLast()).toBeUndefined();
+
+    const a = document.createElement('div');
+    const b = document.createElement('span');
+    store.toggle(a);
+    store.toggle(b);
+
+    expect(store.getLast()).toBe(b);
+  });
+
+  it('replace swaps element in place keeping index and notifies', () => {
+    const store = new SelectionStoreService();
+    const a = document.createElement('div');
+    const b = document.createElement('span');
+    const c = document.createElement('p');
+    store.toggle(a);
+    store.toggle(b);
+    const listener = jest.fn();
+    store.subscribe(listener);
+
+    store.replace(a, c);
+
+    expect(store.getAll()).toEqual([c, b]);
+    expect(listener).toHaveBeenCalledWith([c, b]);
+  });
+
+  it('replace is a noop when oldEl is not present (no notification)', () => {
+    const store = new SelectionStoreService();
+    const a = document.createElement('div');
+    store.toggle(a);
+    const listener = jest.fn();
+    store.subscribe(listener);
+
+    store.replace(document.createElement('div'), document.createElement('div'));
+
+    expect(listener).not.toHaveBeenCalled();
+    expect(store.getAll()).toEqual([a]);
+  });
 });
