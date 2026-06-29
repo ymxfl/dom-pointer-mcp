@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.6.0
+
+### Minor Changes
+
+- 5f1fff2: 新增方向键导航选择框功能：选中元素后可使用方向键在相邻 DOM 节点间移动选区，发送/复制选区时按引用去重合并。
+
 ## 1.5.3
 
 ### Patch Changes
