@@ -86,7 +86,7 @@ async function startServices(): Promise<void> {
   }
 }
 
-async function start(options: { port: string }) {
+async function start(options: { port: number }) {
   // Initialize services
   initializeServices(options.port);
 

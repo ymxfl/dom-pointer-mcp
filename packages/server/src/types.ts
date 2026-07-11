@@ -41,7 +41,7 @@ export interface SerializedDOMElement {
   position: ElementPosition;
   url: string;
   timestamp: string;
-  innerText: string;
+  innerText?: string;
   textContent?: string;
   cssProperties?: CSSProperties;
   componentInfo?: ComponentInfo;

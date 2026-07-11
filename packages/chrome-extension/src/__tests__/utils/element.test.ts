@@ -1,4 +1,4 @@
-import { dedupeElements } from '../../utils/element';
+import { dedupeElements, getTextSnapshots } from '../../utils/element';
 
 describe('dedupeElements', () => {
   it('returns same list when no duplicates', () => {
@@ -24,5 +24,18 @@ describe('dedupeElements', () => {
 
   it('handles empty list', () => {
     expect(dedupeElements([])).toEqual([]);
+  });
+});
+
+describe('getTextSnapshots', () => {
+  it('keeps browser-visible text separate from full text content', () => {
+    const element = document.createElement('div');
+    element.innerText = 'Visible text';
+    element.textContent = 'Visible textHidden text';
+
+    expect(getTextSnapshots(element)).toEqual({
+      visible: 'Visible text',
+      full: 'Visible textHidden text',
+    });
   });
 });

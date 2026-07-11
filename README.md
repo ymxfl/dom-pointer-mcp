@@ -26,6 +26,9 @@ DOM Pointer MCP 是一个本地工具，由 Chrome 扩展 + MCP Server 组成。
 - ⬆️ **方向键微调选区** —— 选中后用方向键移动选择框：`↑` 父级、`↓` 子级、`←` `→` 同级，轻松选中靠得很近、不好点中的元素
 - 🧺 **多选 Batch** —— 多个元素叠加成一个 batch，配一段共享的 note 一起发送
 - 📝 **浮动 Note Panel** —— 在选中区域旁边写自由文本说明，可 Send 或 Copy
+- 📷 **按需截图** —— 单次发送可附带选区截图，现有选区工具会同时返回本地路径和 MCP 图像内容
+- 🕘 **选择历史** —— 保留最近 20 次选择，支持列表、回显、按 ID 获取和清理
+- 🖼️ **iframe 支持** —— 可以在 iframe 页面内选择和提取元素
 - 🤖 **Skill / Slash command** —— 输入 `/pointed` 即可触发，AI 自动获取选区并执行
 - 📋 **完整元素数据** —— 文本内容、CSS 类、HTML 属性、定位、样式等
 - 💡 **按需控制上下文体量** —— 每次调用可选只要可见文本、不要文本、CSS 详略 0–3
@@ -58,7 +61,7 @@ https://github.com/user-attachments/assets/26816d01-0e15-4a31-86ff-c41519b98e63
 5. 工具栏出现 DOM Pointer MCP 图标
 6. **刷新已打开的网页** 让扩展生效
 
-> **⚠️ 版本兼容：** Chrome 扩展和 MCP server 同步发版。升级时请把两边都升到同一个版本，避免协议格式不一致。
+> **⚠️ 版本兼容：** Chrome 扩展和 MCP server 独立发版，版本号不需要完全相同。建议两边都使用最新版本；涉及通信协议变化时，Release Notes 会注明最低兼容版本。
 
 <details>
 <summary>从源码构建</summary>
@@ -170,11 +173,16 @@ AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag 
 - `textDetail`：`0`（不含文本）| `1`（仅可见文本）| `2`（可见 + 隐藏，默认）
 - `cssLevel`：`0`（无 CSS）| `1`（布局，默认）| `2`（+ 盒模型）| `3`（完整 computed style）
 
+历史相关工具：
+- `list-pointed-selections`：列出最近选择
+- `get-pointed-selection`：按 `selectionId` 获取历史选择
+- `clear-pointed-selections`：清理一条或全部历史
+
 ## 🎯 工作流程
 
 1. **按住 Option (Alt) 点击** 页面元素 —— 元素被选中并高亮（触发键可在插件设置中自定义）
 2. *（可选）* 继续按住 Option 点更多元素 —— 多选叠加成一个 batch
-3. 第一个选中的元素旁会出现 **浮动 note panel**，里面有 textarea 和三个按钮
+3. 第一个选中的元素旁会出现 **浮动 note panel**，可以填写 note、选择是否附带截图，并执行 Send / Copy / Close
 4. 写下你想要的改动（例如 "把这些按钮改成蓝色"、"在 [1] 和 [2] 之间加分割线"）
 5. **Send**（`⌘/Ctrl+Enter`）把选区 + note 发到 MCP server；**Copy** 把同样的内容拷到剪贴板；**×** 关闭面板
 6. 在 AI 工具中输入 `/pointed`，AI 拿到 `{ userNote, url, timestamp, elements: [...] }` 并执行
@@ -240,8 +248,7 @@ AI 会返回选区的结构化摘要（URL、元素数量、每个元素的 tag 
 
 ### 1. **Visual Content Support**（面向多模态 LLM）
    - 图片（img tag）转 base64
-   - 选中元素截图
-   - 提供独立的视觉内容 MCP 工具
+   - 截图压缩和尺寸上限配置
 
 ### 2. **更好的框架支持**
    - React 19+ 支持（React 19 移除了 `_debugSource`，当前仅支持 React 18 及以下）

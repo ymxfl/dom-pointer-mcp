@@ -187,8 +187,7 @@ Your AI tool will automatically start the MCP server when needed using the `npx 
 
 ### 2. **Visual Content Support** (for multimodal LLMs)
    - Base64 encoding for images (img tags)
-   - Screenshot capture of selected elements
-   - Separate MCP tool for direct visual content retrieval
+   - Existing selection tools attach saved screenshots as MCP image content
 
 ### 3. **Enhanced Framework Support**
    - Vue.js component detection

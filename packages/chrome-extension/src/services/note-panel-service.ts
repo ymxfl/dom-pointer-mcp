@@ -78,6 +78,15 @@ export default class NotePanelService {
     this.updateScreenshotButton();
   }
 
+  public getCenterPosition(): { x: number; y: number } | undefined {
+    if (!this.root) return undefined;
+    const rect = this.root.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+  }
+
   private handleSelectionChange(elements: HTMLElement[]): void {
     // Self-heal: page JS may have removed our panel
     if (this.root && !document.body.contains(this.root)) {

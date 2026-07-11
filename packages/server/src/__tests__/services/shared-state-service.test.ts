@@ -10,6 +10,8 @@ jest.mock('../../logger', () => ({
 }));
 
 describe('SharedStateService', () => {
+  const originalDefaultPath = SharedStateService.DEFAULT_SHARED_STATE_PATH;
+  const originalStatePath = SharedStateService.SHARED_STATE_PATH;
   let service: SharedStateService;
   let testPath: string;
 
@@ -25,6 +27,17 @@ describe('SharedStateService', () => {
     } catch {
       // ignore
     }
+  });
+
+  afterAll(() => {
+    SharedStateService.DEFAULT_SHARED_STATE_PATH = originalDefaultPath;
+    SharedStateService.SHARED_STATE_PATH = originalStatePath;
+  });
+
+  it('uses the platform temp directory for the default state path', () => {
+    expect(SharedStateService.DEFAULT_SHARED_STATE_PATH).toBe(
+      path.join(os.tmpdir(), 'dom-pointer-mcp', 'shared-state.json'),
+    );
   });
 
   describe('saveState', () => {

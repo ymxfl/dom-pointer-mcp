@@ -10,6 +10,7 @@ import {
 import { selectAction } from './config/prompts';
 import { setLang } from './config/i18n';
 import type { Scope, LaunchMode } from './config/types';
+import parsePort from './utils/port';
 
 // ============================================================
 // Public runtime exports (used by start.ts and friends)
@@ -59,7 +60,14 @@ export default async function configCommand(
     setLang(opts.lang);
   }
 
-  const port = parseInt(getPort(), 10);
+  let port: number;
+  try {
+    port = parsePort(getPort());
+  } catch (e) {
+    logger.error(`❌ ${(e as Error).message}`);
+    process.exit(1);
+    return;
+  }
   const launchMode: LaunchMode = opts.global ? 'global' : 'npx';
 
   // Interactive flows (no positional tool)

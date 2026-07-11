@@ -26,6 +26,9 @@ DOM Pointer MCP is a local tool combining a Chrome Extension and an MCP Server. 
 - ⬆️ **Arrow-key Fine-tuning** — After selecting, move the selection box with arrow keys: `↑` parent, `↓` child, `←` `→` siblings — easily target elements packed too close to click
 - 🧺 **Multi-select Batches** — Stack multiple elements into one batch and send them with a shared note
 - 📝 **Floating Note Panel** — Type a free-form instruction next to your selection, then Send or Copy
+- 📷 **Optional Screenshots** — Attach a cropped screenshot; existing selection tools return both its local path and MCP image content
+- 🕘 **Selection History** — Keep the latest 20 selections and list, restore, retrieve, or clear them by ID
+- 🖼️ **iframe Support** — Point to and extract elements inside iframe documents
 - 🤖 **Skill / Slash Command** — Type `/pointed` to trigger; the AI fetches your selection and acts on it
 - 📋 **Complete Element Data** — Text content, CSS classes, HTML attributes, positioning, and styling
 - 💡 **Dynamic Context Control** — Request visible-only text, suppress text entirely, or dial CSS detail from none → full computed styles per call
@@ -53,7 +56,7 @@ Download and install from the latest GitHub Release:
 5. The DOM Pointer MCP extension should appear in your extensions list
 6. **Reload web pages** to activate the extension
 
-> **⚠️ Version Compatibility:** The Chrome extension and the MCP server are released in lockstep. When upgrading, please update both to the same version to avoid wire-format mismatches.
+> **⚠️ Version Compatibility:** The Chrome extension and MCP server are versioned independently and do not need identical version numbers. Keep both reasonably current; release notes will call out minimum compatible versions when the wire protocol changes.
 
 <details>
 <summary>Build from source instead</summary>
@@ -165,11 +168,16 @@ Advanced users can also ask the AI to call `get-pointed-element` directly (omit 
 - `textDetail`: `0` (no text) | `1` (visible text only) | `2` (visible + hidden, default)
 - `cssLevel`: `0` (no CSS) | `1` (layout, default) | `2` (+ box model) | `3` (full computed style)
 
+History tools:
+- `list-pointed-selections`: list recent selections
+- `get-pointed-selection`: retrieve one by `selectionId`
+- `clear-pointed-selections`: clear one selection or all history
+
 ## 🎯 How It Works
 
 1. **Hold Option (Alt) and click** any element on the page — it becomes selected (highlighted)
 2. *(Optional)* Hold Option and click more elements — multi-select adds them to a batch
-3. A floating **note panel** appears next to the first selected element with a textarea and three buttons
+3. A floating **note panel** appears next to the first selected element for notes, optional screenshots, Send, Copy, and Close
 4. Type a description of what you want changed (e.g. "make these buttons primary blue", "add a divider between [1] and [2]")
 5. **Send** (⌘/Ctrl+Enter) ships the selection + your note to the MCP server; **Copy** puts the same payload on your clipboard; **×** dismisses the panel
 6. Type `/pointed` in your AI tool — the AI receives `{ userNote, url, timestamp, elements: [...] }` and acts
@@ -235,8 +243,7 @@ Component extraction runs in the page's MAIN world (so it can read React Fiber /
 
 ### 1. **Visual Content Support** (for multimodal LLMs)
    - Base64 encoding for images (img tags)
-   - Screenshot capture of selected elements
-   - Separate MCP tool for direct visual content retrieval
+   - Configurable screenshot compression and size limits
 
 ### 2. **Enhanced Framework Support**
    - React 19+ support (React 19 removed `_debugSource`; currently only React 18 and below are supported)

@@ -17,9 +17,9 @@ export default class ScreenshotStorageService {
     if (!screenshot?.dataUrl) return undefined;
 
     const buffer = this.decodeDataUrl(screenshot.dataUrl);
-    await fs.mkdir(ScreenshotStorageService.SCREENSHOT_DIR, { recursive: true });
+    await fs.mkdir(ScreenshotStorageService.SCREENSHOT_DIR, { recursive: true, mode: 0o700 });
     const filePath = path.join(ScreenshotStorageService.SCREENSHOT_DIR, `${selectionId}.png`);
-    await fs.writeFile(filePath, buffer);
+    await fs.writeFile(filePath, buffer, { mode: 0o600 });
 
     return {
       path: filePath,

@@ -1,4 +1,9 @@
-const TOAST_DURATION_MS = 5000;
+const TOAST_DURATION_MS = 1000;
+
+export interface ToastPosition {
+  x: number;
+  y: number;
+}
 
 export default class ToastService {
   private container: HTMLElement | null = null;
@@ -7,7 +12,14 @@ export default class ToastService {
 
   private shown = false;
 
-  show(message: string, actionLabel?: string, onAction?: () => void): void {
+  private dismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+  show(
+    message: string,
+    position?: ToastPosition,
+    actionLabel?: string,
+    onAction?: () => void,
+  ): void {
     if (this.shown) return;
     this.shown = true;
 
@@ -19,8 +31,8 @@ export default class ToastService {
     style.textContent = `
       .toast {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        top: 50%;
+        left: 50%;
         z-index: 2147483647;
         background: #1a1a2e;
         color: #eee;
@@ -30,14 +42,15 @@ export default class ToastService {
         font-size: 13px;
         line-height: 1.4;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        max-width: 340px;
+        width: max-content;
+        max-width: min(340px, calc(100vw - 24px));
         opacity: 0;
-        transform: translateY(10px);
+        transform: translate(-50%, calc(-50% + 10px));
         transition: opacity 0.3s, transform 0.3s;
       }
       .toast.visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate(-50%, -50%);
       }
       .toast-action {
         color: #64b5f6;
@@ -56,6 +69,10 @@ export default class ToastService {
 
     const toast = document.createElement('div');
     toast.className = 'toast';
+    if (position) {
+      toast.style.left = `${position.x}px`;
+      toast.style.top = `${position.y}px`;
+    }
 
     const text = document.createElement('span');
     text.textContent = message;
@@ -80,14 +97,19 @@ export default class ToastService {
       toast.classList.add('visible');
     });
 
-    setTimeout(() => this.dismiss(), TOAST_DURATION_MS);
+    this.dismissTimer = setTimeout(() => this.dismiss(), TOAST_DURATION_MS);
   }
 
   private dismiss(): void {
+    if (this.dismissTimer) {
+      clearTimeout(this.dismissTimer);
+      this.dismissTimer = null;
+    }
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
     }
     this.container = null;
     this.shadow = null;
+    this.shown = false;
   }
 }

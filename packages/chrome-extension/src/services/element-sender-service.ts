@@ -7,6 +7,7 @@ import {
   PointerHistoryListResponse,
   PointerHistoryGetResponse,
   PointerHistoryClearResponse,
+  PointerSelectionAck,
 } from '@dom-pointer-mcp/shared/types';
 import logger from '../utils/logger';
 
@@ -15,6 +16,12 @@ function sleep(ms: number): Promise<void> {
 }
 
 export type StatusCallback = (status: ConnectionStatus, error?: string) => void;
+
+interface RequestOptions {
+  requestId?: string;
+  statusCallback?: StatusCallback;
+  timeoutMessage?: string;
+}
 
 export class ElementSenderService {
   private ws: ReconnectingWebSocket | null = null;
@@ -39,16 +46,16 @@ export class ElementSenderService {
 
   private readonly SEND_RETRY_INTERVAL = 1000; // 1s between attempts
 
-  private readonly SEND_VERIFY_WINDOW = 300; // 300ms post-send watch for close/error
-
   private readonly REQUEST_TIMEOUT = 5000;
 
   async sendSelection(
     selection: RawPointedSelection,
     port: number,
     statusCallback?: StatusCallback,
-  ): Promise<void> {
+  ): Promise<PointerSelectionAck> {
     this.clearIdleTimer();
+    const requestId = this.createRequestId();
+    let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < this.SEND_RETRY_MAX_ATTEMPTS; attempt += 1) {
       if (attempt > 0) {
@@ -57,19 +64,36 @@ export class ElementSenderService {
         await sleep(this.SEND_RETRY_INTERVAL);
       }
 
-      const ok = await this.attemptSend(selection, port, statusCallback);
-      if (ok) {
+      try {
+        const ack = await this.sendRequest<PointerSelectionAck>(
+          PointerMessageType.SELECTION_SENT,
+          PointerMessageType.SELECTION_ACK,
+          selection,
+          port,
+          {
+            requestId,
+            statusCallback,
+            timeoutMessage: 'Selection acknowledgment timeout',
+          },
+        );
+        if (!ack.success || !ack.selectionId) {
+          throw new Error(ack.error ?? 'Server failed to persist selection');
+        }
         statusCallback?.(ConnectionStatus.SENT);
-        this.startIdleTimer();
-        return;
+        return ack;
+      } catch (error) {
+        lastError = error as Error;
+        logger.warn(`Selection send attempt ${attempt + 1} failed:`, lastError);
       }
     }
 
+    const error = new Error(`Failed to send after ${this.SEND_RETRY_MAX_ATTEMPTS} attempts: ${lastError?.message ?? 'unknown error'}`);
     statusCallback?.(
       ConnectionStatus.ERROR,
-      `Failed to send after ${this.SEND_RETRY_MAX_ATTEMPTS} attempts`,
+      error.message,
     );
     this.disconnect();
+    throw error;
   }
 
   async listHistory(port: number): Promise<PointerHistoryListResponse> {
@@ -110,14 +134,16 @@ export class ElementSenderService {
     responseType: PointerMessageType,
     data: Record<string, any>,
     port: number,
+    options: RequestOptions = {},
   ): Promise<T> {
     this.clearIdleTimer();
-    const connected = await this.ensureConnection(port);
+    const connected = await this.ensureConnection(port, options.statusCallback);
     if (!connected) {
       throw new Error('Connection timeout');
     }
 
-    const requestId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    const requestId = options.requestId ?? this.createRequestId();
+    options.statusCallback?.(ConnectionStatus.SENDING);
     try {
       return await new Promise<T>((resolve, reject) => {
         if (!this.ws) {
@@ -174,7 +200,7 @@ export class ElementSenderService {
           ws.removeEventListener('message', onMessage);
           ws.removeEventListener('close', onClose);
           ws.removeEventListener('error', onError);
-          reject(new Error('History request timeout'));
+          reject(new Error(options.timeoutMessage ?? 'History request timeout'));
         }, this.REQUEST_TIMEOUT);
 
         const message: PointerMessage = {
@@ -182,7 +208,15 @@ export class ElementSenderService {
           data: { ...data, requestId },
           timestamp: Date.now(),
         };
-        ws.send(JSON.stringify(message));
+        try {
+          ws.send(JSON.stringify(message));
+        } catch (error) {
+          if (timer) clearTimeout(timer);
+          ws.removeEventListener('message', onMessage);
+          ws.removeEventListener('close', onClose);
+          ws.removeEventListener('error', onError);
+          reject(error);
+        }
       });
     } finally {
       if (this.isConnected) {
@@ -193,59 +227,9 @@ export class ElementSenderService {
     }
   }
 
-  private async attemptSend(
-    selection: RawPointedSelection,
-    port: number,
-    statusCallback?: StatusCallback,
-  ): Promise<boolean> {
-    const connected = await this.ensureConnection(port, statusCallback);
-    if (!connected) return false;
-
-    statusCallback?.(ConnectionStatus.SENDING);
-
-    const message: PointerMessage = {
-      type: PointerMessageType.SELECTION_SENT,
-      data: selection,
-      timestamp: Date.now(),
-    };
-
-    try {
-      this.ws!.send(JSON.stringify(message));
-    } catch (error) {
-      logger.error('Synchronous send failure:', error);
-      return false;
-    }
-
-    logger.info('📤 Selection sent:', selection);
-
-    return this.verifyDelivery();
-  }
-
-  private verifyDelivery(): Promise<boolean> {
-    return new Promise((resolve) => {
-      const { ws } = this;
-      if (!ws) {
-        resolve(false);
-        return;
-      }
-      let settled = false;
-      let timer: ReturnType<typeof setTimeout>;
-      const settle = (ok: boolean) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        ws.removeEventListener('close', onClose);
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        ws.removeEventListener('error', onError);
-        resolve(ok);
-      };
-      const onClose = () => settle(false);
-      const onError = () => settle(false);
-      ws.addEventListener('close', onClose);
-      ws.addEventListener('error', onError);
-      timer = setTimeout(() => settle(true), this.SEND_VERIFY_WINDOW);
-    });
+  private createRequestId(): string {
+    return globalThis.crypto?.randomUUID?.()
+      ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
   }
 
   private handlePortChange(port: number, statusCallback?: StatusCallback): boolean {

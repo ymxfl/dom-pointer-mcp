@@ -1,9 +1,14 @@
-import { RawPointedSelection, ComponentInfo } from '@dom-pointer-mcp/shared/types';
+import {
+  RawPointedSelection,
+  ComponentInfo,
+  TextSnapshots,
+} from '@dom-pointer-mcp/shared/types';
 import ElementProcessor from '../../services/element-processor';
 
 function singleElementRaw(overrides: Partial<{
   outerHTML: string;
   componentInfo?: ComponentInfo;
+  textSnapshots?: TextSnapshots;
 }> = {}) {
   return {
     outerHTML: '<div class="x" id="y">hi</div>',
@@ -44,6 +49,19 @@ describe('ElementProcessor.processBatchFromRaw', () => {
   it('passes through empty userNote', () => {
     const result = processor.processBatchFromRaw(makeBatch(1, ''));
     expect(result.userNote).toBe('');
+  });
+
+  it('preserves separate visible and full browser text snapshots', () => {
+    const batch = makeBatch(1);
+    batch.elements[0].textSnapshots = {
+      visible: 'Visible text',
+      full: 'Visible textHidden text',
+    };
+
+    const result = processor.processBatchFromRaw(batch);
+
+    expect(result.elements[0].innerText).toBe('Visible text');
+    expect(result.elements[0].textContent).toBe('Visible textHidden text');
   });
 
   it('isolates parse failure to the affected element', () => {

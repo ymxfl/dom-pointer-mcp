@@ -14,6 +14,7 @@ import ArrowNavigationService from './arrow-navigation-service';
 import NotePanelService from './note-panel-service';
 import ConfigStorageService from './config-storage-service';
 import { extractRawPointedDOMElement, dedupeElements } from '../utils/element';
+import { withExtensionUiHidden } from '../utils/screenshot';
 
 const POINTING_CLASS = 'dom-pointer-mcp--is-pointing';
 const SCREENSHOT_PADDING = 12;
@@ -65,7 +66,11 @@ export default class ElementPointerService {
 
   private hoveredElement: HTMLElement | null = null;
 
-  constructor(modifierKey: ModifierKey, captureScreenshotDefault: boolean) {
+  constructor(
+    modifierKey: ModifierKey,
+    captureScreenshotDefault: boolean,
+    private onSendSuccess: (position?: { x: number; y: number }) => void = () => {},
+  ) {
     this.triggerKeyService = new TriggerKeyService({
       onTriggerKeyStart: this.startPointing.bind(this),
       onTriggerKeyEnd: this.stopPointing.bind(this),
@@ -172,11 +177,15 @@ export default class ElementPointerService {
       try {
         chrome.runtime.sendMessage(
           { type: 'SELECTION_SENT', data: payload },
-          (response: any) => {
+          (response: { success?: boolean; error?: string } | undefined) => {
             if (chrome.runtime?.lastError) {
               const msg = chrome.runtime.lastError.message || 'unknown error';
               logger.error('❌ Error sending selection:', msg);
               reject(translateRuntimeError(msg));
+            } else if (!response?.success) {
+              const msg = response?.error || 'unknown error';
+              logger.error('❌ Server rejected selection:', msg);
+              reject(new Error(msg));
             } else {
               logger.debug('✅ Selection sent successfully:', response);
               resolve();
@@ -187,6 +196,8 @@ export default class ElementPointerService {
         reject(translateRuntimeError((err as Error).message));
       }
     });
+
+    this.onSendSuccess(this.notePanel.getCenterPosition());
 
     try {
       const config = await ConfigStorageService.load();
@@ -226,7 +237,9 @@ export default class ElementPointerService {
     if (!bounds) return undefined;
 
     try {
-      const response = await this.requestVisibleTabScreenshot();
+      const response = await withExtensionUiHidden(
+        () => this.requestVisibleTabScreenshot(),
+      );
       if (!response.success || !response.dataUrl) {
         logger.warn('Unable to capture screenshot:', response.error);
         return undefined;

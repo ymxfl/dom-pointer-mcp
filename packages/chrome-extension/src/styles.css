@@ -769,3 +769,9 @@
 .dom-pointer-mcp__overlay--flashing {
   animation: dom-pointer-mcp__overlay-flash 0.4s ease-in-out;
 }
+.dom-pointer-mcp--capturing-screenshot .dom-pointer-mcp__overlay,
+.dom-pointer-mcp--capturing-screenshot .dom-pointer-mcp__note-panel,
+.dom-pointer-mcp--capturing-screenshot .dom-pointer-mcp__history-drawer,
+.dom-pointer-mcp--capturing-screenshot #dom-pointer-mcp-toast-root {
+  visibility: hidden !important;
+}

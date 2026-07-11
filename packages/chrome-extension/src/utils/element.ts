@@ -1,4 +1,4 @@
-import { RawPointedDOMElement } from '@dom-pointer-mcp/shared/types';
+import { RawPointedDOMElement, TextSnapshots } from '@dom-pointer-mcp/shared/types';
 import { requestComponentInfo } from '../isolated-world/request-component-info';
 
 function escapeIdentifier(value: string): string {
@@ -68,6 +68,14 @@ export function getAllComputedStyles(element: HTMLElement): Record<string, strin
   return styles;
 }
 
+export function getTextSnapshots(element: HTMLElement): TextSnapshots {
+  const full = element.textContent ?? '';
+  return {
+    visible: typeof element.innerText === 'string' ? element.innerText : full,
+    full,
+  };
+}
+
 export async function extractRawPointedDOMElement(
   element: HTMLElement,
 ): Promise<RawPointedDOMElement> {
@@ -77,6 +85,7 @@ export async function extractRawPointedDOMElement(
     timestamp: Date.now(),
     selector: buildElementSelector(element),
     boundingClientRect: element.getBoundingClientRect(),
+    textSnapshots: getTextSnapshots(element),
     computedStyles: getAllComputedStyles(element),
   };
 
