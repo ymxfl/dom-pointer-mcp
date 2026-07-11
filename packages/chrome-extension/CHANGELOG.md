@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/chrome-extension
 
+## 1.6.1
+
+### Patch Changes
+
+- b93cd07: Wait for a server persistence ACK before reporting a selection as sent, show a success toast after confirmation, hide extension UI while capturing screenshots, attach saved screenshots as MCP image content, preserve visible/full text separately, filter kebab-case CSS correctly, move shared state to the platform temp directory, and report the real CLI/MCP server version with strict port validation.
+
 ## 1.6.0
 
 ### Minor Changes
