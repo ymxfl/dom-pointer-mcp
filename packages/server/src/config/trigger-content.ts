@@ -43,6 +43,15 @@ If the first arg is \`clear\`:
 2. If a selectionId follows \`clear\`, pass it as \`selectionId\`; otherwise clear all.
 3. Report only the removed count.`;
 
+const UPDATE_MODE = `### UPDATE mode
+
+If the first arg is \`update\`:
+1. Call \`check-update\` IMMEDIATELY.
+2. If the second arg is \`apply\`, pass \`{ action: "apply" }\`; otherwise pass \`{ action: "check" }\` (or omit action).
+3. Report currentVersion, latestVersion, updateAvailable, launchHint, applied, and message.
+4. Do not modify project source files. For npx launches, tell the user to restart MCP to pick up @latest.
+5. Extension updates are handled in the Chrome extension popup (CWS or GitHub), not by this tool.`;
+
 // --- GET mode fragments (platform-specific) ---
 
 const GET_MODE_GENERIC = `### GET mode (read-only preview)
@@ -120,6 +129,7 @@ ${FAST_PATH_RULE}
 **If the first arg is "history" or "list"** → you are in **HISTORY mode (read-only list)**.
 **If the first arg is "use" plus a selectionId** → you are in **HISTORY EXECUTE mode**.
 **If the first arg is "clear"** → you are in **CLEAR mode**.
+**If the first arg is "update"** → you are in **UPDATE mode**.
 **Otherwise** → you are in **EXECUTE mode**.
 
 Remember which mode you are in. This decision is FINAL and cannot change after the tool call.
@@ -129,6 +139,7 @@ Remember which mode you are in. This decision is FINAL and cannot change after t
 - EXECUTE mode: call \`get-pointed-element\` IMMEDIATELY with no questions.
 - GET mode: call \`get-pointed-element\` IMMEDIATELY with no questions.
 - HISTORY mode: follow the HISTORY mode tool call rules below.
+- UPDATE mode: follow the UPDATE mode tool call rules below.
 
 Parse optional trailing integers as textDetail/cssLevel; if absent, pass NO arguments.
 
@@ -137,6 +148,8 @@ Parse optional trailing integers as textDetail/cssLevel; if absent, pass NO argu
 ---
 
 ${HISTORY_MODE}
+
+${UPDATE_MODE}
 
 ${getMode}
 

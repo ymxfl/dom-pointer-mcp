@@ -3,6 +3,7 @@ import { getModifierLabel } from '../utils/platform';
 import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
 import { checkReachability, ReachabilityState } from './server-reachability-service';
+import { checkExtensionUpdate, UpdateCheckResult } from './update-check-service';
 import { t, setLocale } from '../i18n';
 
 const ALL_MODIFIER_KEYS: ModifierKey[] = ['Alt', 'Ctrl', 'Meta'];
@@ -40,6 +41,16 @@ export default class PopupManagerService {
 
   private recheckBtn: HTMLButtonElement;
 
+  private updateStatus: HTMLElement;
+
+  private updateVersion: HTMLElement;
+
+  private updateText: HTMLElement;
+
+  private updateLink: HTMLAnchorElement;
+
+  private checkUpdateBtn: HTMLButtonElement;
+
   constructor() {
     this.enabledInput = document.getElementById('enabled') as HTMLInputElement;
     this.clearAfterSendInput = document.getElementById('clearAfterSend') as HTMLInputElement;
@@ -57,6 +68,11 @@ export default class PopupManagerService {
     this.statusIndicator = document.getElementById('statusIndicator') as HTMLElement;
     this.statusText = document.getElementById('statusText') as HTMLElement;
     this.recheckBtn = document.getElementById('recheckBtn') as HTMLButtonElement;
+    this.updateStatus = document.getElementById('updateStatus') as HTMLElement;
+    this.updateVersion = document.getElementById('updateVersion') as HTMLElement;
+    this.updateText = document.getElementById('updateText') as HTMLElement;
+    this.updateLink = document.getElementById('updateLink') as HTMLAnchorElement;
+    this.checkUpdateBtn = document.getElementById('checkUpdateBtn') as HTMLButtonElement;
 
     this.populateTriggerKeyOptions();
     this.setupEventListeners();
@@ -77,8 +93,11 @@ export default class PopupManagerService {
     this.saveBtn.textContent = t('popup.save');
     this.resetBtn.textContent = t('popup.reset');
     this.recheckBtn.textContent = t('popup.recheck');
+    this.checkUpdateBtn.textContent = t('popup.checkUpdate');
     this.aboutLink.title = t('popup.aboutTitle');
     this.aboutLink.setAttribute('aria-label', t('popup.aboutTitle'));
+    const currentVersion = chrome.runtime.getManifest().version;
+    this.updateVersion.textContent = t('popup.version', { version: currentVersion });
   }
 
   private populateTriggerKeyOptions(): void {
@@ -95,6 +114,7 @@ export default class PopupManagerService {
     this.saveBtn.addEventListener('click', () => this.saveConfig());
     this.resetBtn.addEventListener('click', () => this.resetToDefaults());
     this.recheckBtn.addEventListener('click', () => this.checkServer());
+    this.checkUpdateBtn.addEventListener('click', () => this.checkForUpdates());
   }
 
   private async loadConfig(): Promise<void> {
@@ -243,5 +263,64 @@ export default class PopupManagerService {
     this.statusIndicator.textContent = indicator;
     this.statusText.textContent = text;
     this.recheckBtn.disabled = (state === 'checking');
+  }
+
+  /**
+   * Check extension updates via Chrome Web Store and/or GitHub Releases.
+   * @author zgx
+   */
+  private async checkForUpdates(): Promise<void> {
+    this.checkUpdateBtn.disabled = true;
+    this.updateStatus.className = 'update-status';
+    this.updateText.textContent = t('popup.updateChecking');
+    this.updateLink.hidden = true;
+
+    try {
+      const result = await checkExtensionUpdate('auto');
+      this.renderUpdateResult(result);
+    } catch (error) {
+      this.updateStatus.className = 'update-status error';
+      this.updateText.textContent = t('popup.updateError');
+      logger.error('Error checking updates:', error);
+    } finally {
+      this.checkUpdateBtn.disabled = false;
+    }
+  }
+
+  private renderUpdateResult(result: UpdateCheckResult): void {
+    this.updateVersion.textContent = t('popup.version', { version: result.currentVersion });
+
+    if (result.status === 'update-available') {
+      this.updateStatus.className = 'update-status available';
+      this.updateText.textContent = result.messageKey === 'popup.updateCwsAvailable'
+        ? t('popup.updateCwsAvailable')
+        : t('popup.updateAvailable', {
+          latest: result.latestVersion || '',
+          current: result.currentVersion,
+        });
+      if (result.updateUrl) {
+        this.updateLink.hidden = false;
+        this.updateLink.href = result.updateUrl;
+        this.updateLink.textContent = result.channel === 'chrome-web-store'
+          ? t('popup.updateOpenStore')
+          : t('popup.updateOpen');
+      }
+      return;
+    }
+
+    if (result.status === 'error') {
+      this.updateStatus.className = 'update-status error';
+      this.updateText.textContent = result.detail
+        ? `${t('popup.updateError')}: ${result.detail}`
+        : t('popup.updateError');
+      this.updateLink.hidden = true;
+      return;
+    }
+
+    this.updateStatus.className = 'update-status';
+    this.updateText.textContent = result.status === 'throttled'
+      ? t('popup.updateThrottled')
+      : t('popup.updateUpToDate');
+    this.updateLink.hidden = true;
   }
 }

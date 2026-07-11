@@ -294,6 +294,53 @@ body {
   cursor: not-allowed;
 }
 
+.update-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  min-height: 34px;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #d7dee8;
+  background: #fff;
+  font-size: 12px;
+  color: #374151;
+}
+
+.update-status.available {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.update-status.error {
+  background: #fff0ed;
+  color: #b42318;
+  border-color: #f2b8af;
+}
+
+.update-version {
+  font-weight: 650;
+  color: #111827;
+}
+
+.update-text {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.update-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.update-link[hidden] {
+  display: none;
+}
+
 .conflict-warning {
   display: none;
   padding: 7px 9px;
