@@ -87,11 +87,12 @@ chrome.runtime.onMessage
               break;
           }
         },
-      )).catch((error) => {
+      )).then((ack) => {
+        sendResponse({ success: true, data: ack });
+      }).catch((error) => {
         logger.error('❌ Failed to send selection:', error);
+        sendResponse({ success: false, error: (error as Error).message });
       });
-
-      sendResponse({ success: true });
       return true;
     }
 

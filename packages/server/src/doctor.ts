@@ -7,7 +7,7 @@ import SharedStateService from './services/shared-state-service';
 import ScreenshotStorageService from './services/screenshot-storage-service';
 
 interface DoctorOptions {
-  port: string;
+  port: number;
 }
 
 function icon(ok: boolean): string {
@@ -56,18 +56,18 @@ async function countPngFiles(dir: string): Promise<number> {
 }
 
 export default async function doctor(options: DoctorOptions): Promise<void> {
-  const port = parseInt(options.port, 10);
+  const { port } = options;
   const sharedState = new SharedStateService();
   const statePath = SharedStateService.SHARED_STATE_PATH;
   const screenshotDir = ScreenshotStorageService.SCREENSHOT_DIR;
   const stateFileExists = await pathExists(statePath);
   const selections = await sharedState.listPointedSelections();
-  const reachable = Number.isNaN(port) ? false : await checkPort(port);
+  const reachable = await checkPort(port);
   const screenshotCount = await countPngFiles(screenshotDir);
 
   logger.info('DOM Pointer MCP doctor');
   logger.info(`${icon(isSupportedNode())} Node: ${process.version}`);
-  logger.info(`${icon(!Number.isNaN(port))} WebSocket port: ${options.port}`);
+  logger.info(`${icon(true)} WebSocket port: ${port}`);
   logger.info(`${icon(reachable)} WebSocket reachable: ${reachable ? 'yes' : 'no'}`);
   logger.info(`${icon(stateFileExists)} Shared state: ${stateFileExists ? statePath : 'missing'}`);
   logger.info(`${icon(selections.length > 0)} Stored selections: ${selections.length}`);

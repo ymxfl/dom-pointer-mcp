@@ -111,12 +111,7 @@ function resolveTextContent(
     return undefined;
   }
 
-  if (detail === TextDetailLevel.VISIBLE) {
-    return element.innerText;
-  }
-
-  // Full detail returns textContent if available, otherwise falls back to innerText
-  return element.textContent ?? element.innerText;
+  return element.innerText;
 }
 
 function buildCssProperties(
@@ -150,10 +145,6 @@ function buildCssProperties(
     return cssProperties;
   }
 
-  if (element.cssComputed) {
-    return { ...element.cssComputed };
-  }
-
   return undefined;
 }
 
@@ -176,9 +167,12 @@ export function serializeElement(
     componentInfo: element.componentInfo ? { ...element.componentInfo } : undefined,
     timestamp: element.timestamp,
     url: element.url,
-    innerText: resolvedText ?? '',
     warnings: element.warnings,
   };
+
+  if (resolvedText !== undefined) {
+    shaped.innerText = resolvedText;
+  }
 
   if (textContent !== undefined) {
     shaped.textContent = textContent;

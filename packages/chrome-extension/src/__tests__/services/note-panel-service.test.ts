@@ -9,6 +9,7 @@ function flushMicrotasks(): Promise<void> {
 
 describe('NotePanelService', () => {
   let store: SelectionStoreService;
+  let service: NotePanelService;
   let onSend: jest.Mock;
   let onCopy: jest.Mock;
   let originalClipboard: any;
@@ -27,9 +28,7 @@ describe('NotePanelService', () => {
       value: { writeText },
     });
 
-    // Constructor subscribes to store; instance kept alive by that subscription.
-    // eslint-disable-next-line no-new
-    new NotePanelService(store, onSend, onCopy, false);
+    service = new NotePanelService(store, onSend, onCopy, false);
   });
 
   afterEach(() => {
@@ -59,6 +58,21 @@ describe('NotePanelService', () => {
     expect(document.querySelector(PANEL_SELECTOR)).not.toBeNull();
     store.toggle(el); // removes
     expect(document.querySelector(PANEL_SELECTOR)).toBeNull();
+  });
+
+  it('returns the current panel center for anchored feedback', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    store.toggle(el);
+    const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+    panel.getBoundingClientRect = () => ({
+      left: 100,
+      top: 200,
+      width: 360,
+      height: 120,
+    } as DOMRect);
+
+    expect(service.getCenterPosition()).toEqual({ x: 280, y: 260 });
   });
 
   it('clicking a chip × button calls store.remove for that element', () => {

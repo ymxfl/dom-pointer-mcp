@@ -2,7 +2,7 @@
 
 本文档说明 `pnpm build` 后的产物如何使用。
 
-> ⚠️ 本文件被 `.gitignore` 排除，是本地参考资料，不会随仓库一同提交。
+> 本文件随仓库维护，用于说明本地编译产物的使用方式。
 
 ## 编译产物概览
 
@@ -81,7 +81,7 @@ dom-pointer-mcp config
     "pointer": {
       "command": "node",
       "args": [
-        "/Users/lizhenhua.81/GithubStudy/dom-pointer-mcp/packages/server/dist/cli.cjs",
+        "/absolute/path/to/dom-pointer-mcp/packages/server/dist/cli.cjs",
         "start"
       ]
     }
@@ -103,8 +103,7 @@ dom-pointer-mcp config
 1. 浏览器打开 `chrome://extensions/`
 2. 右上角开启 **Developer mode（开发者模式）**
 3. 点击 **Load unpacked（加载已解压的扩展程序）**
-4. 选择目录：
-   `/Users/lizhenhua.81/GithubStudy/dom-pointer-mcp/packages/chrome-extension/dist`
+4. 选择当前仓库下的 `packages/chrome-extension/dist` 目录
 
 加载后即可在工具栏看到 DOM Pointer MCP 图标。点击图标可以看到 server 可达性指示（🟢 / 🔴）、端口设置以及 Recheck 按钮。
 
@@ -134,7 +133,7 @@ dom-pointer-mcp config
 - **扩展弹窗显示 "Server unreachable"**
   确认 server 已启动，弹窗里端口与服务端绑定端口一致；改完端口点 **Save** 会自动重新探测。
 - **`get-pointed-element` 返回旧格式 / 报错**
-  v0.7 起 wire format 已切换为 batch（`{ userNote, elements: [...] }`），扩展和 server 必须同版本。
+  扩展和 Server 独立发版，不要求版本号完全相同；请将两边升级到 Release Notes 标注的兼容版本。
 - **重新构建**
   ```bash
   pnpm build           # 全量构建

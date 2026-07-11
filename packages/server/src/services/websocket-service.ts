@@ -3,6 +3,7 @@ import { PointerMessage } from '@dom-pointer-mcp/shared/types';
 import { config } from '../config';
 import logger from '../logger';
 import { sleep } from '../utils';
+import parsePort from '../utils/port';
 
 // WebSocket constants
 const WEBSOCKET_RETRY_INTERVAL = 5000; // 5 seconds
@@ -24,9 +25,7 @@ export default class WebSocketService {
   private messageHandler: MessageHandler | null = null;
 
   constructor(port: string | number = config.websocket.port) {
-    const intPort = typeof port === 'string' ? parseInt(port, 10) : port;
-
-    this.port = intPort;
+    this.port = parsePort(port);
   }
 
   public registerMessageHandler(handler: MessageHandler): void {

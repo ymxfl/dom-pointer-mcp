@@ -22,11 +22,11 @@ function createMockProcessedElement(): ProcessedPointedDOMElement {
     cssComputed: {
       display: 'block',
       position: 'relative',
-      fontSize: '16px',
+      'font-size': '16px',
       color: 'rgb(0, 0, 0)',
-      backgroundColor: 'rgb(255, 255, 255)',
-      marginTop: '10px',
-      paddingLeft: '5px',
+      'background-color': 'rgb(255, 255, 255)',
+      'margin-top': '10px',
+      'padding-left': '5px',
     },
     timestamp: new Date().toISOString(),
     url: 'https://example.com',
@@ -75,7 +75,7 @@ describe('element-detail utilities', () => {
         CSSDetailLevel.NONE,
       );
 
-      expect(shaped.innerText).toBe('');
+      expect(shaped.innerText).toBeUndefined();
       expect(shaped.textContent).toBeUndefined();
       expect(shaped.cssProperties).toBeUndefined();
     });
@@ -93,8 +93,13 @@ describe('element-detail utilities', () => {
       expect(shaped.innerText).toBe('Visible text only');
       expect(shaped.textContent).toBeUndefined();
       expect(shaped.cssProperties).toBeDefined();
-      expect(Object.keys(shaped.cssProperties!)).toContain('display');
-      expect(Object.keys(shaped.cssProperties!)).not.toContain('marginTop');
+      expect(shaped.cssProperties).toEqual({
+        display: 'block',
+        position: 'relative',
+        'font-size': '16px',
+        color: 'rgb(0, 0, 0)',
+        'background-color': 'rgb(255, 255, 255)',
+      });
     });
 
     it('returns full css when level 3 requested', () => {
@@ -106,7 +111,21 @@ describe('element-detail utilities', () => {
       );
 
       expect(shaped.cssProperties).toEqual(element.cssComputed);
+      expect(shaped.innerText).toBe(element.innerText);
       expect(shaped.textContent).toBe(element.textContent);
+    });
+
+    it('does not fall back to full css when a detail subset has no matches', () => {
+      const element = createMockProcessedElement();
+      element.cssComputed = { '--custom-property': 'value' };
+
+      const shaped = serializeElement(
+        element,
+        TextDetailLevel.VISIBLE,
+        CSSDetailLevel.BASIC,
+      );
+
+      expect(shaped.cssProperties).toBeUndefined();
     });
   });
 });

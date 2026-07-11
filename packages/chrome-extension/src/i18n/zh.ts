@@ -31,6 +31,7 @@ const zh = {
   'notePanel.copied': '已复制!',
   'notePanel.hint': '⌘/Ctrl+Enter 发送',
   'notePanel.sendFailed': '发送失败: {error}',
+  'notePanel.sendSuccess': '选区已发送',
   'notePanel.copyFailed': '复制失败: {error}',
   'notePanel.closeTitle': '清除所有选区',
   'history.tab': '历史',

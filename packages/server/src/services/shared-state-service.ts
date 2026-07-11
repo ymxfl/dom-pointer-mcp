@@ -1,4 +1,7 @@
 import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+import { randomUUID } from 'crypto';
 import {
   SharedState,
   SharedStateData,
@@ -8,7 +11,13 @@ import {
 import logger from '../logger';
 
 export default class SharedStateService {
-  static SHARED_STATE_PATH = '/tmp/dom-pointer-mcp-shared-state.json';
+  static DEFAULT_SHARED_STATE_PATH = path.join(
+    os.tmpdir(),
+    'dom-pointer-mcp',
+    'shared-state.json',
+  );
+
+  static SHARED_STATE_PATH = SharedStateService.DEFAULT_SHARED_STATE_PATH;
 
   static MAX_HISTORY_ITEMS = 20;
 
@@ -17,11 +26,12 @@ export default class SharedStateService {
       const existing = await this.readState();
       const { history, evicted } = this.mergeHistory(state.data, existing);
       const json = JSON.stringify({ data: state.data, history }, null, 2);
-      await fs.writeFile(SharedStateService.SHARED_STATE_PATH, json, 'utf8');
+      await this.writeState(json);
       await this.deleteScreenshots(evicted);
       logger.debug('Pointed selection saved to shared state file');
     } catch (error) {
       logger.error('Failed to save pointed selection:', error);
+      throw error;
     }
   }
 
@@ -75,10 +85,8 @@ export default class SharedStateService {
       return removed;
     }
 
-    await fs.writeFile(
-      SharedStateService.SHARED_STATE_PATH,
+    await this.writeState(
       JSON.stringify({ data: nextHistory[0], history: nextHistory }, null, 2),
-      'utf8',
     );
     return removed;
   }
@@ -138,6 +146,23 @@ export default class SharedStateService {
       }
       logger.error('Failed to read state file:', error);
       return null;
+    }
+  }
+
+  private async writeState(json: string): Promise<void> {
+    const statePath = SharedStateService.SHARED_STATE_PATH;
+    const stateDir = path.dirname(statePath);
+    const temporaryPath = `${statePath}.${process.pid}.${randomUUID()}.tmp`;
+    await fs.mkdir(stateDir, { recursive: true, mode: 0o700 });
+    try {
+      await fs.writeFile(temporaryPath, json, { encoding: 'utf8', mode: 0o600 });
+      await fs.rename(temporaryPath, statePath);
+    } finally {
+      try {
+        await fs.unlink(temporaryPath);
+      } catch {
+        // The atomic rename normally consumes the temporary file.
+      }
     }
   }
 }

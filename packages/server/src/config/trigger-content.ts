@@ -13,10 +13,11 @@ const ELEMENT_READING = `Read the returned payload:
 - \`userNote\`: the user's primary instruction
 - \`selectionId\`: stable id for this selection
 - \`screenshot.path\`: local screenshot file path when available
+- The MCP response also includes the screenshot as image content when the file is available
 - \`elements[]\`: DOM info per element (selector, componentInfo.sourceFile, cssProperties, url)
 - Reference elements by 1-based index when user uses [1], [2] notation
-- For visual UI/layout/color changes, use \`screenshot.path\` immediately
-  if your runtime can inspect local images; do not ask the user to upload it`;
+- For visual UI/layout/color changes, inspect the attached image content immediately;
+  fall back to \`screenshot.path\` only if the runtime does not expose image content`;
 
 const NO_SELECTION_HINT = 'If the tool returns "No selection pointed", tell the user to Option+Click elements in the browser and press Cmd/Ctrl+Enter before retrying.';
 

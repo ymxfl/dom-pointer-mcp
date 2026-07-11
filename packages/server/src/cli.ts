@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, InvalidArgumentError } from 'commander';
 import { LogLevel } from '@dom-pointer-mcp/shared/logger';
 import start from './start';
 import configCommand from './config';
 import CLICommand from './commands';
 import logger from './logger';
 import doctor from './doctor';
+import parsePort from './utils/port';
+import serverVersion from './version';
 
 function parseLogLevel(level: string): LogLevel {
   const levelMap: Record<string, LogLevel> = {
@@ -24,6 +26,14 @@ function parseLogLevel(level: string): LogLevel {
   }
 
   return parsedLevel;
+}
+
+function parsePortOption(value: string): number {
+  try {
+    return parsePort(value);
+  } catch (error) {
+    throw new InvalidArgumentError((error as Error).message);
+  }
 }
 
 const program = new Command();
@@ -44,12 +54,12 @@ program.on('option:silent', () => {
 program
   .name('dom-pointer-mcp')
   .description('👆 DOM Pointer MCP Server')
-  .version(process.env.npm_package_version ?? '0.1.0');
+  .version(serverVersion);
 
 program
   .command(CLICommand.START)
   .description('👆 Start pointing at elements (start server)')
-  .option('-p, --port <port>', 'WebSocket port', '7007')
+  .option('-p, --port <port>', 'WebSocket port', parsePortOption, 7007)
   .action(start);
 
 program
@@ -64,7 +74,7 @@ program
 program
   .command(CLICommand.DOCTOR)
   .description('Check DOM Pointer MCP local setup and recent shared state')
-  .option('-p, --port <port>', 'WebSocket port', '7007')
+  .option('-p, --port <port>', 'WebSocket port', parsePortOption, 7007)
   .action(doctor);
 
 program.parse();

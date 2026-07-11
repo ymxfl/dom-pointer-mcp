@@ -12,7 +12,7 @@
     "dom-pointer-mcp": "dist/cli.cjs"
   },
   "scripts": {
-    "build": "pnpm clean && esbuild src/cli.ts --outfile=dist/cli.cjs --format=cjs --bundle  --platform=node --target=node20 --sourcemap",
+    "build": "pnpm clean && esbuild src/cli.ts --outfile=dist/cli.cjs --format=cjs --bundle --platform=node --target=node20 --sourcemap --define:DOM_POINTER_MCP_VERSION=\\\"$npm_package_version\\\"",
     "dev": "tsx watch src/cli.ts start",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",

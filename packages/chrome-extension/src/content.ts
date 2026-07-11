@@ -34,6 +34,7 @@ async function initializePointer() {
       pointer = new ElementPointerService(
         config.trigger.modifierKey,
         config.behavior.captureScreenshot,
+        (position) => toast.show(t('notePanel.sendSuccess'), position),
       );
 
       if (IS_DEV) {

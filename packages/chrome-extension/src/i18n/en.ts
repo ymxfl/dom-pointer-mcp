@@ -33,6 +33,7 @@ const en: Record<MessageKey, string> = {
   'notePanel.copied': 'Copied!',
   'notePanel.hint': '⌘/Ctrl+Enter to send',
   'notePanel.sendFailed': 'Send failed: {error}',
+  'notePanel.sendSuccess': 'Selection sent',
   'notePanel.copyFailed': 'Copy failed: {error}',
   'notePanel.closeTitle': 'Clear all selections',
   'history.tab': 'History',

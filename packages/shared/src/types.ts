@@ -128,6 +128,7 @@ export interface RawPointedDOMElement {
   boundingClientRect?: DOMRect;
 
   // Optional enhanced data
+  textSnapshots?: TextSnapshots;
   computedStyles?: Record<string, string>;
   componentInfo?: ComponentInfo;
 }
@@ -139,6 +140,14 @@ export interface RawPointedSelection {
   userNote: string;
   elements: RawPointedDOMElement[];
   screenshot?: RawSelectionScreenshot;
+  requestId?: string;
+}
+
+export interface PointerSelectionAck {
+  requestId: string;
+  success: boolean;
+  selectionId?: string;
+  error?: string;
 }
 
 // Pointer message types between extension and MCP server
@@ -146,6 +155,7 @@ export enum PointerMessageType {
   LEGACY_ELEMENT_SELECTED = 'element-selected',
   DOM_ELEMENT_POINTED = 'dom-element-pointed',
   SELECTION_SENT = 'selection-sent',
+  SELECTION_ACK = 'selection-ack',
   HISTORY_LIST_REQUEST = 'history-list-request',
   HISTORY_LIST_RESPONSE = 'history-list-response',
   HISTORY_GET_REQUEST = 'history-get-request',

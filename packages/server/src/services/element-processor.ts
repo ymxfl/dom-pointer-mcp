@@ -46,8 +46,8 @@ export default class ElementProcessor {
         id = element.id || undefined;
         classes = element.classList ? Array.from(element.classList.values()) : [];
         attributes = element.attributes ? this.getAttributes(element) : {};
-        innerText = element.textContent || '';
-        textContent = element.textContent || undefined;
+        innerText = raw.textSnapshots?.visible ?? element.textContent ?? '';
+        textContent = raw.textSnapshots?.full ?? element.textContent ?? undefined;
         selector = raw.selector || generateSelector(element);
       } catch (err) {
         allWarnings.push(`Element extraction failed: ${(err as Error).message}`);

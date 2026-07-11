@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import {
   PointerMessageType,
   type RawPointedSelection,
@@ -21,7 +21,11 @@ function buildMetadata(messageType: string) {
   };
 }
 
-function createSelectionId(): string {
+function createSelectionId(requestId?: unknown): string {
+  if (typeof requestId === 'string' && requestId.length > 0 && requestId.length <= 128) {
+    const digest = createHash('sha256').update(requestId).digest('hex').slice(0, 16);
+    return `sel_${digest}`;
+  }
   return `sel_${Date.now().toString(36)}_${randomUUID().slice(0, 8)}`;
 }
 
@@ -31,7 +35,7 @@ async function buildState(
   services: HandlerServices,
 ): Promise<SharedState> {
   const raw = data as RawPointedSelection;
-  const selectionId = createSelectionId();
+  const selectionId = createSelectionId(raw.requestId);
   let screenshot: ProcessedPointedSelection['screenshot'];
 
   try {
@@ -140,7 +144,25 @@ const messageHandler = async (
 
   const buildedState = await buildStateFromMessage(type, data, services);
   if (buildedState) {
-    await services.sharedState.saveState(buildedState);
+    const requestId = (data as RawPointedSelection | undefined)?.requestId;
+    try {
+      await services.sharedState.saveState(buildedState);
+    } catch (error) {
+      if (!requestId) throw error;
+      respond(PointerMessageType.SELECTION_ACK, {
+        requestId,
+        success: false,
+        error: (error as Error).message,
+      });
+      return;
+    }
+    if (requestId) {
+      respond(PointerMessageType.SELECTION_ACK, {
+        requestId,
+        success: true,
+        selectionId: buildedState.data.selectionId,
+      });
+    }
   }
 };
 

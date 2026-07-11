@@ -4,7 +4,6 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { version } from 'process';
 import { CSS_DETAIL_OPTIONS, TEXT_DETAIL_OPTIONS } from '@dom-pointer-mcp/shared/detail';
 import SharedStateService from './shared-state-service';
 import {
@@ -13,6 +12,8 @@ import {
   type DetailParameters,
   type NormalizedDetailParameters,
 } from '../utils/element-detail';
+import serverVersion from '../version';
+import buildSelectionContent from '../utils/selection-content';
 
 enum MCPToolName {
   GET_POINTED_ELEMENT = 'get-pointed-element',
@@ -35,7 +36,7 @@ export default class MCPService {
     this.server = new Server(
       {
         name: MCPServerName.MCP_POINTER,
-        version,
+        version: serverVersion,
       },
       {
         capabilities: {
@@ -57,7 +58,7 @@ export default class MCPService {
       tools: [
         {
           name: MCPToolName.GET_POINTED_ELEMENT,
-          description: 'Returns the currently pointed DOM selection.',
+          description: 'Returns the current DOM selection and attaches its screenshot as image content when available.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -86,7 +87,7 @@ export default class MCPService {
         },
         {
           name: MCPToolName.GET_POINTED_SELECTION,
-          description: 'Returns a recent pointed DOM selection by selectionId.',
+          description: 'Returns a recent DOM selection by selectionId and attaches its screenshot as image content when available.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -183,14 +184,7 @@ export default class MCPService {
       )),
     };
 
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(payload, null, 2),
-        },
-      ],
-    };
+    return { content: await buildSelectionContent(payload, selection.screenshot) };
   }
 
   private async getPointedSelectionById(
@@ -226,14 +220,7 @@ export default class MCPService {
       )),
     };
 
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(payload, null, 2),
-        },
-      ],
-    };
+    return { content: await buildSelectionContent(payload, selection.screenshot) };
   }
 
   private async listPointedSelections() {

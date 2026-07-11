@@ -64,6 +64,21 @@ function makeSelection(): RawPointedSelection {
   };
 }
 
+function acknowledgeSelection(socket: RWSInstance, selectionId = 'sel_ack'): void {
+  const sent = JSON.parse(socket.send.mock.calls[0][0]);
+  socket.emit('message', {
+    data: JSON.stringify({
+      type: PointerMessageType.SELECTION_ACK,
+      data: {
+        requestId: sent.data.requestId,
+        success: true,
+        selectionId,
+      },
+      timestamp: Date.now(),
+    }),
+  });
+}
+
 describe('ElementSenderService', () => {
   beforeEach(() => {
     createdSockets.length = 0;
@@ -86,12 +101,11 @@ describe('ElementSenderService', () => {
     sock.readyState = 1; // OPEN
     sock.emit('open');
 
-    // Allow the 300ms verify window to elapse with no close/error event.
     await flushMicrotasks();
-    jest.advanceTimersByTime(300);
+    acknowledgeSelection(sock);
     await flushMicrotasks();
 
-    await promise;
+    await expect(promise).resolves.toMatchObject({ selectionId: 'sel_ack' });
 
     expect(sock.send).toHaveBeenCalledTimes(1);
     expect(status).toHaveBeenCalledWith(ConnectionStatus.SENT);
@@ -117,13 +131,13 @@ describe('ElementSenderService', () => {
     jest.advanceTimersByTime(1000);
     await flushMicrotasks();
 
-    // Second attempt: a fresh socket is created, opens, and stays open through the verify window.
+    // Second attempt: a fresh socket is created, opens, and receives an ACK.
     expect(createdSockets).toHaveLength(2);
     const second = createdSockets[1];
     second.readyState = 1;
     second.emit('open');
     await flushMicrotasks();
-    jest.advanceTimersByTime(300);
+    acknowledgeSelection(second);
     await flushMicrotasks();
 
     await promise;
@@ -132,6 +146,9 @@ describe('ElementSenderService', () => {
     expect(second.send).toHaveBeenCalledTimes(1);
     expect(status).toHaveBeenCalledWith(ConnectionStatus.SENT);
     expect(status).not.toHaveBeenCalledWith(ConnectionStatus.ERROR, expect.anything());
+    const firstRequest = JSON.parse(first.send.mock.calls[0][0]);
+    const secondRequest = JSON.parse(second.send.mock.calls[0][0]);
+    expect(secondRequest.data.requestId).toBe(firstRequest.data.requestId);
   });
 
   it('reports ERROR with "5 attempts" message after all attempts fail', async () => {
@@ -155,7 +172,7 @@ describe('ElementSenderService', () => {
       }
     }
 
-    await promise;
+    await expect(promise).rejects.toThrow(/Failed to send after 5 attempts/u);
 
     expect(createdSockets).toHaveLength(5);
     const lastCall = status.mock.calls[status.mock.calls.length - 1];
