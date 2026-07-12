@@ -31,7 +31,7 @@ export function buildInstallPrompt(locale: 'zh' | 'en' = 'zh'): string {
       '',
       '1. npm install -g @dom-pointer-mcp/server@latest',
       '2. Pick the best matching tool for the AI app you are currently in, then run:',
-      `   dom-pointer-mcp config <tool> --scope user --global --no-slash`,
+      '   dom-pointer-mcp config <tool> --scope user --global --no-slash',
       `   Available tools: ${tools}`,
       '   (e.g. use claude in Claude Code; use cursor in Cursor)',
       '',
