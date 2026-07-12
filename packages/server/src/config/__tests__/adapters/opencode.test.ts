@@ -9,6 +9,7 @@ jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockRejectedValue(Object.assign(new Error(), { code: 'ENOENT' })),
   unlink: jest.fn().mockResolvedValue(undefined),
+  rm: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockResolvedValue(undefined),
 }));
 
@@ -41,8 +42,22 @@ describe('opencodeAdapter', () => {
     });
   });
 
-  it('has no installSkill (opencode commands ARE the slash mechanism)', () => {
-    expect(opencodeAdapter.installSkill).toBeUndefined();
+  describe('installSkill', () => {
+    it('user writes ~/.config/opencode/skills/pointed/SKILL.md', async () => {
+      const result = await opencodeAdapter.installSkill!('user');
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(
+        path.join(os.homedir(), '.config', 'opencode', 'skills', 'pointed', 'SKILL.md'),
+      );
+    });
+
+    it('project writes <cwd>/.opencode/skills/pointed/SKILL.md', async () => {
+      const result = await opencodeAdapter.installSkill!('project');
+      expect(result.status).toBe('success');
+      expect(result.path).toBe(
+        path.join(process.cwd(), '.opencode', 'skills', 'pointed', 'SKILL.md'),
+      );
+    });
   });
 
   it('registerMcp merges with existing opencode.json mcp servers', async () => {
@@ -91,6 +106,30 @@ describe('opencodeAdapter uninstall', () => {
       const expected = path.join(process.cwd(), '.opencode', 'commands', 'pointed.md');
       expect(result.path).toBe(expected);
       expect(unlinkMock).toHaveBeenCalledWith(expected);
+    });
+  });
+
+  describe('uninstallSkill', () => {
+    it('user scope removes ~/.config/opencode/skills/pointed directory', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockResolvedValue(undefined);
+      const result = await opencodeAdapter.uninstallSkill!('user');
+      expect(result.status).toBe('success');
+      const expected = path.join(os.homedir(), '.config', 'opencode', 'skills', 'pointed');
+      expect(result.path).toBe(expected);
+      expect(rmMock).toHaveBeenCalledWith(expected, { recursive: true, force: false });
+    });
+
+    it('project scope removes <cwd>/.opencode/skills/pointed directory', async () => {
+      const rmMock = fs.rm as jest.Mock;
+      rmMock.mockReset();
+      rmMock.mockResolvedValue(undefined);
+      const result = await opencodeAdapter.uninstallSkill!('project');
+      expect(result.status).toBe('success');
+      const expected = path.join(process.cwd(), '.opencode', 'skills', 'pointed');
+      expect(result.path).toBe(expected);
+      expect(rmMock).toHaveBeenCalledWith(expected, { recursive: true, force: false });
     });
   });
 

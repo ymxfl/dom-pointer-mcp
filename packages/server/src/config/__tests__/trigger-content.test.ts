@@ -11,6 +11,7 @@ import {
   COMMAND_BODY_CURSOR,
   SKILL_BODY_CURSOR,
   COMMAND_BODY_OPENCODE,
+  SKILL_BODY_OPENCODE,
   SKILL_BODY_CODEX,
 } from '../trigger-content';
 
@@ -120,6 +121,10 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY_OPENCODE).toContain('GET mode');
     expect(COMMAND_BODY_OPENCODE).toContain('AskUserQuestion');
     expect(COMMAND_BODY_OPENCODE).toContain('STOP HERE');
+  });
+
+  it('SKILL_BODY_OPENCODE matches COMMAND_BODY_OPENCODE', () => {
+    expect(SKILL_BODY_OPENCODE).toBe(COMMAND_BODY_OPENCODE);
   });
 
   it('SKILL_BODY_CODEX uses request_user_input for GET mode confirmation', () => {

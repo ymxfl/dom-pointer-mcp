@@ -4,7 +4,8 @@ import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
 import { checkReachability, ReachabilityState } from './server-reachability-service';
 import { checkExtensionUpdate, UpdateCheckResult } from './update-check-service';
-import { t, setLocale } from '../i18n';
+import { buildInstallPrompt } from '../utils/install-prompt';
+import { t, setLocale, getLocale } from '../i18n';
 
 const ALL_MODIFIER_KEYS: ModifierKey[] = ['Alt', 'Ctrl', 'Meta'];
 
@@ -43,13 +44,15 @@ export default class PopupManagerService {
 
   private updateStatus: HTMLElement;
 
-  private updateVersion: HTMLElement;
-
   private updateText: HTMLElement;
 
   private updateLink: HTMLAnchorElement;
 
   private checkUpdateBtn: HTMLButtonElement;
+
+  private copyInstallBtn: HTMLButtonElement;
+
+  private titleEl: HTMLElement;
 
   constructor() {
     this.enabledInput = document.getElementById('enabled') as HTMLInputElement;
@@ -69,10 +72,11 @@ export default class PopupManagerService {
     this.statusText = document.getElementById('statusText') as HTMLElement;
     this.recheckBtn = document.getElementById('recheckBtn') as HTMLButtonElement;
     this.updateStatus = document.getElementById('updateStatus') as HTMLElement;
-    this.updateVersion = document.getElementById('updateVersion') as HTMLElement;
     this.updateText = document.getElementById('updateText') as HTMLElement;
     this.updateLink = document.getElementById('updateLink') as HTMLAnchorElement;
     this.checkUpdateBtn = document.getElementById('checkUpdateBtn') as HTMLButtonElement;
+    this.copyInstallBtn = document.getElementById('copyInstallBtn') as HTMLButtonElement;
+    this.titleEl = document.getElementById('title') as HTMLElement;
 
     this.populateTriggerKeyOptions();
     this.setupEventListeners();
@@ -80,7 +84,9 @@ export default class PopupManagerService {
   }
 
   private applyLocaleToUI(): void {
-    document.getElementById('title')!.textContent = t('popup.title');
+    const currentVersion = chrome.runtime.getManifest().version;
+    this.titleEl.textContent = t('popup.title', { version: currentVersion });
+
     document.getElementById('enabledLabel')!.textContent = t('popup.enabled');
     document.getElementById('clearAfterSendLabel')!.textContent = t('popup.clearAfterSend');
     document.getElementById('captureScreenshotLabel')!.textContent = t('popup.captureScreenshot');
@@ -93,11 +99,13 @@ export default class PopupManagerService {
     this.saveBtn.textContent = t('popup.save');
     this.resetBtn.textContent = t('popup.reset');
     this.recheckBtn.textContent = t('popup.recheck');
-    this.checkUpdateBtn.textContent = t('popup.checkUpdate');
+
+    this.copyInstallBtn.title = t('popup.copyInstall');
+    this.copyInstallBtn.setAttribute('aria-label', t('popup.copyInstall'));
+    this.checkUpdateBtn.title = t('popup.checkUpdate');
+    this.checkUpdateBtn.setAttribute('aria-label', t('popup.checkUpdate'));
     this.aboutLink.title = t('popup.aboutTitle');
     this.aboutLink.setAttribute('aria-label', t('popup.aboutTitle'));
-    const currentVersion = chrome.runtime.getManifest().version;
-    this.updateVersion.textContent = t('popup.version', { version: currentVersion });
   }
 
   private populateTriggerKeyOptions(): void {
@@ -115,6 +123,7 @@ export default class PopupManagerService {
     this.resetBtn.addEventListener('click', () => this.resetToDefaults());
     this.recheckBtn.addEventListener('click', () => this.checkServer());
     this.checkUpdateBtn.addEventListener('click', () => this.checkForUpdates());
+    this.copyInstallBtn.addEventListener('click', () => this.copyInstallPrompt());
   }
 
   private async loadConfig(): Promise<void> {
@@ -266,12 +275,28 @@ export default class PopupManagerService {
   }
 
   /**
+   * Copy the agent install prompt to the clipboard.
+   * @author zgx
+   */
+  private async copyInstallPrompt(): Promise<void> {
+    const prompt = buildInstallPrompt(getLocale());
+    try {
+      await navigator.clipboard.writeText(prompt);
+      this.showStatus(t('popup.copyInstallSuccess'), 'success');
+    } catch (error) {
+      this.showStatus(t('popup.copyInstallFailed'), 'error');
+      logger.error('Error copying install prompt:', error);
+    }
+  }
+
+  /**
    * Check extension updates via Chrome Web Store and/or GitHub Releases.
    * @author zgx
    */
   private async checkForUpdates(): Promise<void> {
     this.checkUpdateBtn.disabled = true;
-    this.updateStatus.className = 'update-status';
+    this.updateStatus.hidden = false;
+    this.updateStatus.className = 'update-status checking';
     this.updateText.textContent = t('popup.updateChecking');
     this.updateLink.hidden = true;
 
@@ -279,6 +304,7 @@ export default class PopupManagerService {
       const result = await checkExtensionUpdate('auto');
       this.renderUpdateResult(result);
     } catch (error) {
+      this.updateStatus.hidden = false;
       this.updateStatus.className = 'update-status error';
       this.updateText.textContent = t('popup.updateError');
       logger.error('Error checking updates:', error);
@@ -288,7 +314,7 @@ export default class PopupManagerService {
   }
 
   private renderUpdateResult(result: UpdateCheckResult): void {
-    this.updateVersion.textContent = t('popup.version', { version: result.currentVersion });
+    this.updateStatus.hidden = false;
 
     if (result.status === 'update-available') {
       this.updateStatus.className = 'update-status available';
@@ -317,7 +343,9 @@ export default class PopupManagerService {
       return;
     }
 
-    this.updateStatus.className = 'update-status';
+    this.updateStatus.className = result.status === 'throttled'
+      ? 'update-status'
+      : 'update-status ok';
     this.updateText.textContent = result.status === 'throttled'
       ? t('popup.updateThrottled')
       : t('popup.updateUpToDate');
