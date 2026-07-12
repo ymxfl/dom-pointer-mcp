@@ -14,12 +14,14 @@ import {
 } from '../utils/element-detail';
 import serverVersion from '../version';
 import buildSelectionContent from '../utils/selection-content';
+import { runServerUpdate, type UpdateAction } from './update-service';
 
 enum MCPToolName {
   GET_POINTED_ELEMENT = 'get-pointed-element',
   LIST_POINTED_SELECTIONS = 'list-pointed-selections',
   GET_POINTED_SELECTION = 'get-pointed-selection',
   CLEAR_POINTED_SELECTIONS = 'clear-pointed-selections',
+  CHECK_UPDATE = 'check-update',
 }
 
 enum MCPServerName {
@@ -123,6 +125,21 @@ export default class MCPService {
             required: [],
           },
         },
+        {
+          name: MCPToolName.CHECK_UPDATE,
+          description: 'Checks npm for a newer @dom-pointer-mcp/server, optionally applies a global install.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              action: {
+                type: 'string',
+                enum: ['check', 'apply'],
+                description: 'check (default) compares versions; apply installs globally when needed.',
+              },
+            },
+            required: [],
+          },
+        },
       ],
     };
   }
@@ -150,6 +167,20 @@ export default class MCPService {
     if (request.params.name === MCPToolName.CLEAR_POINTED_SELECTIONS) {
       const args = request.params.arguments as { selectionId?: string } | undefined;
       return this.clearPointedSelections(args?.selectionId);
+    }
+
+    if (request.params.name === MCPToolName.CHECK_UPDATE) {
+      const args = request.params.arguments as { action?: UpdateAction } | undefined;
+      const action: UpdateAction = args?.action === 'apply' ? 'apply' : 'check';
+      const result = await runServerUpdate(action);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
     }
 
     throw new Error(`Unknown tool: ${request.params.name}`);

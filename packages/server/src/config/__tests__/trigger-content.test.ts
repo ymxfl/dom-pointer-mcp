@@ -24,6 +24,7 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY).toContain('list-pointed-selections');
     expect(COMMAND_BODY).toContain('get-pointed-selection');
     expect(COMMAND_BODY).toContain('clear-pointed-selections');
+    expect(COMMAND_BODY).toContain('check-update');
     expect(COMMAND_BODY).toContain('userNote');
     expect(COMMAND_BODY).toContain('selectionId');
     expect(COMMAND_BODY).toContain('screenshot.path');
@@ -65,6 +66,13 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY).toContain('The user intentionally triggered `/pointed`');
     expect(COMMAND_BODY).toContain('The first action after mode parsing MUST be the exact MCP tool call');
     expect(COMMAND_BODY).toContain('call `get-pointed-element` IMMEDIATELY');
+  });
+
+  it('COMMAND_BODY documents UPDATE mode with check-update parameters', () => {
+    expect(COMMAND_BODY).toContain('UPDATE mode');
+    expect(COMMAND_BODY).toContain('check-update');
+    expect(COMMAND_BODY).toContain('action: "apply"');
+    expect(COMMAND_BODY).toContain('action: "check"');
   });
 
   it('COMMAND_BODY_CLAUDE uses AskUserQuestion for GET mode confirmation', () => {

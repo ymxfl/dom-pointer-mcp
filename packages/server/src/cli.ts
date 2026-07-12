@@ -4,6 +4,7 @@ import { Command, InvalidArgumentError } from 'commander';
 import { LogLevel } from '@dom-pointer-mcp/shared/logger';
 import start from './start';
 import configCommand from './config';
+import updateCommand from './update';
 import CLICommand from './commands';
 import logger from './logger';
 import doctor from './doctor';
@@ -76,5 +77,11 @@ program
   .description('Check DOM Pointer MCP local setup and recent shared state')
   .option('-p, --port <port>', 'WebSocket port', parsePortOption, 7007)
   .action(doctor);
+
+program
+  .command(CLICommand.UPDATE)
+  .description('Check npm for server updates (use --apply to install globally)')
+  .option('--apply', 'Install the latest version globally via npm', false)
+  .action(updateCommand);
 
 program.parse();
