@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/server
 
+## 1.7.1
+
+### Patch Changes
+
+- dd2c56f: Add Agent install prompt in the Chrome extension popup, OpenCode skill install support, and `config --no-slash` for MCP + Skill only installs.
+
 ## 1.7.0
 
 ### Minor Changes
