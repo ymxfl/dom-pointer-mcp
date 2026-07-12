@@ -18,7 +18,13 @@ jest.mock('@floating-ui/dom', () => ({
       },
       elements: { floating: overlay },
     });
-    return { x: 0, y: 0, placement: 'bottom', strategy: 'absolute', middlewareData: {} };
+    return {
+      x: 0,
+      y: 0,
+      placement: 'bottom',
+      strategy: 'absolute',
+      middlewareData: {},
+    };
   },
 }));
 

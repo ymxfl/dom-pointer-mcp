@@ -19,13 +19,15 @@
   pointer-events: auto !important;
 }
 
-/* Block: Main overlay container */
+/* Block: Main overlay container
+   Keep below note panel / toast (2147483647) and history drawer (2147483646)
+   so a large selection overlay never covers the composer. */
 .dom-pointer-mcp__overlay {
   position: absolute;
   top: 0;
   left: 0;
   box-sizing: border-box;
-  z-index: 2147483647;
+  z-index: 2147483645;
 }
 
 /* Hover overlay: dashed outline that morphs between targets */
@@ -98,9 +100,11 @@
 }
 
 
-/* Note panel: floating composer for batched selections */
+/* Note panel: floating composer for batched selections.
+   Must stay above selection overlays so large selections don't block input. */
 .dom-pointer-mcp__note-panel {
   width: 360px;
+  z-index: 2147483647;
   background: white;
   border: 1px solid #ccc;
   border-radius: 8px;
