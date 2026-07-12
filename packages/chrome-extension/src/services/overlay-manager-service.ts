@@ -3,11 +3,13 @@ import autoAssignOverlayPositionAndSize from '../utils/position';
 interface OverlayWrapper {
   overlay: HTMLDivElement;
   target: HTMLElement;
+  cleanup: () => void;
 }
 
 const OVERLAY_BASE_CLASS = 'dom-pointer-mcp__overlay';
 const HOVER_CLASS = 'dom-pointer-mcp__overlay--hover';
 const SELECTION_CLASS = 'dom-pointer-mcp__overlay--selection';
+const INSTANT_CLASS = 'dom-pointer-mcp__overlay--instant';
 const INDEX_BADGE_CLASS = 'dom-pointer-mcp__overlay-index';
 
 export default class OverlayManagerService {
@@ -19,17 +21,34 @@ export default class OverlayManagerService {
 
   overlayHover(target: HTMLElement): void {
     if (!this.hoverOverlay) {
+      const overlay = this.buildOverlayElement(HOVER_CLASS);
+      // Snap on first paint so the outline doesn't fly in from 0,0.
+      overlay.classList.add(INSTANT_CLASS);
       this.hoverOverlay = {
-        overlay: this.buildOverlayElement(HOVER_CLASS, false),
+        overlay,
         target,
+        cleanup: autoAssignOverlayPositionAndSize(target, overlay),
       };
-    } else {
-      this.hoverOverlay.target = target;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          overlay.classList.remove(INSTANT_CLASS);
+        });
+      });
+      return;
     }
-    autoAssignOverlayPositionAndSize(target, this.hoverOverlay.overlay);
+
+    if (this.hoverOverlay.target === target) return;
+
+    this.hoverOverlay.cleanup();
+    this.hoverOverlay.target = target;
+    this.hoverOverlay.cleanup = autoAssignOverlayPositionAndSize(
+      target,
+      this.hoverOverlay.overlay,
+    );
   }
 
   clearHover(): void {
+    this.hoverOverlay?.cleanup();
     this.hoverOverlay?.overlay.remove();
     this.hoverOverlay = null;
   }
@@ -38,13 +57,14 @@ export default class OverlayManagerService {
 
   overlaySelection(target: HTMLElement, index?: number): void {
     if (this.selectionOverlays.has(target)) return;
+    const overlay = this.buildOverlayElement(SELECTION_CLASS);
     const wrapper: OverlayWrapper = {
-      overlay: this.buildOverlayElement(SELECTION_CLASS, true),
+      overlay,
       target,
+      cleanup: autoAssignOverlayPositionAndSize(target, overlay),
     };
     this.selectionOverlays.set(target, wrapper);
     this.setOverlayIndex(wrapper.overlay, index);
-    autoAssignOverlayPositionAndSize(target, wrapper.overlay);
   }
 
   updateSelectionIndexes(elements: HTMLElement[]): void {
@@ -58,12 +78,16 @@ export default class OverlayManagerService {
   clearSelection(target: HTMLElement): void {
     const wrapper = this.selectionOverlays.get(target);
     if (!wrapper) return;
+    wrapper.cleanup();
     wrapper.overlay.remove();
     this.selectionOverlays.delete(target);
   }
 
   clearAllSelections(): void {
-    this.selectionOverlays.forEach((w) => w.overlay.remove());
+    this.selectionOverlays.forEach((w) => {
+      w.cleanup();
+      w.overlay.remove();
+    });
     this.selectionOverlays.clear();
   }
 
@@ -73,20 +97,9 @@ export default class OverlayManagerService {
 
   // --- Shared ---
 
-  private buildOverlayElement(typeClass: string, hasGlow: boolean): HTMLDivElement {
+  private buildOverlayElement(typeClass: string): HTMLDivElement {
     const overlay = document.createElement('div');
     overlay.className = `${OVERLAY_BASE_CLASS} ${typeClass}`;
-
-    if (hasGlow) {
-      const glow = document.createElement('div');
-      glow.className = 'dom-pointer-mcp__overlay-glow';
-      overlay.appendChild(glow);
-    }
-
-    const glass = document.createElement('div');
-    glass.className = 'dom-pointer-mcp__overlay-glass';
-    overlay.appendChild(glass);
-
     document.body.appendChild(overlay);
     return overlay;
   }
