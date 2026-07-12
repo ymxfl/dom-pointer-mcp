@@ -1,7 +1,7 @@
 import type { MessageKey } from './zh';
 
 const en: Record<MessageKey, string> = {
-  'popup.title': 'DOM Pointer MCP Settings',
+  'popup.title': 'DOM Pointer {version}',
   'popup.enabled': 'Extension Enabled',
   'popup.clearAfterSend': 'Clear selection after Send',
   'popup.captureScreenshot': 'Screenshots',
@@ -25,7 +25,6 @@ const en: Record<MessageKey, string> = {
   'popup.recheck': 'Recheck',
   'popup.invalidPort': 'Invalid port: {port}',
   'popup.aboutTitle': 'View this project on GitHub',
-  'popup.version': 'Version {version}',
   'popup.checkUpdate': 'Check updates',
   'popup.updateChecking': 'Checking for updates...',
   'popup.updateAvailable': 'Update available: {latest} (current {current})',
@@ -35,6 +34,9 @@ const en: Record<MessageKey, string> = {
   'popup.updateError': 'Failed to check for updates',
   'popup.updateOpen': 'Open download',
   'popup.updateOpenStore': 'Open Web Store',
+  'popup.copyInstall': 'Copy Agent install command',
+  'popup.copyInstallSuccess': 'Install prompt copied',
+  'popup.copyInstallFailed': 'Copy failed',
   'notePanel.placeholder': 'Describe what you want to change...',
   'notePanel.send': 'Send',
   'notePanel.copy': 'Copy',

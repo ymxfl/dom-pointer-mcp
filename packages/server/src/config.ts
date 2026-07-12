@@ -45,6 +45,11 @@ export interface ConfigOpts {
   scope?: string;
   uninstall?: boolean;
   global?: boolean;
+  /**
+   * From commander `--no-slash`.
+   * Commander defaults this to true; `--no-slash` sets it to false.
+   */
+  slash?: boolean;
   lang?: string;
 }
 
@@ -112,7 +117,12 @@ export default async function configCommand(
   }
   logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
   const summary = await executeForAgents([adapter], {
-    mode: 'install', scope, port, withSlash: true, launchMode,
+    mode: 'install',
+    scope,
+    port,
+    // commander `--no-slash` → slash:false; omit flag → slash:true
+    withSlash: opts.slash !== false,
+    launchMode,
   });
   if (summary.exitCode !== 0) process.exit(summary.exitCode);
 }

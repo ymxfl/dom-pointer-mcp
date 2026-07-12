@@ -18,31 +18,59 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
   padding: 0 2px;
 }
 
-.about-link {
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.header-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
-  border-radius: 6px;
-  padding: 2px;
-  transition: color 0.15s, background-color 0.15s;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  color: #4b5563;
+  box-shadow: 0 0 0 1px #e5e7eb inset;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-.about-link:hover {
+.header-icon-btn:hover:not(:disabled) {
   color: #111827;
-  background-color: #f3f4f6;
+  background-color: #f8fafc;
+  box-shadow: 0 0 0 1px #cbd5e1 inset;
+}
+
+.header-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.about-link {
+  text-decoration: none;
 }
 
 .header h1 {
   margin: 0;
+  min-width: 0;
   font-size: 15px;
   color: #111827;
   font-weight: 650;
   letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .config-form {
@@ -299,14 +327,24 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 8px;
-  min-height: 34px;
+  min-height: 32px;
   padding: 6px 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border-radius: 8px;
   border: 1px solid #d7dee8;
   background: #fff;
   font-size: 12px;
   color: #374151;
+}
+
+.update-status[hidden] {
+  display: none;
+}
+
+.update-status.checking {
+  background: #fff;
+  color: #596579;
+  border-color: #d7dee8;
 }
 
 .update-status.available {
@@ -315,15 +353,16 @@ body {
   border-color: #bfdbfe;
 }
 
+.update-status.ok {
+  background: #edf8f1;
+  color: #17633a;
+  border-color: #b8e2c8;
+}
+
 .update-status.error {
   background: #fff0ed;
   color: #b42318;
   border-color: #f2b8af;
-}
-
-.update-version {
-  font-weight: 650;
-  color: #111827;
 }
 
 .update-text {

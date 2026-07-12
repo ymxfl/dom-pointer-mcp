@@ -34,6 +34,6 @@ describe('i18n', () => {
   it('setLocale switches language', () => {
     setLocale('en');
     expect(getLocale()).toBe('en');
-    expect(t('popup.title')).toBe('DOM Pointer MCP Settings');
+    expect(t('popup.title', { version: '1.7.0' })).toBe('DOM Pointer 1.7.0');
   });
 });

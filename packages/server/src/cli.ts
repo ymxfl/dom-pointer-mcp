@@ -68,6 +68,7 @@ program
   .option('--scope <scope>', 'Install scope: user or project (interactive if omitted)')
   .option('--uninstall', 'Remove DOM Pointer MCP instead of installing')
   .option('--global', 'Use globally installed binary instead of npx')
+  .option('--no-slash', 'Skip slash command install (MCP + Skill only)')
   .option('--lang <lang>', 'UI language: zh or en (default: zh)')
   .description('Configure DOM Pointer MCP for AI tools (interactive when no tool is given)')
   .action(configCommand);

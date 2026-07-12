@@ -6,12 +6,15 @@ import {
   readJsonOrDefault,
   fileExists,
   deleteFileIfExists,
+  deleteDirIfExists,
   removeJsonKey,
 } from '../adapter-helpers';
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
   COMMAND_BODY_OPENCODE,
+  SKILL_DESCRIPTION,
+  SKILL_BODY_OPENCODE,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -22,6 +25,25 @@ description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
 ${COMMAND_BODY_OPENCODE}`;
+}
+
+function buildSkillFile(): string {
+  return `---
+name: ${TRIGGER_NAME}
+description: ${JSON.stringify(SKILL_DESCRIPTION)}
+---
+
+${SKILL_BODY_OPENCODE}`;
+}
+
+function skillPath(scope: 'user' | 'project'): string {
+  return scope === 'user'
+    ? path.join(os.homedir(), '.config', 'opencode', 'skills', TRIGGER_NAME, 'SKILL.md')
+    : path.join(process.cwd(), '.opencode', 'skills', TRIGGER_NAME, 'SKILL.md');
+}
+
+function skillDir(scope: 'user' | 'project'): string {
+  return path.dirname(skillPath(scope));
 }
 
 function userConfigPath(): string {
@@ -81,7 +103,18 @@ export const opencodeAdapter: ToolAdapter = {
       return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
     }
   },
-  // No installSkill: OpenCode has no separate skill mechanism distinct from commands.
+
+  async installSkill(scope): Promise<OperationResult> {
+    const filePath = skillPath(scope);
+    try {
+      await writeFileEnsuringDir(filePath, buildSkillFile());
+      return {
+        status: 'success', scope, path: filePath, message: 'Skill installed',
+      };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Write failed: ${(e as Error).message}` };
+    }
+  },
 
   async unregisterMcp(scope): Promise<OperationResult> {
     const filePath = scope === 'user' ? userConfigPath() : projectConfigPath();
@@ -124,5 +157,20 @@ export const opencodeAdapter: ToolAdapter = {
       return { status: 'failed', scope, message: `Delete failed: ${(e as Error).message}` };
     }
   },
-  // No uninstallSkill.
+
+  async uninstallSkill(scope): Promise<OperationResult> {
+    const dirPath = skillDir(scope);
+    try {
+      const r = await deleteDirIfExists(dirPath);
+      return r === 'deleted'
+        ? {
+          status: 'success', scope, path: dirPath, message: 'Skill removed',
+        }
+        : {
+          status: 'skipped', scope, path: dirPath, message: 'Skill directory not found',
+        };
+    } catch (e) {
+      return { status: 'failed', scope, message: `Delete failed: ${(e as Error).message}` };
+    }
+  },
 };
