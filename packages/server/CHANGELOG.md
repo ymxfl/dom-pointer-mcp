@@ -1,5 +1,11 @@
 # @dom-pointer-mcp/server
 
+## 1.7.2
+
+### Patch Changes
+
+- 274dfe5: Keep the note panel above large selection overlays, morph the Option+hover dashed outline between elements, and simplify selection visuals to a soft fill with light outer glow.
+
 ## 1.7.1
 
 ### Patch Changes
