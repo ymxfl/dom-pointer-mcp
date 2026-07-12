@@ -51,6 +51,16 @@ describe('NotePanelService', () => {
     expect(document.querySelector(PANEL_SELECTOR)).not.toBeNull();
   });
 
+  it('stacks the panel above selection overlays via max z-index', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    store.toggle(el);
+    const panel = document.querySelector(PANEL_SELECTOR) as HTMLElement;
+    // Overlay CSS uses 2147483645; panel must stay above so large selections
+    // cannot cover the composer and block note input.
+    expect(panel.style.zIndex).toBe('2147483647');
+  });
+
   it('removes panel from body when selection goes N → 0', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
