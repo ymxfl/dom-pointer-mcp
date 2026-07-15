@@ -1,6 +1,5 @@
 import fs from 'fs/promises';
 import path from 'path';
-import os from 'os';
 import { randomUUID } from 'crypto';
 import {
   SharedState,
@@ -8,12 +7,12 @@ import {
   ProcessedPointedSelection,
   SelectionSummary,
 } from '../types';
+import { BASE_DIR } from '../utils/base-dir';
 import logger from '../logger';
 
 export default class SharedStateService {
   static DEFAULT_SHARED_STATE_PATH = path.join(
-    os.tmpdir(),
-    'dom-pointer-mcp',
+    BASE_DIR,
     'shared-state.json',
   );
 

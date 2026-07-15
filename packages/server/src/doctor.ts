@@ -1,10 +1,9 @@
 import fs from 'fs/promises';
 import net from 'net';
-import path from 'path';
-import os from 'os';
 import logger from './logger';
 import SharedStateService from './services/shared-state-service';
 import ScreenshotStorageService from './services/screenshot-storage-service';
+import { BASE_DIR } from './utils/base-dir';
 
 interface DoctorOptions {
   port: number;
@@ -82,5 +81,5 @@ export default async function doctor(options: DoctorOptions): Promise<void> {
     }
   }
 
-  logger.info(`Temp root: ${path.join(os.tmpdir(), 'dom-pointer-mcp')}`);
+  logger.info(`Base dir: ${BASE_DIR}`);
 }

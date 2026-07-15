@@ -1,14 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
-import os from 'os';
 import {
   RawSelectionScreenshot,
   SavedSelectionScreenshot,
 } from '@dom-pointer-mcp/shared/types';
+import { BASE_DIR } from '../utils/base-dir';
 import { formatLocalTimestamp } from '../utils/time';
 
 export default class ScreenshotStorageService {
-  static SCREENSHOT_DIR = path.join(os.tmpdir(), 'dom-pointer-mcp', 'screenshots');
+  static SCREENSHOT_DIR = path.join(BASE_DIR, 'screenshots');
 
   public async save(
     selectionId: string,
