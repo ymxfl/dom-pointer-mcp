@@ -34,9 +34,9 @@ describe('SharedStateService', () => {
     SharedStateService.SHARED_STATE_PATH = originalStatePath;
   });
 
-  it('uses the platform temp directory for the default state path', () => {
+  it('uses a fixed home-directory path for the default state path', () => {
     expect(SharedStateService.DEFAULT_SHARED_STATE_PATH).toBe(
-      path.join(os.tmpdir(), 'dom-pointer-mcp', 'shared-state.json'),
+      path.join(os.homedir(), '.dom-pointer-mcp', 'shared-state.json'),
     );
   });
 
