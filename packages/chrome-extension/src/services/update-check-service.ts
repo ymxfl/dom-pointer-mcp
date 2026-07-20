@@ -1,7 +1,7 @@
-import { isNewerVersion } from '../utils/semver';
+import { isNewerVersion, parseSemver } from '../utils/semver';
 
 export const GITHUB_REPO = 'ymxfl/dom-pointer-mcp';
-export const GITHUB_RELEASES_LATEST_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+export const GITHUB_RELEASES_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=30`;
 export const EXTENSION_ZIP_NAME = 'dom-pointer-mcp-chrome-extension.zip';
 export const CHROME_WEB_STORE_ID = 'jfhgaembhafbffidedhpkmnaajdfeiok';
 export const CHROME_WEB_STORE_URL = `https://chromewebstore.google.com/detail/dom-pointer-mcp/${CHROME_WEB_STORE_ID}`;
@@ -28,6 +28,59 @@ export interface UpdateCheckResult {
 }
 
 export type InstallType = 'normal' | 'development' | 'sideload' | 'admin' | 'other' | 'unknown';
+
+export interface GithubReleaseAsset {
+  name?: string;
+  browser_download_url?: string;
+}
+
+export interface GithubRelease {
+  tag_name?: string;
+  html_url?: string;
+  draft?: boolean;
+  prerelease?: boolean;
+  assets?: GithubReleaseAsset[];
+}
+
+export interface GithubLatestExtension {
+  version: string;
+  releaseUrl: string;
+  zipUrl?: string;
+}
+
+/**
+ * Pick the newest extension release from a GitHub releases list.
+ * Extension releases are tagged with a bare semver (e.g. `1.7.4`); server
+ * releases use a package-scoped tag (`@dom-pointer-mcp/server@x`) and must be
+ * ignored so a server-only release never masks the extension's latest version.
+ * @author zgx
+ */
+export function pickLatestExtensionRelease(
+  releases: GithubRelease[],
+): GithubLatestExtension | null {
+  // Only bare-semver tags belong to the Chrome extension; server releases use a
+  // package-scoped tag (`@dom-pointer-mcp/server@x`) and are excluded here.
+  const candidates = releases
+    .filter((release) => !release.draft && !release.prerelease)
+    .filter((release) => /^v?\d+\.\d+\.\d+$/u.test(release.tag_name ?? ''))
+    .map((release) => ({ release, version: (release.tag_name ?? '').replace(/^v/u, '') }))
+    .filter((candidate) => parseSemver(candidate.version) !== null);
+
+  const best = candidates.reduce<{ release: GithubRelease; version: string } | null>(
+    (acc, candidate) => (
+      !acc || isNewerVersion(candidate.version, acc.version) ? candidate : acc
+    ),
+    null,
+  );
+
+  if (!best) return null;
+  const zip = best.release.assets?.find((asset) => asset.name === EXTENSION_ZIP_NAME);
+  return {
+    version: best.version,
+    releaseUrl: best.release.html_url || `https://github.com/${GITHUB_REPO}/releases/latest`,
+    zipUrl: zip?.browser_download_url,
+  };
+}
 
 export interface UpdateCheckDeps {
   getCurrentVersion: () => string;
@@ -74,27 +127,18 @@ export function createDefaultUpdateCheckDeps(): UpdateCheckDeps {
       }
     }),
     fetchGithubLatest: async () => {
-      const response = await fetch(GITHUB_RELEASES_LATEST_URL, {
+      const response = await fetch(GITHUB_RELEASES_URL, {
         headers: { Accept: 'application/vnd.github+json' },
       });
       if (!response.ok) {
         throw new Error(`GitHub releases HTTP ${response.status}`);
       }
-      const data = await response.json() as {
-        tag_name?: string;
-        html_url?: string;
-        assets?: Array<{ name?: string; browser_download_url?: string }>;
-      };
-      const version = data.tag_name?.replace(/^v/, '');
-      if (!version) {
-        throw new Error('GitHub release missing tag_name');
+      const releases = await response.json() as GithubRelease[];
+      const latest = pickLatestExtensionRelease(releases);
+      if (!latest) {
+        throw new Error('No Chrome extension release found');
       }
-      const zip = data.assets?.find((asset) => asset.name === EXTENSION_ZIP_NAME);
-      return {
-        version,
-        releaseUrl: data.html_url || `https://github.com/${GITHUB_REPO}/releases/latest`,
-        zipUrl: zip?.browser_download_url,
-      };
+      return latest;
     },
   };
 }

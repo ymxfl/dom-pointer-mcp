@@ -1,6 +1,8 @@
 import {
   checkExtensionUpdate,
+  pickLatestExtensionRelease,
   CHROME_WEB_STORE_URL,
+  EXTENSION_ZIP_NAME,
   UpdateCheckDeps,
 } from '../../services/update-check-service';
 
@@ -102,5 +104,48 @@ describe('checkExtensionUpdate', () => {
     }));
     expect(result.channel).toBe('chrome-web-store');
     expect(result.status).toBe('update-available');
+  });
+});
+
+describe('pickLatestExtensionRelease', () => {
+  it('ignores server package-scoped releases and picks the bare-semver extension release', () => {
+    const result = pickLatestExtensionRelease([
+      { tag_name: '@dom-pointer-mcp/server@1.7.5', html_url: 'https://x/server175' },
+      {
+        tag_name: '1.7.4',
+        html_url: 'https://x/174',
+        assets: [{ name: EXTENSION_ZIP_NAME, browser_download_url: 'https://x/174.zip' }],
+      },
+      { tag_name: '@dom-pointer-mcp/server@1.7.3', html_url: 'https://x/server173' },
+    ]);
+    expect(result).toEqual({
+      version: '1.7.4',
+      releaseUrl: 'https://x/174',
+      zipUrl: 'https://x/174.zip',
+    });
+  });
+
+  it('picks the highest extension version regardless of list order', () => {
+    const result = pickLatestExtensionRelease([
+      { tag_name: '1.7.2', html_url: 'https://x/172' },
+      { tag_name: '1.7.4', html_url: 'https://x/174' },
+      { tag_name: '1.7.3', html_url: 'https://x/173' },
+    ]);
+    expect(result?.version).toBe('1.7.4');
+  });
+
+  it('skips drafts and prereleases', () => {
+    const result = pickLatestExtensionRelease([
+      { tag_name: '1.8.0', html_url: 'https://x/180', prerelease: true },
+      { tag_name: '1.7.4', html_url: 'https://x/174' },
+    ]);
+    expect(result?.version).toBe('1.7.4');
+  });
+
+  it('returns null when no extension release exists', () => {
+    const result = pickLatestExtensionRelease([
+      { tag_name: '@dom-pointer-mcp/server@1.7.5', html_url: 'https://x/server' },
+    ]);
+    expect(result).toBeNull();
   });
 });
