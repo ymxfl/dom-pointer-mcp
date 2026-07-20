@@ -3,9 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [
-    ["@dom-pointer-mcp/server", "@dom-pointer-mcp/chrome-extension"]
-  ],
+  "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
