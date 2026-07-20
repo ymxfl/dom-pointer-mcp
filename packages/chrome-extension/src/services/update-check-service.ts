@@ -58,19 +58,21 @@ export interface GithubLatestExtension {
 export function pickLatestExtensionRelease(
   releases: GithubRelease[],
 ): GithubLatestExtension | null {
-  let best: { release: GithubRelease; version: string } | null = null;
-  for (const release of releases) {
-    if (release.draft || release.prerelease) continue;
-    const tag = release.tag_name ?? '';
-    // Only bare-semver tags belong to the Chrome extension.
-    if (!/^v?\d+\.\d+\.\d+$/u.test(tag)) continue;
-    const parsed = parseSemver(tag);
-    if (!parsed) continue;
-    const version = tag.replace(/^v/u, '');
-    if (!best || isNewerVersion(version, best.version)) {
-      best = { release, version };
-    }
-  }
+  // Only bare-semver tags belong to the Chrome extension; server releases use a
+  // package-scoped tag (`@dom-pointer-mcp/server@x`) and are excluded here.
+  const candidates = releases
+    .filter((release) => !release.draft && !release.prerelease)
+    .filter((release) => /^v?\d+\.\d+\.\d+$/u.test(release.tag_name ?? ''))
+    .map((release) => ({ release, version: (release.tag_name ?? '').replace(/^v/u, '') }))
+    .filter((candidate) => parseSemver(candidate.version) !== null);
+
+  const best = candidates.reduce<{ release: GithubRelease; version: string } | null>(
+    (acc, candidate) => (
+      !acc || isNewerVersion(candidate.version, acc.version) ? candidate : acc
+    ),
+    null,
+  );
+
   if (!best) return null;
   const zip = best.release.assets?.find((asset) => asset.name === EXTENSION_ZIP_NAME);
   return {
