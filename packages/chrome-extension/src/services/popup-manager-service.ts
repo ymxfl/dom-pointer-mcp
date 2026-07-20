@@ -3,7 +3,7 @@ import { getModifierLabel } from '../utils/platform';
 import logger from '../utils/logger';
 import ConfigStorageService from './config-storage-service';
 import { checkReachability, ReachabilityState } from './server-reachability-service';
-import { checkExtensionUpdate, UpdateCheckResult } from './update-check-service';
+import { checkExtensionUpdate, UpdateCheckResult, UpdateChannel } from './update-check-service';
 import { buildInstallPrompt } from '../utils/install-prompt';
 import { t, setLocale, getLocale } from '../i18n';
 
@@ -50,6 +50,10 @@ export default class PopupManagerService {
 
   private checkUpdateBtn: HTMLButtonElement;
 
+  private updateMenu: HTMLElement;
+
+  private updateMenuItems: HTMLButtonElement[];
+
   private copyInstallBtn: HTMLButtonElement;
 
   private titleEl: HTMLElement;
@@ -75,6 +79,10 @@ export default class PopupManagerService {
     this.updateText = document.getElementById('updateText') as HTMLElement;
     this.updateLink = document.getElementById('updateLink') as HTMLAnchorElement;
     this.checkUpdateBtn = document.getElementById('checkUpdateBtn') as HTMLButtonElement;
+    this.updateMenu = document.getElementById('updateMenu') as HTMLElement;
+    this.updateMenuItems = Array.from(
+      this.updateMenu.querySelectorAll<HTMLButtonElement>('.update-menu-item'),
+    );
     this.copyInstallBtn = document.getElementById('copyInstallBtn') as HTMLButtonElement;
     this.titleEl = document.getElementById('title') as HTMLElement;
 
@@ -104,6 +112,9 @@ export default class PopupManagerService {
     this.copyInstallBtn.setAttribute('aria-label', t('popup.copyInstall'));
     this.checkUpdateBtn.title = t('popup.checkUpdate');
     this.checkUpdateBtn.setAttribute('aria-label', t('popup.checkUpdate'));
+    document.getElementById('updateChannelAuto')!.textContent = t('popup.updateChannelAuto');
+    document.getElementById('updateChannelStore')!.textContent = t('popup.updateChannelStore');
+    document.getElementById('updateChannelGithub')!.textContent = t('popup.updateChannelGithub');
     this.aboutLink.title = t('popup.aboutTitle');
     this.aboutLink.setAttribute('aria-label', t('popup.aboutTitle'));
   }
@@ -122,7 +133,24 @@ export default class PopupManagerService {
     this.saveBtn.addEventListener('click', () => this.saveConfig());
     this.resetBtn.addEventListener('click', () => this.resetToDefaults());
     this.recheckBtn.addEventListener('click', () => this.checkServer());
-    this.checkUpdateBtn.addEventListener('click', () => this.checkForUpdates());
+    this.checkUpdateBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.toggleUpdateMenu();
+    });
+    this.updateMenuItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        const channel = (item.dataset.channel as UpdateChannel) || 'auto';
+        this.closeUpdateMenu();
+        this.checkForUpdates(channel);
+      });
+    });
+    document.addEventListener('click', (event) => {
+      if (this.updateMenu.hidden) return;
+      const target = event.target as Node;
+      if (!this.updateMenu.contains(target) && !this.checkUpdateBtn.contains(target)) {
+        this.closeUpdateMenu();
+      }
+    });
     this.copyInstallBtn.addEventListener('click', () => this.copyInstallPrompt());
   }
 
@@ -293,7 +321,21 @@ export default class PopupManagerService {
    * Check extension updates via Chrome Web Store and/or GitHub Releases.
    * @author zgx
    */
-  private async checkForUpdates(): Promise<void> {
+  private toggleUpdateMenu(): void {
+    if (this.updateMenu.hidden) {
+      this.updateMenu.hidden = false;
+      this.checkUpdateBtn.setAttribute('aria-expanded', 'true');
+    } else {
+      this.closeUpdateMenu();
+    }
+  }
+
+  private closeUpdateMenu(): void {
+    this.updateMenu.hidden = true;
+    this.checkUpdateBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  private async checkForUpdates(channel: UpdateChannel = 'auto'): Promise<void> {
     this.checkUpdateBtn.disabled = true;
     this.updateStatus.hidden = false;
     this.updateStatus.className = 'update-status checking';
@@ -301,7 +343,7 @@ export default class PopupManagerService {
     this.updateLink.hidden = true;
 
     try {
-      const result = await checkExtensionUpdate('auto');
+      const result = await checkExtensionUpdate(channel);
       this.renderUpdateResult(result);
     } catch (error) {
       this.updateStatus.hidden = false;
