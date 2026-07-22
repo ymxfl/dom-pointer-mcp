@@ -80,7 +80,8 @@ jobs:
         run: |
           EXT_VERSION=$(node -p "require('./packages/chrome-extension/package.json').version")
           echo "version=${EXT_VERSION}" >> "$GITHUB_OUTPUT"
-          if git tag --list | grep -qx "@dom-pointer-mcp/chrome-extension@${EXT_VERSION}"; then
+          # 通过远端 tag 判断，避免 shallow clone 下本地 tag 缺失导致误判为"新版本"
+          if git ls-remote --tags origin "refs/tags/@dom-pointer-mcp/chrome-extension@${EXT_VERSION}" | grep -q .; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
