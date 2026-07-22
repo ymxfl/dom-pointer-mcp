@@ -167,7 +167,49 @@ export default class HistoryDrawerService {
       if (selectionId) {
         await this.clearHistory(selectionId);
       }
+      return;
     }
+
+    if (action === 'copy-one') {
+      const { selectionId } = actionEl.dataset;
+      if (selectionId) {
+        await this.copyUserNote(selectionId);
+      }
+    }
+  }
+
+  private async copyUserNote(selectionId: string): Promise<void> {
+    try {
+      const selection = await this.fetchSelection(selectionId);
+      if (!selection) {
+        this.setStatus(t('history.missingSelection'));
+        return;
+      }
+      const note = selection.userNote ?? '';
+      if (!note) {
+        this.setStatus(t('history.copyEmpty'));
+        return;
+      }
+      await this.writeToClipboard(note);
+      this.setStatus(t('history.copySuccess'));
+    } catch (error) {
+      this.setStatus(t('history.copyFailed', { error: (error as Error).message }));
+    }
+  }
+
+  private async writeToClipboard(text: string): Promise<void> {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
   }
 
   private async loadHistory(): Promise<void> {
@@ -227,6 +269,12 @@ export default class HistoryDrawerService {
       const actions = document.createElement('div');
       actions.className = 'dom-pointer-mcp__history-item-actions';
 
+      const copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.dataset.action = 'copy-one';
+      copyButton.dataset.selectionId = summary.selectionId;
+      copyButton.textContent = t('history.copy');
+
       const showButton = document.createElement('button');
       showButton.type = 'button';
       showButton.dataset.action = 'show-one';
@@ -241,7 +289,7 @@ export default class HistoryDrawerService {
       deleteButton.className = 'dom-pointer-mcp__history-danger';
       deleteButton.textContent = t('history.delete');
 
-      actions.append(showButton, deleteButton);
+      actions.append(copyButton, showButton, deleteButton);
 
       item.append(main, actions);
       this.list!.appendChild(item);
