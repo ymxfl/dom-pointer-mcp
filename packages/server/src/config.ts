@@ -10,6 +10,7 @@ import {
 import { selectAction } from './config/prompts';
 import { setLang } from './config/i18n';
 import type { Scope, LaunchMode } from './config/types';
+import { resolveDisplayName } from './config/types';
 import parsePort from './utils/port';
 
 // ============================================================
@@ -115,7 +116,7 @@ export default async function configCommand(
     process.exit(1);
     return;
   }
-  logger.info(`🔧 Configuring DOM Pointer MCP for ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🔧 Configuring DOM Pointer MCP for ${resolveDisplayName(adapter)} (${scope} scope)...`);
   const summary = await executeForAgents([adapter], {
     mode: 'install',
     scope,

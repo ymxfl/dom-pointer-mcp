@@ -4,7 +4,7 @@ export type LaunchMode = 'npx' | 'global';
 
 export type ToolId =
   | 'claude' | 'cursor' | 'windsurf'
-  | 'codex' | 'opencode' | 'joycode';
+  | 'codex' | 'opencode' | 'joycode' | 'generic';
 
 export type Status = 'success' | 'degraded' | 'skipped' | 'failed';
 
@@ -17,7 +17,7 @@ export interface OperationResult {
 
 export interface ToolAdapter {
   toolId: ToolId;
-  displayName: string;
+  displayName: string | (() => string);
 
   // Install
   registerMcp(scope: Scope, port: number, launchMode?: LaunchMode): Promise<OperationResult>;
@@ -28,4 +28,8 @@ export interface ToolAdapter {
   unregisterMcp(scope: Scope): Promise<OperationResult>;
   uninstallCommand?(scope: Scope): Promise<OperationResult>;
   uninstallSkill?(scope: Scope): Promise<OperationResult>;
+}
+
+export function resolveDisplayName(adapter: ToolAdapter): string {
+  return typeof adapter.displayName === 'function' ? adapter.displayName() : adapter.displayName;
 }

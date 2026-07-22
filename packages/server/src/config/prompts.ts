@@ -2,6 +2,7 @@ import {
   checkbox, confirm, select,
 } from '@inquirer/prompts';
 import type { Scope, ToolAdapter, ToolId } from './types';
+import { resolveDisplayName } from './types';
 import { t } from './i18n';
 
 export type Action = 'install' | 'uninstall';
@@ -31,7 +32,7 @@ export async function selectAgents(
   ensureTTY();
   const selectedIds = await checkbox<ToolId>({
     message,
-    choices: adapters.map((a) => ({ name: a.displayName, value: a.toolId })),
+    choices: adapters.map((a) => ({ name: resolveDisplayName(a), value: a.toolId })),
     validate: (items) => (items.length === 0 ? t('agentValidation') as string : true),
   });
   const byId = new Map(adapters.map((a) => [a.toolId, a]));

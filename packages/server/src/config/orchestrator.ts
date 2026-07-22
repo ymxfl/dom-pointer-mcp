@@ -7,6 +7,7 @@ import { t } from './i18n';
 import type {
   OperationResult, Scope, LaunchMode, ToolAdapter,
 } from './types';
+import { resolveDisplayName } from './types';
 
 export interface RunOptions {
   mode: 'install' | 'uninstall';
@@ -29,7 +30,7 @@ function iconFor(status: OperationResult['status']): string {
 
 function printResult(adapter: ToolAdapter, label: string, r: OperationResult): void {
   const where = r.path ? ` (${r.path})` : '';
-  logger.info(`  ${iconFor(r.status)} ${adapter.displayName} · ${label}: ${r.message}${where}`);
+  logger.info(`  ${iconFor(r.status)} ${resolveDisplayName(adapter)} · ${label}: ${r.message}${where}`);
 }
 
 export async function executeForAgents(
@@ -86,7 +87,7 @@ export async function runInteractiveInstall(port: number): Promise<RunSummary> {
   const launchMode = await selectLaunchMode();
   const withSlash = await confirmSlash();
   logger.info('');
-  logger.info(`🔧 Installing for ${adapters.map((a) => a.displayName).join(', ')} (${scope} scope)...`);
+  logger.info(`🔧 Installing for ${adapters.map(resolveDisplayName).join(', ')} (${scope} scope)...`);
   return executeForAgents(adapters, {
     mode: 'install', scope, port, withSlash, launchMode,
   });
@@ -94,13 +95,13 @@ export async function runInteractiveInstall(port: number): Promise<RunSummary> {
 
 export async function runInteractiveUninstall(): Promise<RunSummary> {
   const adapters = await selectAgents(listAdapters(), t('selectAgentsUninstall') as string);
-  const ok = await confirmUninstall(adapters.map((a) => a.displayName));
+  const ok = await confirmUninstall(adapters.map(resolveDisplayName));
   if (!ok) {
     logger.info('Cancelled.');
     return { exitCode: 0 };
   }
   logger.info('');
-  logger.info(`🗑  Uninstalling from ${adapters.map((a) => a.displayName).join(', ')} (user scope)...`);
+  logger.info(`🗑  Uninstalling from ${adapters.map(resolveDisplayName).join(', ')} (user scope)...`);
   const summary = await executeForAgents(adapters, { mode: 'uninstall', scope: 'user' });
   logger.info('');
   logger.info('💡 To remove project-scope installs, cd into the project and run:');
@@ -117,6 +118,6 @@ export async function runNonInteractiveUninstall(
     logger.error(`❌ Unsupported tool: ${toolId}`);
     return { exitCode: 1 };
   }
-  logger.info(`🗑  Uninstalling DOM Pointer MCP from ${adapter.displayName} (${scope} scope)...`);
+  logger.info(`🗑  Uninstalling DOM Pointer MCP from ${resolveDisplayName(adapter)} (${scope} scope)...`);
   return executeForAgents([adapter], { mode: 'uninstall', scope });
 }
