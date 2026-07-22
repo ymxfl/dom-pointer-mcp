@@ -12,7 +12,7 @@ import {
 import {
   TRIGGER_NAME,
   SKILL_DESCRIPTION,
-  SKILL_BODY_CODEX,
+  SKILL_BODY,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -21,7 +21,7 @@ function buildTomlSection(port: number, launchMode: LaunchMode = 'npx'): string 
   const cmd = launchMode === 'global' ? 'dom-pointer-mcp' : 'npx';
   const args = launchMode === 'global'
     ? '["start"]'
-    : '["-y", "@dom-pointer-mcp/server@latest", "start"]';
+    : '["-y", "--registry=https://registry.npmjs.org/", "@dom-pointer-mcp/server@latest", "start"]';
   return `[mcp_servers.${MCP_SERVER_NAME}]
 command = "${cmd}"
 args = ${args}
@@ -92,7 +92,7 @@ name: ${TRIGGER_NAME}
 description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${SKILL_BODY_CODEX}`;
+${SKILL_BODY}`;
 }
 
 export const codexAdapter: ToolAdapter = {

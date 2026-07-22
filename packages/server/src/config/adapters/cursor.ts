@@ -7,9 +7,9 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY_CURSOR,
+  COMMAND_BODY,
   SKILL_DESCRIPTION,
-  SKILL_BODY_CURSOR,
+  SKILL_BODY,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -19,7 +19,7 @@ function buildCommandFile(): string {
 description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${COMMAND_BODY_CURSOR}`;
+${COMMAND_BODY}`;
 }
 
 function buildMdcFile(): string {
@@ -28,7 +28,7 @@ description: ${JSON.stringify(SKILL_DESCRIPTION)}
 alwaysApply: false
 ---
 
-${SKILL_BODY_CURSOR}`;
+${SKILL_BODY}`;
 }
 
 function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {
@@ -41,7 +41,7 @@ function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {
   }
   return {
     command: 'npx',
-    args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
+    args: ['-y', '--registry=https://registry.npmjs.org/', '@dom-pointer-mcp/server@latest', 'start'],
     env: { MCP_POINTER_PORT: String(port) },
   };
 }

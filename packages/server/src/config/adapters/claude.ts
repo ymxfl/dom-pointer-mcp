@@ -13,9 +13,9 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY_CLAUDE,
+  COMMAND_BODY,
   SKILL_DESCRIPTION,
-  SKILL_BODY_CLAUDE,
+  SKILL_BODY,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -25,7 +25,7 @@ function buildCommandFile(): string {
 description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${COMMAND_BODY_CLAUDE}`;
+${COMMAND_BODY}`;
 }
 
 function buildSkillFile(): string {
@@ -34,7 +34,7 @@ name: ${TRIGGER_NAME}
 description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${SKILL_BODY_CLAUDE}`;
+${SKILL_BODY}`;
 }
 
 function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {
@@ -47,7 +47,7 @@ function pointerEntry(port: number, launchMode: LaunchMode = 'npx') {
   }
   return {
     command: 'npx',
-    args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
+    args: ['-y', '--registry=https://registry.npmjs.org/', '@dom-pointer-mcp/server@latest', 'start'],
     env: { MCP_POINTER_PORT: String(port) },
   };
 }
@@ -64,7 +64,7 @@ export const claudeAdapter: ToolAdapter = {
         } catch { /* ignore: not installed */ }
         const cmdArgs = launchMode === 'global'
           ? 'dom-pointer-mcp start'
-          : 'npx -y @dom-pointer-mcp/server@latest start';
+          : 'npx -y --registry=https://registry.npmjs.org/ @dom-pointer-mcp/server@latest start';
         execSync(
           `claude mcp add ${MCP_SERVER_NAME} -s user --env MCP_POINTER_PORT=${port} `
           + `-- ${cmdArgs}`,

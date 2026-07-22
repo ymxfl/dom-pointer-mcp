@@ -39,7 +39,7 @@ node packages/server/dist/cli.cjs start
 node packages/server/dist/cli.cjs config
 
 # 非交互式安装单一 agent（保留旧用法）
-node packages/server/dist/cli.cjs config claude    # 也可以是 cursor / windsurf / codex / opencode / joycode
+node packages/server/dist/cli.cjs config claude    # 也可以是 cursor / windsurf / codex / opencode / joycode / generic
 node packages/server/dist/cli.cjs config claude --scope project
 
 # 非交互式卸载
@@ -120,7 +120,7 @@ dom-pointer-mcp config
    - `Option+Click`（macOS）/ `Alt+Click`（Windows）选中元素，可继续点其它元素叠加为一个 batch。
    - 第一次选中后会出现浮动 note panel，输入你想让 AI 做什么。
    - **Send**（`⌘/Ctrl+Enter`）发送 `{ userNote, elements: [...] }` 到 server；**Copy** 复制同样的内容到剪贴板；**×** 关闭。
-4. 在已配置 MCP 的 AI 工具（Claude/Cursor/Windsurf/Codex/Opencode/Joycode）中，调用 `get-pointed-element` 工具即可读取当前选中 batch。可选参数：
+4. 在已配置 MCP 的 AI 工具（Claude/Cursor/Windsurf/Codex/Opencode/Joycode，或通过"其他 Agent"通用配置接入的 agent）中，调用 `get-pointed-element` 工具即可读取当前选中 batch。可选参数：
    - `textDetail`：`0|1|2`（默认 `2`），控制每个元素文本的详略。
    - `cssLevel`：`0|1|2|3`（默认 `1`），控制每个元素的 CSS 详略。
 

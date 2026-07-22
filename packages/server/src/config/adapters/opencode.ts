@@ -12,9 +12,9 @@ import {
 import {
   TRIGGER_NAME,
   COMMAND_DESCRIPTION,
-  COMMAND_BODY_OPENCODE,
+  COMMAND_BODY,
   SKILL_DESCRIPTION,
-  SKILL_BODY_OPENCODE,
+  SKILL_BODY,
 } from '../trigger-content';
 
 const MCP_SERVER_NAME = 'dom-pointer';
@@ -24,7 +24,7 @@ function buildCommandFile(): string {
 description: ${JSON.stringify(COMMAND_DESCRIPTION)}
 ---
 
-${COMMAND_BODY_OPENCODE}`;
+${COMMAND_BODY}`;
 }
 
 function buildSkillFile(): string {
@@ -33,7 +33,7 @@ name: ${TRIGGER_NAME}
 description: ${JSON.stringify(SKILL_DESCRIPTION)}
 ---
 
-${SKILL_BODY_OPENCODE}`;
+${SKILL_BODY}`;
 }
 
 function skillPath(scope: 'user' | 'project'): string {
@@ -65,7 +65,7 @@ export const opencodeAdapter: ToolAdapter = {
       const existingMcp = (existing.mcp && typeof existing.mcp === 'object') ? existing.mcp : {};
       const cmd = launchMode === 'global'
         ? ['dom-pointer-mcp', 'start']
-        : ['npx', '-y', '@dom-pointer-mcp/server@latest', 'start'];
+        : ['npx', '-y', '--registry=https://registry.npmjs.org/', '@dom-pointer-mcp/server@latest', 'start'];
       const merged = {
         ...existing,
         mcp: {

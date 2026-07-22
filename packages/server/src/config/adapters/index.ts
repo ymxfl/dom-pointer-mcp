@@ -5,6 +5,7 @@ import { windsurfAdapter } from './windsurf';
 import { codexAdapter } from './codex';
 import { opencodeAdapter } from './opencode';
 import { joycodeAdapter } from './joycode';
+import { genericAdapter } from './generic';
 
 const ADAPTERS: Record<ToolId, ToolAdapter> = {
   claude: claudeAdapter,
@@ -13,6 +14,7 @@ const ADAPTERS: Record<ToolId, ToolAdapter> = {
   codex: codexAdapter,
   opencode: opencodeAdapter,
   joycode: joycodeAdapter,
+  generic: genericAdapter,
 };
 
 export function getAdapter(toolId: string): ToolAdapter | undefined {

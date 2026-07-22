@@ -64,7 +64,7 @@ function buildMcpConfig(port: number, existingMcpServers: Record<string, unknown
     }
     : {
       command: 'npx',
-      args: ['-y', '@dom-pointer-mcp/server@latest', 'start'],
+      args: ['-y', '--registry=https://registry.npmjs.org/', '@dom-pointer-mcp/server@latest', 'start'],
       env: { MCP_POINTER_PORT: String(port) },
     };
   return {

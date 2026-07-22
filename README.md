@@ -35,7 +35,7 @@ DOM Pointer MCP 是一个本地工具，由 Chrome 扩展 + MCP Server 组成。
 - ⚛️ **组件信息识别** —— 通过运行时反射拿到 React（≤ 18）/ Vue 2 / Vue 3 的组件名和源文件（实验性）
 - 🟢 **服务端状态指示** —— 弹窗会探测 MCP server，发不出去之前你就能看到红灯
 - ⚡ **快捷键冲突检测** —— 自动检测页面是否占用当前触发键，提示并建议替代键
-- 🛠️ **交互式多 Agent 配置** —— 一条 `config` 命令为 Claude Code、Cursor、Windsurf、Codex、Opencode、JoyCode 安装 MCP + Skill + slash命令
+- 🛠️ **交互式多 Agent 配置** —— 一条 `config` 命令为 Claude Code、Cursor、Windsurf、Codex、Opencode、JoyCode 安装 MCP + Skill + slash命令；也支持"其他 Agent"通用配置（生成 MCP JSON + Skill 到 `~/.agents/`，供你手动复制到未直接适配的 agent）
 - 🌐 **i18n 支持** —— 配置界面支持中文 / 英文（`--lang en`）
 
 ## 🎬 使用示例（视频）
@@ -85,7 +85,7 @@ npx -y @dom-pointer-mcp/server config
 会依次问你：
 
 1. **Action** —— Install 还是 Uninstall
-2. **Agents** —— 多选：Claude Code、Cursor、Windsurf、Codex、Opencode、JoyCode
+2. **Agents** —— 多选：Claude Code、Cursor、Windsurf、Codex、Opencode、JoyCode、其他 Agent（通用配置）
 3. **Scope** —— `user`（全局）或 `project`（仅当前目录）
 4. **启动方式** —— `npx`（每次从 registry 获取最新）或 `global`（使用本地已安装的 bin，离线可用）
 5. **Slash command?** —— 是否同时安装 `/pointed` slash命令
@@ -99,7 +99,7 @@ npx -y @dom-pointer-mcp/server config
 
 ```bash
 # 安装单个 agent
-npx -y @dom-pointer-mcp/server config claude       # 也支持 cursor / windsurf / codex / opencode / joycode
+npx -y @dom-pointer-mcp/server config claude       # 也支持 cursor / windsurf / codex / opencode / joycode / generic
 npx -y @dom-pointer-mcp/server config claude --scope project
 
 # 使用全局安装的 bin（不走 npx fetch，离线可用）

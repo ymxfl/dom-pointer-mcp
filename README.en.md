@@ -34,7 +34,7 @@ DOM Pointer MCP is a local tool combining a Chrome Extension and an MCP Server. 
 - 💡 **Dynamic Context Control** — Request visible-only text, suppress text entirely, or dial CSS detail from none → full computed styles per call
 - ⚛️ **Component Detection** — React (≤ 18) / Vue 2 / Vue 3 component names and source files via runtime introspection (experimental)
 - 🟢 **Server Status Indicator** — The popup probes the MCP server and tells you instantly when it's not reachable
-- 🛠️ **Interactive Multi-agent Config** — One `config` command installs MCP + Skill + slash command across Claude Code, Cursor, Windsurf, Codex, Opencode, JoyCode
+- 🛠️ **Interactive Multi-agent Config** — One `config` command installs MCP + Skill + slash command across Claude Code, Cursor, Windsurf, Codex, Opencode, JoyCode; also supports "Other Agent" generic mode (drops an MCP JSON + skill under `~/.agents/` for you to paste into agents not directly adapted)
 - 🌐 **i18n Support** — Config UI supports Chinese / English (`--lang en`)
 
 ## 🎬 Usage Example (Video)
@@ -80,7 +80,7 @@ npx -y @dom-pointer-mcp/server config
 You'll be walked through:
 
 1. **Action** — Install or Uninstall
-2. **Agents** — checkbox-pick any combination of: Claude Code, Cursor, Windsurf, Codex, Opencode, JoyCode
+2. **Agents** — checkbox-pick any combination of: Claude Code, Cursor, Windsurf, Codex, Opencode, JoyCode, Other Agent (generic)
 3. **Scope** — `user` (global) or `project` (current directory only)
 4. **Launch mode** — `npx` (always fetch latest from registry) or `global` (use locally installed binary, works offline)
 5. **Slash command?** — whether to also install the `/pointed` slash command
@@ -94,7 +94,7 @@ Each agent reports `installed` / `degraded` / `skipped` / `failed` per artifact 
 
 ```bash
 # Install a single tool
-npx -y @dom-pointer-mcp/server config claude       # or cursor, windsurf, codex, opencode, joycode
+npx -y @dom-pointer-mcp/server config claude       # or cursor, windsurf, codex, opencode, joycode, generic
 npx -y @dom-pointer-mcp/server config claude --scope project
 
 # Use globally installed binary (no registry fetch, works offline)

@@ -85,6 +85,18 @@ const texts = {
     en: 'Interactive mode requires a TTY. Pass a tool name and --scope explicitly '
       + '(e.g. `dom-pointer-mcp config claude --scope user`).',
   },
+  genericAgentName: {
+    zh: '其他 Agent',
+    en: 'Other Agent',
+  },
+  genericMcpHint: {
+    zh: '已生成通用 MCP 配置，请复制上方 JSON 到你的 agent 配置中',
+    en: 'Generic MCP config generated; copy the JSON above into your agent config',
+  },
+  genericSkillHint: {
+    zh: 'Skill 已生成，请手动复制到你的 agent skills 目录',
+    en: 'Skill generated; copy it manually into your agent skills directory',
+  },
 } as const;
 
 type TextKey = keyof typeof texts;
