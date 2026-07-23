@@ -49,6 +49,26 @@ export interface SavedSelectionScreenshot {
   capturedAt: string;
 }
 
+export type ReferenceImageMimeType = 'image/png' | 'image/jpeg';
+
+// A reference image the user pasted into the note panel from an external source.
+// Independent from the selection screenshot; its intended use lives in userNote.
+export interface RawReferenceImage {
+  dataUrl: string;
+  mimeType: ReferenceImageMimeType;
+  width: number;
+  height: number;
+  capturedAt: number;
+}
+
+export interface SavedReferenceImage {
+  path: string;
+  mimeType: ReferenceImageMimeType;
+  width: number;
+  height: number;
+  capturedAt: string;
+}
+
 export interface PointerHistorySummary {
   selectionId: string;
   url: string;
@@ -56,6 +76,7 @@ export interface PointerHistorySummary {
   userNotePreview: string;
   elementCount: number;
   screenshotPath?: string;
+  referenceImageCount?: number;
 }
 
 export interface PointerHistoryRequest {
@@ -140,6 +161,7 @@ export interface RawPointedSelection {
   userNote: string;
   elements: RawPointedDOMElement[];
   screenshot?: RawSelectionScreenshot;
+  referenceImages?: RawReferenceImage[];
   requestId?: string;
 }
 

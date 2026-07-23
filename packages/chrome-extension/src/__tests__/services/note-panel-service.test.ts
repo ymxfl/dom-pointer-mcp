@@ -111,7 +111,7 @@ describe('NotePanelService', () => {
     const event = new KeyboardEvent('keydown', { key: 'Enter', metaKey: true, cancelable: true });
     textarea.dispatchEvent(event);
 
-    expect(onSend).toHaveBeenCalledWith([el], 'change me', false);
+    expect(onSend).toHaveBeenCalledWith([el], 'change me', false, []);
     await flushMicrotasks();
     expect(textarea.value).toBe('');
   });
@@ -129,7 +129,7 @@ describe('NotePanelService', () => {
 
     await flushMicrotasks();
 
-    expect(onSend).toHaveBeenCalledWith([el], '', true);
+    expect(onSend).toHaveBeenCalledWith([el], '', true, []);
   });
 
   it('onSend rejection does NOT clear textarea; sendBtn re-enabled', async () => {

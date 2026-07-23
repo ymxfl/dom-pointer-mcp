@@ -37,6 +37,7 @@ async function buildState(
   const raw = data as RawPointedSelection;
   const selectionId = createSelectionId(raw.requestId);
   let screenshot: ProcessedPointedSelection['screenshot'];
+  let referenceImages: ProcessedPointedSelection['referenceImages'];
 
   try {
     screenshot = await services.screenshotStorage.save(selectionId, raw.screenshot);
@@ -44,9 +45,19 @@ async function buildState(
     logger.warn(`Failed to save selection screenshot: ${(err as Error).message}`);
   }
 
+  try {
+    referenceImages = await services.screenshotStorage.saveReferenceImages(
+      selectionId,
+      raw.referenceImages,
+    );
+  } catch (err) {
+    logger.warn(`Failed to save reference images: ${(err as Error).message}`);
+  }
+
   const processed = services.elementProcessor.processBatchFromRaw(raw, {
     selectionId,
     screenshot,
+    referenceImages,
   });
 
   const stateData: SharedStateData = {
@@ -54,6 +65,7 @@ async function buildState(
     rawPointedSelection: {
       ...raw,
       screenshot: undefined,
+      referenceImages: undefined,
     },
     processedPointedSelection: processed,
     metadata: buildMetadata(type),

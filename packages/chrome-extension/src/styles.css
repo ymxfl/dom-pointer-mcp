@@ -191,6 +191,47 @@
   background: white;
 }
 
+.dom-pointer-mcp__note-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dom-pointer-mcp__note-thumb {
+  position: relative;
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f7f7f7;
+}
+
+.dom-pointer-mcp__note-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dom-pointer-mcp__note-thumb button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  border-bottom-left-radius: 4px;
+}
+
 .dom-pointer-mcp__note-error {
   color: #c62828;
   font-size: 12px;

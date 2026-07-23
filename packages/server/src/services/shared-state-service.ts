@@ -59,6 +59,7 @@ export default class SharedStateService {
       userNotePreview: this.preview(item.processedPointedSelection.userNote),
       elementCount: item.processedPointedSelection.elements.length,
       screenshotPath: item.processedPointedSelection.screenshot?.path,
+      referenceImageCount: item.processedPointedSelection.referenceImages?.length,
     }));
   }
 
@@ -124,13 +125,18 @@ export default class SharedStateService {
 
   private async deleteScreenshots(items: SharedStateData[]): Promise<void> {
     await Promise.all(items.map(async (item) => {
-      const screenshotPath = item.processedPointedSelection.screenshot?.path;
-      if (!screenshotPath) return;
-      try {
-        await fs.unlink(screenshotPath);
-      } catch {
-        // Best effort cleanup.
-      }
+      const { screenshot, referenceImages } = item.processedPointedSelection;
+      const paths = [
+        screenshot?.path,
+        ...(referenceImages?.map((image) => image.path) ?? []),
+      ].filter((p): p is string => Boolean(p));
+      await Promise.all(paths.map(async (imagePath) => {
+        try {
+          await fs.unlink(imagePath);
+        } catch {
+          // Best effort cleanup.
+        }
+      }));
     }));
   }
 

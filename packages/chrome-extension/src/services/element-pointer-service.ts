@@ -1,5 +1,6 @@
 import {
   RawPointedSelection,
+  RawReferenceImage,
   RawSelectionScreenshot,
   ScreenshotBounds,
 } from '@dom-pointer-mcp/shared/types';
@@ -85,7 +86,12 @@ export default class ElementPointerService {
     this.arrowNavigationService = new ArrowNavigationService(this.store);
     this.notePanel = new NotePanelService(
       this.store,
-      (els, note, includeScreenshot) => this.sendSelection(els, note, includeScreenshot),
+      (els, note, includeScreenshot, referenceImages) => this.sendSelection(
+        els,
+        note,
+        includeScreenshot,
+        referenceImages,
+      ),
       (els, note) => this.buildSelectionJson(els, note),
       captureScreenshotDefault,
     );
@@ -167,11 +173,12 @@ export default class ElementPointerService {
     elements: HTMLElement[],
     note: string,
     includeScreenshot: boolean,
+    referenceImages: RawReferenceImage[],
   ): Promise<void> {
     logger.info(`📤 Sending selection (${elements.length} elements) to background`);
 
     assertExtensionContextValid();
-    const payload = await this.buildPayload(elements, note, includeScreenshot);
+    const payload = await this.buildPayload(elements, note, includeScreenshot, referenceImages);
 
     await new Promise<void>((resolve, reject) => {
       try {
@@ -213,6 +220,7 @@ export default class ElementPointerService {
     elements: HTMLElement[],
     note: string,
     includeScreenshot: boolean,
+    referenceImages: RawReferenceImage[] = [],
   ): Promise<RawPointedSelection> {
     const uniqueElements = dedupeElements(elements);
     const rawElements = await Promise.all(
@@ -227,6 +235,7 @@ export default class ElementPointerService {
       userNote: note,
       elements: rawElements,
       screenshot,
+      referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
     };
   }
 

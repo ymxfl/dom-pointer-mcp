@@ -11,6 +11,7 @@ import logger from '../logger';
 export interface ProcessBatchOptions {
   selectionId?: string;
   screenshot?: ProcessedPointedSelection['screenshot'];
+  referenceImages?: ProcessedPointedSelection['referenceImages'];
 }
 
 export default class ElementProcessor {
@@ -25,6 +26,7 @@ export default class ElementProcessor {
       timestamp: formatLocalTimestamp(raw.timestamp),
       elements: raw.elements.map((el) => this.processSingleRaw(el)),
       screenshot: options.screenshot,
+      referenceImages: options.referenceImages,
     };
   }
 
