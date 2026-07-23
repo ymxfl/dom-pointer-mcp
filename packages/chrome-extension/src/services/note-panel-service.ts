@@ -1,7 +1,10 @@
 import {
   autoUpdate, computePosition, flip, limitShift, shift,
 } from '@floating-ui/dom';
+import { RawReferenceImage } from '@dom-pointer-mcp/shared/types';
 import SelectionStoreService from './selection-store-service';
+import buildReferenceImage from '../utils/reference-image';
+import logger from '../utils/logger';
 import { t } from '../i18n';
 
 function viewportClippedRect(el: HTMLElement): DOMRect {
@@ -19,12 +22,14 @@ function viewportClippedRect(el: HTMLElement): DOMRect {
 
 const PANEL_CLASS = 'dom-pointer-mcp__note-panel';
 const CHIP_CLASS = 'dom-pointer-mcp__note-chip';
+const THUMB_CLASS = 'dom-pointer-mcp__note-thumb';
 const FLASH_CLASS = 'dom-pointer-mcp__overlay--flashing';
 
 export type OnSend = (
   elements: HTMLElement[],
   note: string,
   includeScreenshot: boolean,
+  referenceImages: RawReferenceImage[],
 ) => Promise<void>;
 export type OnCopy = (elements: HTMLElement[], note: string) => Promise<string>;
 
@@ -32,6 +37,12 @@ export default class NotePanelService {
   private root: HTMLDivElement | null = null;
 
   private chipContainer: HTMLDivElement | null = null;
+
+  private thumbContainer: HTMLDivElement | null = null;
+
+  private referenceImages: RawReferenceImage[] = [];
+
+  private handlePaste: ((e: ClipboardEvent) => void) | null = null;
 
   private textarea: HTMLTextAreaElement | null = null;
 
@@ -114,6 +125,7 @@ export default class NotePanelService {
       <div class="dom-pointer-mcp__note-chips"></div>
       <textarea class="dom-pointer-mcp__note-textarea"
         placeholder="${t('notePanel.placeholder')}"></textarea>
+      <div class="dom-pointer-mcp__note-thumbs" hidden></div>
       <div class="dom-pointer-mcp__note-error" hidden></div>
       <div class="dom-pointer-mcp__note-footer">
         <span class="dom-pointer-mcp__note-hint">${t('notePanel.hint')}</span>
@@ -129,6 +141,7 @@ export default class NotePanelService {
     document.body.appendChild(this.root);
 
     this.chipContainer = this.root.querySelector('.dom-pointer-mcp__note-chips');
+    this.thumbContainer = this.root.querySelector('.dom-pointer-mcp__note-thumbs');
     this.textarea = this.root.querySelector('textarea');
     this.sendBtn = this.root.querySelector('.dom-pointer-mcp__note-send');
     this.copyBtn = this.root.querySelector('.dom-pointer-mcp__note-copy');
@@ -149,6 +162,9 @@ export default class NotePanelService {
         this.handleSend();
       }
     });
+
+    this.handlePaste = (e: ClipboardEvent) => { this.onPaste(e); };
+    this.root.addEventListener('paste', this.handlePaste);
 
     // NOTE: TriggerMouseService listens at document level (capture phase) and
     // is BEFORE this panel root in the event path, so capture-phase
@@ -263,6 +279,55 @@ export default class NotePanelService {
     });
   }
 
+  private async onPaste(e: ClipboardEvent): Promise<void> {
+    const items = Array.from(e.clipboardData?.items ?? []);
+    const imageItems = items.filter((item) => item.kind === 'file' && item.type.startsWith('image/'));
+    if (imageItems.length === 0) return;
+
+    // Prevent the image (or its file path) from landing in the textarea.
+    e.preventDefault();
+
+    const blobs = imageItems
+      .map((item) => item.getAsFile())
+      .filter((blob): blob is File => blob !== null);
+
+    await Promise.all(blobs.map(async (blob) => {
+      try {
+        const image = await buildReferenceImage(blob);
+        if (image) this.referenceImages.push(image);
+      } catch (err) {
+        logger.warn('Failed to process pasted image:', err);
+      }
+    }));
+
+    this.renderThumbnails();
+  }
+
+  private renderThumbnails(): void {
+    if (!this.thumbContainer) return;
+    this.thumbContainer.innerHTML = '';
+    this.thumbContainer.hidden = this.referenceImages.length === 0;
+
+    this.referenceImages.forEach((image, idx) => {
+      const thumb = document.createElement('span');
+      thumb.className = THUMB_CLASS;
+      const img = document.createElement('img');
+      img.src = image.dataUrl;
+      img.alt = `reference ${idx + 1}`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.setAttribute('aria-label', 'Remove');
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', () => {
+        this.referenceImages.splice(idx, 1);
+        this.renderThumbnails();
+      });
+      thumb.appendChild(img);
+      thumb.appendChild(removeBtn);
+      this.thumbContainer!.appendChild(thumb);
+    });
+  }
+
   private async handleSend(): Promise<void> {
     if (!this.sendBtn || !this.textarea || !this.errorText) return;
     if (this.sendBtn.disabled) return;
@@ -274,8 +339,10 @@ export default class NotePanelService {
     this.errorText.hidden = true;
 
     try {
-      await this.onSend(elements, note, this.includeScreenshot);
+      await this.onSend(elements, note, this.includeScreenshot, this.referenceImages);
       if (this.textarea) this.textarea.value = '';
+      this.referenceImages = [];
+      this.renderThumbnails();
     } catch (err) {
       if (this.errorText) {
         this.errorText.textContent = t('notePanel.sendFailed', { error: (err as Error).message });
@@ -351,6 +418,8 @@ export default class NotePanelService {
     this.handleDragStart = null;
     this.dragOrigin = null;
     this.positionFrozen = false;
+    this.handlePaste = null;
+    this.referenceImages = [];
     if (this.feedbackTimer) {
       clearTimeout(this.feedbackTimer);
       this.feedbackTimer = null;
@@ -358,6 +427,7 @@ export default class NotePanelService {
     this.root?.remove();
     this.root = null;
     this.chipContainer = null;
+    this.thumbContainer = null;
     this.textarea = null;
     this.sendBtn = null;
     this.copyBtn = null;

@@ -27,6 +27,7 @@ DOM Pointer MCP is a local tool combining a Chrome Extension and an MCP Server. 
 - 🧺 **Multi-select Batches** — Stack multiple elements into one batch and send them with a shared note
 - 📝 **Floating Note Panel** — Type a free-form instruction next to your selection, then Send or Copy
 - 📷 **Optional Screenshots** — Attach a cropped screenshot; existing selection tools return both its local path and MCP image content
+- 🖼️ **Paste Reference Images** — `Ctrl/Cmd+V` any external screenshot into the note panel as a reference image; paste multiple, see thumbnails, and send them alongside the selection (describe their purpose in the note, e.g. "match the selection's style to this image")
 - 🕘 **Selection History** — Keep the latest 20 selections and list, restore, retrieve, or clear them by ID
 - 🖼️ **iframe Support** — Point to and extract elements inside iframe documents
 - 🤖 **Skill / Slash Command** — Type `/pointed` to trigger; the AI fetches your selection and acts on it

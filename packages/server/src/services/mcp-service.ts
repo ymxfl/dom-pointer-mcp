@@ -60,7 +60,7 @@ export default class MCPService {
       tools: [
         {
           name: MCPToolName.GET_POINTED_ELEMENT,
-          description: 'Returns the current DOM selection and attaches its screenshot as image content when available.',
+          description: 'Returns the current DOM selection and attaches its screenshot plus any user-provided reference images as image content when available.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -89,7 +89,7 @@ export default class MCPService {
         },
         {
           name: MCPToolName.GET_POINTED_SELECTION,
-          description: 'Returns a recent DOM selection by selectionId and attaches its screenshot as image content when available.',
+          description: 'Returns a recent DOM selection by selectionId and attaches its screenshot plus any user-provided reference images as image content when available.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -208,6 +208,7 @@ export default class MCPService {
       url: selection.url,
       timestamp: selection.timestamp,
       screenshot: selection.screenshot,
+      referenceImages: selection.referenceImages,
       elements: selection.elements.map((el) => serializeElement(
         el,
         details.textDetail,
@@ -215,7 +216,13 @@ export default class MCPService {
       )),
     };
 
-    return { content: await buildSelectionContent(payload, selection.screenshot) };
+    return {
+      content: await buildSelectionContent(
+        payload,
+        selection.screenshot,
+        selection.referenceImages,
+      ),
+    };
   }
 
   private async getPointedSelectionById(
@@ -244,6 +251,7 @@ export default class MCPService {
       url: selection.url,
       timestamp: selection.timestamp,
       screenshot: selection.screenshot,
+      referenceImages: selection.referenceImages,
       elements: selection.elements.map((el) => serializeElement(
         el,
         details.textDetail,
@@ -251,7 +259,13 @@ export default class MCPService {
       )),
     };
 
-    return { content: await buildSelectionContent(payload, selection.screenshot) };
+    return {
+      content: await buildSelectionContent(
+        payload,
+        selection.screenshot,
+        selection.referenceImages,
+      ),
+    };
   }
 
   private async listPointedSelections() {

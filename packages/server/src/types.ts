@@ -4,6 +4,7 @@ import {
   ComponentInfo,
   RawPointedSelection,
   SavedSelectionScreenshot,
+  SavedReferenceImage,
 } from '@dom-pointer-mcp/shared/types';
 
 // Server-processed data (extracted & enhanced)
@@ -56,6 +57,7 @@ export interface ProcessedPointedSelection {
   timestamp: string;
   elements: ProcessedPointedDOMElement[];
   screenshot?: SavedSelectionScreenshot;
+  referenceImages?: SavedReferenceImage[];
 }
 
 export interface SerializedSelection {
@@ -65,6 +67,7 @@ export interface SerializedSelection {
   timestamp: string;
   elements: SerializedDOMElement[];
   screenshot?: SavedSelectionScreenshot;
+  referenceImages?: SavedReferenceImage[];
 }
 
 export interface SelectionSummary {
@@ -74,6 +77,7 @@ export interface SelectionSummary {
   userNotePreview: string;
   elementCount: number;
   screenshotPath?: string;
+  referenceImageCount?: number;
 }
 
 // State data structure

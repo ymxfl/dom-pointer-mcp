@@ -39,4 +39,35 @@ describe('buildSelectionContent', () => {
       { type: 'text', text: JSON.stringify({ selectionId: 'sel_1' }, null, 2) },
     ]);
   });
+
+  it('attaches reference images with a labeled preamble each', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'dom-pointer-ref-'));
+    const refPath = path.join(dir, 'ref-0.jpg');
+    await fs.writeFile(refPath, Buffer.from('jpg-bytes'));
+
+    try {
+      const content = await buildSelectionContent(
+        { selectionId: 'sel_1' },
+        undefined,
+        [{
+          path: refPath,
+          mimeType: 'image/jpeg',
+          width: 2,
+          height: 2,
+          capturedAt: '2026-07-11T10:00:00+08:00',
+        }],
+      );
+
+      expect(content).toEqual([
+        { type: 'text', text: JSON.stringify({ selectionId: 'sel_1' }, null, 2) },
+        {
+          type: 'text',
+          text: 'Reference image [1] — user-provided reference, see userNote for intent:',
+        },
+        { type: 'image', data: Buffer.from('jpg-bytes').toString('base64'), mimeType: 'image/jpeg' },
+      ]);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
 });
