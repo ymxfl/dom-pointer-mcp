@@ -11,16 +11,15 @@ describe('trigger content sanity', () => {
     expect(TRIGGER_NAME).toBe('pointed');
   });
 
-  it('COMMAND_BODY contains tool name and key payload fields', () => {
+  it('COMMAND_BODY dispatches every mode to its tool', () => {
     expect(COMMAND_BODY).toContain('get-pointed-element');
     expect(COMMAND_BODY).toContain('list-pointed-selections');
     expect(COMMAND_BODY).toContain('get-pointed-selection');
     expect(COMMAND_BODY).toContain('clear-pointed-selections');
     expect(COMMAND_BODY).toContain('check-update');
+    expect(COMMAND_BODY).toContain('EXECUTE mode');
+    expect(COMMAND_BODY).toContain('GET mode');
     expect(COMMAND_BODY).toContain('userNote');
-    expect(COMMAND_BODY).toContain('selectionId');
-    expect(COMMAND_BODY).toContain('screenshot.path');
-    expect(COMMAND_BODY).toContain('elements[]');
   });
 
   it('COMMAND_DESCRIPTION mentions pointed elements', () => {
@@ -41,14 +40,7 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY).toContain('0-3');
   });
 
-  it('COMMAND_BODY has GET mode with confirmation gate', () => {
-    expect(COMMAND_BODY).toContain('GET mode');
-    expect(COMMAND_BODY).toContain('Determine mode BEFORE calling the tool');
-    expect(COMMAND_BODY).toContain('Do NOT take ANY other action');
-    expect(COMMAND_BODY).toContain('STOP HERE');
-  });
-
-  it('COMMAND_BODY GET mode lists cross-agent ask-tool mapping', () => {
+  it('COMMAND_BODY lists the cross-agent ask-tool mapping in one place', () => {
     expect(COMMAND_BODY).toContain('AskUserQuestion');
     expect(COMMAND_BODY).toContain('request_user_input');
     expect(COMMAND_BODY).toContain('task_ask_question');
@@ -58,24 +50,24 @@ describe('trigger content sanity', () => {
     expect(COMMAND_BODY).toContain('JoyCode');
     expect(COMMAND_BODY).toContain('Cursor');
     expect(COMMAND_BODY).toContain('OpenCode');
-    expect(COMMAND_BODY).toContain('Any other agent');
-  });
-
-  it('COMMAND_BODY has EXECUTE mode that acts immediately when userNote present', () => {
-    expect(COMMAND_BODY).toContain('EXECUTE mode');
-    expect(COMMAND_BODY).toContain('Do NOT ask for confirmation');
   });
 
   it('COMMAND_BODY preserves the fast skill-trigger path', () => {
     expect(COMMAND_BODY).toContain('The user intentionally triggered `/pointed`');
     expect(COMMAND_BODY).toContain('The first action after mode parsing MUST be the exact MCP tool call');
-    expect(COMMAND_BODY).toContain('call `get-pointed-element` IMMEDIATELY');
+    expect(COMMAND_BODY).toContain('IMMEDIATELY');
   });
 
-  it('COMMAND_BODY documents UPDATE mode with check-update parameters', () => {
-    expect(COMMAND_BODY).toContain('UPDATE mode');
+  it('COMMAND_BODY dispatches UPDATE mode with check-update parameters', () => {
     expect(COMMAND_BODY).toContain('check-update');
     expect(COMMAND_BODY).toContain('action: "apply"');
     expect(COMMAND_BODY).toContain('action: "check"');
+  });
+
+  it('COMMAND_BODY stays lean by delegating per-mode detail to tool descriptions', () => {
+    // Guard against the body re-accreting the verbose per-mode instructions
+    // that now live in the MCP tool descriptions.
+    expect(COMMAND_BODY.length).toBeLessThan(2200);
+    expect(COMMAND_BODY).toContain("Each tool's description defines how to act");
   });
 });
