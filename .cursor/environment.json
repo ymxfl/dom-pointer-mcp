@@ -1,0 +1,17 @@
+{
+  "name": "dom-pointer-mcp",
+  "install": "pnpm install --frozen-lockfile && pnpm build",
+  "terminals": [
+    {
+      "name": "MCP Server",
+      "command": "node packages/server/dist/cli.cjs start --log-level info",
+      "description": "Starts the DOM Pointer MCP server (WebSocket on :7007 + MCP stdio). Keep this running while testing the Chrome extension or MCP tools."
+    }
+  ],
+  "ports": [
+    {
+      "name": "DOM Pointer WebSocket",
+      "port": 7007
+    }
+  ]
+}
