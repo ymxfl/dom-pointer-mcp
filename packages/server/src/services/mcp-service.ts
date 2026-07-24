@@ -60,7 +60,11 @@ export default class MCPService {
       tools: [
         {
           name: MCPToolName.GET_POINTED_ELEMENT,
-          description: 'Returns the current DOM selection and attaches its screenshot plus any user-provided reference images as image content when available.',
+          description: 'Returns the current DOM selection; attaches the selection screenshot and any user-provided reference images as image content when available. '
+            + 'Payload: userNote (the user\'s primary instruction), selectionId, elements[] (selector, componentInfo.sourceFile, cssProperties, url — reference by 1-based index for [1]/[2] notation), screenshot.path, and referenceImages[] (external images the user pasted — NOT the selected element\'s current appearance; their purpose is described in userNote, e.g. "改成参考图的样式"). For visual changes inspect the attached image content directly. '
+            + 'EXECUTE (default, i.e. /pointed with no "get" prefix): if userNote is non-empty, apply the requested source-code changes IMMEDIATELY without asking for confirmation; if userNote is empty, ask the user what to do and wait. '
+            + 'GET (when invoked via /pointed get, read-only preview): do NOT modify any files. First summarize the elements (page URL, userNote, and each element\'s component name, source file, tag), then ask the user to confirm via the ask tool and STOP — take no other action (no searching, reading, or code analysis) until they reply. If they cancel, respond "已取消" and end. '
+            + 'If no selection exists, tell the user to Option+Click elements in the browser and press Cmd/Ctrl+Enter before retrying.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -80,7 +84,7 @@ export default class MCPService {
         },
         {
           name: MCPToolName.LIST_POINTED_SELECTIONS,
-          description: 'Lists recent pointed DOM selections with ids, notes, counts, and screenshots.',
+          description: 'Lists recent pointed DOM selections (read-only). Return a compact list: selectionId, timestamp, elementCount, userNote preview, and screenshotPath when present. Do not modify files.',
           inputSchema: {
             type: 'object',
             properties: {},
@@ -89,7 +93,7 @@ export default class MCPService {
         },
         {
           name: MCPToolName.GET_POINTED_SELECTION,
-          description: 'Returns a recent DOM selection by selectionId and attaches its screenshot plus any user-provided reference images as image content when available.',
+          description: 'Returns a recent DOM selection by selectionId and attaches its screenshot plus any user-provided reference images as image content when available. Payload shape matches get-pointed-element. After fetching, follow EXECUTE behavior on this historical selection (apply changes when userNote is non-empty); text the user typed after the selectionId refines userNote.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -113,7 +117,7 @@ export default class MCPService {
         },
         {
           name: MCPToolName.CLEAR_POINTED_SELECTIONS,
-          description: 'Clears all stored pointed selections, or one selection by selectionId.',
+          description: 'Clears all stored pointed selections, or one by selectionId (pass the id after /pointed clear; omit to clear all). Report only the removed count.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -127,7 +131,8 @@ export default class MCPService {
         },
         {
           name: MCPToolName.CHECK_UPDATE,
-          description: 'Checks npm for a newer @dom-pointer-mcp/server, optionally applies a global install.',
+          description: 'Checks npm for a newer @dom-pointer-mcp/server; with action "apply" installs it globally, "check" (default) only compares. Report currentVersion, latestVersion, updateAvailable, launchHint, applied, and message. Do not modify project source files. '
+            + 'When an update was applied (or for npx launches, to pick up @latest), the running MCP server must be replaced: tell the user to first kill ALL existing dom-pointer MCP processes (e.g. `pkill -f dom-pointer-mcp`), then restart the agent session so a fresh server starts on the new version. Extension updates are handled in the Chrome extension popup, not here.',
           inputSchema: {
             type: 'object',
             properties: {
